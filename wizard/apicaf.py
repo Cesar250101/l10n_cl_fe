@@ -80,8 +80,9 @@ class APICAF(models.TransientModel):
                 self.message = data["message"]
             else:
                 self.message = str(resp.data)
-            self.env["bus.bus"].sendone(
-                (self._cr.dbname, "dte.caf.apicaf", self.env.user.partner_id.id),
+            self.env["bus.bus"]._sendone(
+                self.env.user.partner_id,
+                'dte.caf.apicaf/display_notification',
                 {
                     "title": "Error en conexión con apicaf",
                     "message": self.message,
@@ -231,8 +232,9 @@ class APICAF(models.TransientModel):
                 _logger.warning(self.message)
             else:
                 self.message = str(resp.data)
-            self.env["bus.bus"].sendone(
-                (self._cr.dbname, "dte.caf.apicaf", self.env.user.partner_id.id),
+            self.env["bus.bus"]._sendone(
+                self.env.user.partner_id,
+                'dte.caf.apicaf/display_notification',
                 {
                     "title": "Error en conexión con apicaf",
                     "message": self.message,
@@ -273,8 +275,9 @@ class APICAF(models.TransientModel):
                 _logger.warning(self.message)
             else:
                 self.message = str(resp.data)
-            self.env["bus.bus"].sendone(
-                (self._cr.dbname, "dte.caf.apicaf", self.env.user.partner_id.id),
+            self.env["bus.bus"]._sendone(
+                self.env.user.partner_id,
+                'dte.caf.apicaf/display_notification',
                 {
                     "title": "Error en conexión con apicaf",
                     "message": self.message,
@@ -355,8 +358,9 @@ class APICAF(models.TransientModel):
                 _logger.warning(self.message)
             else:
                 self.message = str(resp.data)
-            self.env["bus.bus"].sendone(
-                (self._cr.dbname, "dte.caf.apicaf", self.env.user.partner_id.id),
+            self.env["bus.bus"]._sendone(
+                self.env.user.partner_id,
+                'dte.caf.apicaf/display_notification',
                 {
                     "title": "Error en conexión con apicaf",
                     "message": self.message,
@@ -404,8 +408,9 @@ class APICAF(models.TransientModel):
                 _logger.warning(self.message)
             else:
                 self.message = str(resp.data)
-            self.env["bus.bus"].sendone(
-                (self._cr.dbname, "dte.caf.apicaf", self.env.user.partner_id.id),
+            self.env["bus.bus"]._sendone(
+                self.env.user.partner_id,
+                'dte.caf.apicaf/display_notification',
                 {
                     "title": "Error en conexión con apicaf",
                     "message": self.message,
@@ -441,8 +446,9 @@ class APICAF(models.TransientModel):
                 _logger.warning(self.message)
             else:
                 self.message = str(resp.data)
-            self.env["bus.bus"].sendone(
-                (self._cr.dbname, "dte.caf.apicaf", self.env.user.partner_id.id),
+            self.env["bus.bus"]._sendone(
+                self.env.user.partner_id,
+                'dte.caf.apicaf/display_notification',
                 {
                     "title": "Error en conexión con apicaf",
                     "message": self.message,
@@ -482,8 +488,9 @@ class APICAF(models.TransientModel):
                 _logger.warning(self.message)
             else:
                 self.message = str(resp.data)
-            self.env["bus.bus"].sendone(
-                (self._cr.dbname, "dte.caf.apicaf", self.env.user.partner_id.id),
+            self.env["bus.bus"]._sendone(
+                self.env.user.partner_id,
+                'dte.caf.apicaf/display_notification',
                 {
                     "title": "Error en conexión con apicaf",
                     "message": self.message,

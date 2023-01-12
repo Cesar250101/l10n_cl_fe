@@ -406,14 +406,33 @@
                                         />
                                     </td>
                                 </tr>
-                                <t t-foreach="o.amount_by_group" t-as="amount_by_group">
-                                    <tr style="max-height:11px; font-size:12px !important;">
+                                <t t-set="monto_exento" t-value="o.exento()" />
+                                <tr
+                                    t-if="monto_exento > 0"
+                                    style="max-height:11px; font-size:12px !important;"
+                                >
+                                    <td>
+                                        <span>Exento</span>
+                                    </td>
+                                    <td class="text-right">
+                                        <span
+                                            t-esc="monto_exento"
+                                            t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"
+                                        />
+                                    </td>
+                                </tr>
+                                <t t-foreach="o.line_ids.filtered(lambda line: line.tax_line_id)" t-as="t">
+                                    <tr
+                                        t-if="not o.es_boleta() or (o.es_boleta() and t.tax_line_id.sii_code in [14, 15, 17]) "
+                                        style="max-height:11px; font-size:12px !important;"
+                                    >
                                         <td>
-                                            <span t-esc="amount_by_group[0]" />
+                                            <span t-esc="t.tax_line_id.description if not t.is_retention else t.tax_line_id.name" />
                                         </td>
                                         <td class="text-right">
                                             <span
-                                                t-esc="amount_by_group[3]"
+                                                t-esc="t.debit or t.credit"
+                                                t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"
                                             />
                                         </td>
                                     </tr>
@@ -689,13 +708,14 @@
                   <div class="row">
                       <div class="col-12 pull-right">
                           <table class="table table-condensed" style="border-top: 1px solid black; width: 100%; line-height:1!important;">
-                              <t t-foreach="o.amount_by_group" t-as="amount_by_group">
-                                  <tr class="border-black">
+                              <t t-foreach="o.invoice_line_ids.filtered(lambda line: line.sudo().account_id and line.product_id).sorted(key=lambda l: (l.sequence))"
+                              t-as="t">
+                                  <tr class="border-black" t-if="not o.es_boleta() or (o.es_boleta() and ( t.tax_id.amount == 0 or t.tax_id.sii_code in [14, 15, 17]))">
                                       <td>
-                                          <t t-esc="amount_by_group[0]"/>
+                                          <t t-esc="t.tax_line_id.description if not t.is_retention else t.tax_line_id.name"/>
                                       </td>
                                       <td class="text-right">
-                                          <span t-esc="amount_by_group[3]"/>
+                                          <span t-esc="t.debit or t.credit" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
                                       </td>
                                   </tr>
                               </t>
@@ -1009,10 +1029,12 @@
                     <left>
                         <pre>        Impuestos</pre>
                     </left>
-                    <t t-foreach="doc.amount_by_group" t-as="amount_by_group">
-                        <t>
-                            <right><t t-esc="amount_by_group[0]" />: <value>
-                                    <t t-esc='amount_by_group[3]' />
+                    <t t-foreach="doc.line_ids.filtered(lambda line: line.tax_line_id)" t-as="tl">
+                        <t
+                            t-if="not doc.es_boleta() or (doc.es_boleta() and ( tl.tax_id.amount == 0 or tl.tax_line_id.sii_code in [14, 15, 17]))"
+                        >
+                            <right><t t-esc="tl.tax_line_id.description" />: $ <value value-decimals='0'>
+                                    <t t-esc='tl.debit or tl.credit' />
                                 </value></right>
                         </t>
                     </t>

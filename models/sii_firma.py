@@ -28,8 +28,8 @@ class SignatureCert(models.Model):
     def alerta_vencimiento(self):
         if self.expire_date < (datetime.now() + relativedelta.relativedelta(days=30)):
             alert_msg = "Firma pronto a vencer"
-            self.env["bus.bus"].sendone(
-                (self._cr.dbname, "sii.firma", self.env.user.partner_id.id),
+            self.env["bus.bus"]._sendone(
+                self.env.user.partner_id, 'sii.firma/display_notification',
                 {"title": "Alerta sobre Firma Electrónica", "message": alert_msg, "type": "dte_notif",},
             )
 
@@ -104,7 +104,7 @@ class SignatureCert(models.Model):
     ]
     _order = "priority DESC"
 
-    
+
     def action_process(self):
         if self.subject_serial_number:
             return self.check_signature()

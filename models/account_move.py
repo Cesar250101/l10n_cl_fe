@@ -298,60 +298,6 @@ class AccountMove(models.Model):
         compute='_get_sequence_prefix'
     )
 
-    @api.depends('line_ids.price_subtotal', 'line_ids.tax_base_amount', 'line_ids.tax_line_id', 'partner_id', 'currency_id')
-    def _compute_invoice_taxes_by_group(self):
-        ''' Helper to get the taxes grouped according their account.tax.group.
-        This method is only used when printing the invoice.
-        '''
-        for move in self.filtered('document_class_id'):
-            lang_env = move.with_context(lang=move.partner_id.lang).env
-            tax_lines = move.line_ids.filtered(lambda line: line.tax_line_id)
-            tax_balance_multiplicator = -1 if move.is_inbound(True) else 1
-            res = {}
-            # There are as many tax line as there are repartition lines
-            if move.es_boleta():
-                imps = move.line_ids.filtered(lambda line: line.tax_line_id.sii_code)
-                tax_lines -= imps
-
-            for line in tax_lines:
-                res.setdefault(line.tax_line_id, {'base': 0.0, 'amount': 0.0, 'name': line.tax_line_id.name if line.is_retention else line.tax_line_id.description})
-                res[line.tax_line_id]['amount'] += tax_balance_multiplicator * (line.amount_currency if line.currency_id else line.balance)
-            amount_exe = 0
-            for line in (self.invoice_line_ids).filtered('tax_ids'):
-                if line.tax_ids[0].amount == 0:
-                    res.setdefault(line.tax_ids[0], {'base': 0.0, 'amount': 0.0, 'name': line.tax_ids[0].name})
-                    res[line.tax_ids[0]]['amount'] += line.price_subtotal
-                    amount_exe += line.price_subtotal
-            if move.es_boleta():
-                for i in imps:
-                    if i.tax_line_id.sii_code in [14, 15]:
-                        iva = i.tax_line_id
-                        break
-                if iva:
-                    force_sign = -1 if move.move_type in ('out_invoice', 'in_refund', 'out_receipt') else 1
-                    if iva.price_include:
-                        amount = move.amount_total_signed
-                    else:
-                        amount = move.amount_untaxed_signed
-                    taxes_res = iva._origin.with_context(force_sign=force_sign).compute_all(
-                        (amount - amount_exe),
-                        quantity=1, currency=move.currency_id,
-                        partner=move.partner_id,
-                        is_refund=move.move_type in ('out_refund', 'in_refund'))
-                    res[iva] = {'base': 0.0, 'amount': taxes_res['taxes'][0]['amount'], 'name': iva.description}
-
-            move.amount_by_group = [(
-                amounts['name'],
-                amounts['amount'],
-                amounts['base'],
-                formatLang(lang_env, amounts['amount'], currency_obj=move.currency_id),
-                formatLang(lang_env, amounts['base'], currency_obj=move.currency_id),
-                len(res),
-                group.id
-            ) for group, amounts in res.items()]
-            self -= move
-        return super(AccountMove, self)._compute_invoice_taxes_by_group()
-
     @api.depends(
         'line_ids.matched_debit_ids.debit_move_id.move_id.line_ids.amount_residual',
         'line_ids.matched_debit_ids.debit_move_id.move_id.line_ids.amount_residual_currency',
@@ -533,6 +479,7 @@ class AccountMove(models.Model):
                 partner=base_line.partner_id,
                 is_refund=is_refund,
                 handle_price_include=handle_price_include,
+                include_caba_tags=move.always_tax_exigible,
                 discount=discount,
                 uom_id=base_line.product_uom_id,
             )
@@ -583,16 +530,12 @@ class AccountMove(models.Model):
             if not recompute_tax_base_amount:
                 line.tax_tag_ids = compute_all_vals['base_tags'] or [(5, 0, 0)]
 
-            tax_exigible = True
             for tax_vals in compute_all_vals['taxes']:
                 grouping_dict = self._get_tax_grouping_key_from_base_line(line, tax_vals)
                 grouping_key = _serialize_tax_grouping_key(grouping_dict)
 
                 tax_repartition_line = self.env['account.tax.repartition.line'].browse(tax_vals['tax_repartition_line_id'])
                 tax = tax_repartition_line.invoice_tax_id or tax_repartition_line.refund_tax_id
-
-                if tax.tax_exigibility == 'on_payment':
-                    tax_exigible = False
 
                 taxes_map_entry = taxes_map.setdefault(grouping_key, {
                     'tax_line': None,
@@ -603,8 +546,6 @@ class AccountMove(models.Model):
                 taxes_map_entry['amount'] += tax_vals['amount']
                 taxes_map_entry['tax_base_amount'] += self._get_base_amount_to_display(tax_vals['base'], tax_repartition_line, tax_vals['group'])
                 taxes_map_entry['grouping_dict'] = grouping_dict
-            if not recompute_tax_base_amount:
-                line.tax_exigible = tax_exigible
 
         # ==== Pre-process taxes_map ====
         taxes_map = self._preprocess_taxes_map(taxes_map)
@@ -666,12 +607,10 @@ class AccountMove(models.Model):
                     **to_write_on_line,
                     'name': tax.name,
                     'move_id': self.id,
-                    'partner_id': line.partner_id.id,
                     'company_id': line.company_id.id,
                     'company_currency_id': line.company_currency_id.id,
                     'tax_base_amount': tax_base_amount,
                     'exclude_from_invoice_tab': True,
-                    'tax_exigible': tax.tax_exigibility == 'on_invoice',
                     **taxes_map_entry['grouping_dict'],
                     'is_retention': tax_repartition_line.sii_type in ['R'],
                 })
@@ -815,6 +754,7 @@ class AccountMove(models.Model):
             invoice.sequence_number_next = 0
             if invoice.journal_document_class_id:
                 invoice.sequence_number_next = invoice.journal_document_class_id.sequence_id.number_next_actual
+
 
     def _reverse_move_vals(self, default_values, cancel=True):
         ''' Reverse values passed as parameter being the copied values of the original journal entry.
@@ -1111,7 +1051,6 @@ class AccountMove(models.Model):
     def _validaciones_uso_dte(self):
         if not self.document_class_id:
             raise UserError("NO tiene seleccionado tipo de documento")
-
         if (self.es_nc() or self.es_nd()) and not self.referencias:
             raise UserError("Las Notas deben llevar por obligación una referencia al documento que están afectando")
         if not self.env.user.get_digital_signature(self.company_id):
@@ -1259,6 +1198,7 @@ class AccountMove(models.Model):
                 _apply_global_gdr(self, gdr_amount, gdr_amount_currency, gr, gdr, taxes)
         self.amount_untaxed_global_discount = total_gd
         self.amount_untaxed_global_recargo = total_gr
+        
     def _recompute_dynamic_lines(self, recompute_all_taxes=False, recompute_tax_base_amount=False):
         for invoice in self:
             if invoice.is_invoice(include_receipts=True):
@@ -1448,7 +1388,8 @@ class AccountMove(models.Model):
         if self.ind_servicio:
             IdDoc["IndServicio"] = self.ind_servicio
         # todo: forma de pago y fecha de vencimiento - opcional
-        if resumen['tax_include'] and not self.es_boleta():
+        if resumen['tax_include'] and resumen['MntExe'] == 0 and \
+                not self.es_boleta():
             IdDoc["MntBruto"] = 1
         if not self.es_boleta():
             IdDoc["FmaPago"] = self.forma_pago or 1
@@ -1505,11 +1446,11 @@ class AccountMove(models.Model):
         Receptor["RznSocRecep"] = self._acortar_str(commercial_partner_id.name, 100)
         if not self.partner_id or Receptor["RUTRecep"] == "66666666-6":
             return Receptor
-        if not self.es_boleta() and not self.es_nc_boleta():
+        if not self.es_boleta() and not self.es_nc_boleta() and self.move_type not in ["in_invoice", "in_refund"]:
             GiroRecep = self.acteco_id.name or commercial_partner_id.activity_description.name
             if not GiroRecep:
                 raise UserError(_("Seleccione giro del partner"))
-            Receptor["GiroRecep"] = GiroRecep
+            Receptor["GiroRecep"] = self._acortar_str(GiroRecep, 40)
         if self.partner_id.phone or commercial_partner_id.phone:
             Receptor["Contacto"] = self._acortar_str(
                 self.partner_id.phone or commercial_partner_id.phone or self.partner_id.email, 80
@@ -1912,7 +1853,7 @@ class AccountMove(models.Model):
                     dr.valor, currency_id, self.company_id, self.invoice_date
                 )
             if self.document_class_id.sii_code in [34] and (
-                self.referencias and self.referencias[0].sii_referencia_TpoDocRef.sii_code == 34
+                self.referencias and self.referencias[0].sii_referencia_TpoDocRef.sii_code == "34"
             ):  # solamente si es exento
                 dr_line["IndExeDR"] = 1
             result.append(dr_line)
@@ -2140,7 +2081,9 @@ class AccountMove(models.Model):
                     "type": "dte_notif",
                 }
             if mess:
-                self.env["bus.bus"].sendone((self._cr.dbname, "account.move", r.user_id.partner_id.id), mess)
+                self.env["bus.bus"]._sendone(
+                    self.env.user.partner_id,
+                    'account.move/display_notification', mess)
 
     def set_dte_claim(self, claim=False):
         if self.document_class_id.sii_code not in [33, 34, 43]:
@@ -2158,10 +2101,10 @@ class AccountMove(models.Model):
                 "Claim": claim,
             }
         ]
-        key = "RUT%sT%sF%s" %(rut_emisor,
-                              tipo_dte, str(self.sii_document_number))
         try:
             respuesta = fe.ingreso_reclamo_documento(datos)
+            key = "RUT%sT%sF%s" %(rut_emisor,
+                                  tipo_dte, str(self.sii_document_number))
             self.claim_description = respuesta[key]
         except Exception as e:
             msg = "Error al ingresar Reclamo DTE"
@@ -2173,9 +2116,9 @@ class AccountMove(models.Model):
                 )
             raise UserError("{}: {}".format(msg, str(e)))
         self.claim_description = respuesta
-        if respuesta.get(key,
-                         {'codResp': 9})["codResp"] in [0, 7]:
+        if respuesta.codResp in [0, 7]:
             self.claim = claim
+
 
     def get_dte_claim(self):
         tipo_dte = self.document_class_id.sii_code
@@ -2290,6 +2233,15 @@ class AccountMove(models.Model):
         else:
             report_string = super(AccountMove, self)._get_report_base_filename()
         return report_string
+
+
+    def exento(self):
+        exento = 0
+        for l in self.invoice_line_ids:
+            if l.tax_ids[0].amount == 0:
+                exento += l.price_subtotal
+        return exento if exento > 0 else (exento * -1)
+
 
     def getTotalDiscount(self):
         total_discount = 0

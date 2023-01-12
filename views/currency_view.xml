@@ -6,7 +6,7 @@
         <field name="model">res.currency</field>
         <field name="inherit_id" ref="base.view_currency_form" />
         <field name="arch" type="xml">
-            <field name="rate" position="after">
+            <field name="name" position="before">
                 <field name="code" />
                 <field name="abreviatura" />
             </field>

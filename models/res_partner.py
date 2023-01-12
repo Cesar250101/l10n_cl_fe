@@ -77,7 +77,7 @@ class ResPartner(models.Model):
 
     @api.model
     def _name_search(self, name, args=None, operator='ilike', limit=100, name_get_uid=None):
-        self = self.with_user(name_get_uid or self.env.uid)
+        self = self.with_user(name_get_uid) if name_get_uid else self
         # as the implementation is in SQL, we force the recompute of fields if necessary
         self.recompute(['display_name'])
         self.flush()
@@ -239,11 +239,8 @@ class ResPartner(models.Model):
 
     @api.onchange("document_number", "document_type_id")
     def onchange_document(self):
-        mod_obj = self.env["ir.model.data"]
-        if self.document_number and (
-            ("sii.document_type", self.document_type_id.id) == mod_obj.get_object_reference("l10n_cl_fe", "dt_RUT")
-            or ("sii.document_type", self.document_type_id.id) == mod_obj.get_object_reference("l10n_cl_fe", "dt_RUN")
-        ):
+        if self.document_number and (self.document_type_id == self.env.ref("l10n_cl_fe.dt_RUT")
+            or self.document_type_id == self.env.ref("l10n_cl_fe.dt_RUN")):
             document_number = (re.sub("[^1234567890Kk]", "", str(self.document_number))).zfill(9).upper()
             if not self.check_vat_cl(document_number):
                 return {"warning": {"title": _("Rut Erróneo"), "message": _("Rut Erróneo"),}}
@@ -269,9 +266,7 @@ class ResPartner(models.Model):
             self.document_number = "{}.{}.{}-{}".format(
                 document_number[0:2], document_number[2:5], document_number[5:8], document_number[-1],
             )
-        elif self.document_number and ("sii.document_type", self.document_type_id.id) == mod_obj.get_object_reference(
-            "l10n_cl_fe", "dt_Sigd",
-        ):
+        elif self.document_number and self.document_type_id == self.env.ref("l10n_cl_fe.dt_Sigd"):
             self.document_number = ""
         else:
             self.vat = ""

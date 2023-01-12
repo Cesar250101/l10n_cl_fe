@@ -474,6 +474,8 @@ class Libro(models.Model):
         }
         datos["test"] = True
         result = fe.libro(datos)
+        if result.get('errores'):
+            raise UserError("Error al timbrar libro: %s" %str(result['errores'])
         envio_dte = result["sii_xml_request"]
         doc_id = "{}_{}".format(self.tipo_operacion, self.periodo_tributario)
         self.sii_xml_request = (

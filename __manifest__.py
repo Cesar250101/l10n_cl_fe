@@ -46,7 +46,6 @@ Facturación Electrónica para Chile. Mayor información en https://globalrespon
         "wizard/upload_xml.xml",
         "wizard/validar.xml",
         "wizard/sale_make_invoice_advance.xml",
-        "views/assets.xml",
         "wizard/journal_config_wizard_view.xml",
         "views/account_tax_mepco.xml",
         "views/account_tax.xml",
@@ -108,7 +107,16 @@ Facturación Electrónica para Chile. Mayor información en https://globalrespon
         "security/state_manager.xml",
         "security/ir.model.access.csv",
     ],
-    "qweb": ["static/src/xml/base.xml",],
+    'assets': {
+        'web.assets_backend': [
+            "l10n_cl_fe/static/src/js/upgrade_fields.js",
+            "l10n_cl_fe/static/src/js/notify_manager.js",
+            "l10n_cl_fe/static/src/js/report/action_manager_report.js",
+        ],
+        'web.assets_qweb': [
+            'l10n_cl_fe/static/src/xml/**/*',
+        ],
+    },
     "post_init_hook": "_set_default_configs",
     "installable": True,
     "auto_install": False,

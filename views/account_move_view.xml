@@ -139,28 +139,14 @@
                   <field name="iva_uso_comun" attrs="{'invisible': [('move_type', 'not in', ('in_invoice', 'in_refund'))]}" />
                   <field name="no_rec_code" attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund'))]}" />
                 </field>
-                <field name="amount_untaxed" position="after">
-                    <field
-                        name="amount_untaxed_global_discount"
-                        widget="monetary"
-                        attrs="{'invisible':[('amount_untaxed_global_discount','=',0)]}"
-                    />
-                    <field
-                        name="amount_untaxed_global_recargo"
-                        widget="monetary"
-                        attrs="{'invisible':[('amount_untaxed_global_recargo','=',0)]}"
-                    />
-                </field>
-                <field name="amount_by_group" position="after">
-                  <field name="amount_retencion"
-                    attrs="{'invisible': [('amount_retencion', '&lt;=', 0)]}"/>
-                </field>
-                <field name="narration" position="after">
+
+                <xpath expr="//group[hasclass('oe_invoice_lines_tab')]" position="after">
                     <field
                         name="global_descuentos_recargos"
                         widget="one2many_list"
                         mode="tree"
                         context="{'default_move_id': active_id}"
+                        nolabel="1"
                     >
                         <tree string="Descuetos / Recargos Globales" editable="bottom">
                             <field name="type" />
@@ -174,7 +160,7 @@
                             <field name="move_id" invisible="1" />
                         </tree>
                     </field>
-                </field>
+                </xpath>
                 <xpath expr="//field[@name='line_ids']/tree/field[@name='is_rounding_line']" position="before">
                     <field name="is_gd_line" invisible="1"/>
                     <field name="is_gr_line" invisible="1"/>

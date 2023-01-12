@@ -78,7 +78,31 @@ class SiiTax(models.Model):
             amount_tax = amount_tax / factor
         return amount_tax
 
-    def compute_all(self, price_unit, currency=None, quantity=1.0, product=None, partner=None, is_refund=False, handle_price_include=True, discount=None, uom_id=None):
+    def _fix_composed_included_tax(self, base, quantity, uom_id):
+        composed_tax = {}
+        price_included = False
+        percent = 0.0
+        rec = 0.0
+        for tax in self.sorted(key=lambda r: r.sequence):
+            if tax.price_include:
+                price_included = True
+            else:
+                continue
+            if tax.amount_type == "percent":
+                percent += tax.amount
+            else:
+                amount_tax = tax.compute_factor(uom_id)
+                rec += quantity * amount_tax
+        if price_included:
+            _base = base - rec
+            common_base = _base / (1 + percent / 100.0)
+            for tax in self.sorted(key=lambda r: r.sequence):
+                if tax.amount_type == "percent":
+                    composed_tax[tax.id] = common_base * (1 + tax.amount / 100)
+        return composed_tax
+
+
+    def compute_all(self, price_unit, currency=None, quantity=1.0, product=None, partner=None, is_refund=False, handle_price_include=True, include_caba_tags=False, discount=None, uom_id=None):
         """ Returns all information required to apply taxes (in self + their children in case of a tax group).
             We consider the sequence of the parent for group of taxes.
                 Eg. considering letters as taxes and alphabetic order as sequence :
@@ -106,26 +130,13 @@ class SiiTax(models.Model):
         else:
             company = self[0].company_id
 
-        uom_id = self._context.get('tax_uom_id', False) or uom_id
         # 1) Flatten the taxes.
         taxes, groups_map = self.flatten_taxes_hierarchy(create_map=True)
 
-        # 2) Avoid mixing taxes having price_include=False && include_base_amount=True
-        # with taxes having price_include=True. This use case is not supported as the
-        # computation of the total_excluded would be impossible.
-        base_excluded_flag = False  # price_include=False && include_base_amount=True
-        included_flag = False  # price_include=True
-        for tax in taxes:
-            if tax.price_include:
-                included_flag = True
-            elif tax.include_base_amount:
-                base_excluded_flag = True
-            if base_excluded_flag and included_flag:
-                raise UserError(_('Unable to mix any taxes being price included with taxes affecting the base amount but not included in price.'))
-
-        # 3) Deal with the rounding methods
+        # 2) Deal with the rounding methods
         if not currency:
             currency = company.currency_id
+
         # By default, for each tax, tax amount will first be computed
         # and rounded at the 'Account' decimal precision for each
         # PO/SO/invoice line and then these rounded amounts will be
@@ -148,7 +159,7 @@ class SiiTax(models.Model):
         if not round_tax:
             prec *= 1e-5
 
-        # 4) Iterate the taxes in the reversed sequence order to retrieve the initial base of the computation.
+        # 3) Iterate the taxes in the reversed sequence order to retrieve the initial base of the computation.
         #     tax  |  base  |  amount  |
         # /\ ----------------------------
         # || tax_1 |  XXXX  |          | <- we are looking for that, it's the total_excluded
@@ -209,6 +220,7 @@ class SiiTax(models.Model):
                 price_unit *= (1 - (discount / 100.0))
             base = currency.round(price_unit * quantity)
 
+
         # For the computation of move lines, we could have a negative base value.
         # In this case, compute all with positive values and negate them at the end.
         sign = 1
@@ -235,8 +247,11 @@ class SiiTax(models.Model):
                     or tax.invoice_repartition_line_ids
                 ).filtered(lambda x: x.repartition_type == "tax")
                 sum_repartition_factor = sum(tax_repartition_lines.mapped("factor"))
-
                 if tax.include_base_amount and not tax.include_base_amount_cl:
+                    base = recompute_base(base, incl_fixed_amount, incl_percent_amount, incl_division_amount)
+                    incl_fixed_amount = incl_percent_amount = incl_division_amount = 0
+                    store_included_tax_total = True
+                if tax.include_base_amount:
                     base = recompute_base(base, incl_fixed_amount, incl_percent_amount, incl_division_amount)
                     incl_fixed_amount = incl_percent_amount = incl_division_amount = 0
                     store_included_tax_total = True
@@ -246,13 +261,10 @@ class SiiTax(models.Model):
                     elif tax.amount_type == 'division':
                         incl_division_amount += tax.amount * sum_repartition_factor
                     elif tax.amount_type == 'fixed':
-                        amount_tax = tax.amount
-                        if tax.uom_id:
-                            amount_tax = tax.compute_factor(uom_id)
-                        incl_fixed_amount += quantity * amount_tax * sum_repartition_factor
+                        incl_fixed_amount += abs(quantity) * tax.amount * sum_repartition_factor
                     else:
                         # tax.amount_type == other (python)
-                        tax_amount = tax._compute_amount(base, sign * price_unit, quantity, product, partner, uom_id=uom_id) * sum_repartition_factor
+                        tax_amount = tax._compute_amount(base, sign * price_unit, quantity, product, partner) * sum_repartition_factor
                         incl_fixed_amount += tax_amount
                         # Avoid unecessary re-computation
                         cached_tax_amounts[i] = tax_amount
@@ -267,34 +279,51 @@ class SiiTax(models.Model):
                 i -= 1
 
         total_excluded = currency.round(recompute_base(base, incl_fixed_amount, incl_percent_amount, incl_division_amount))
-        # 5) Iterate the taxes in the sequence order to compute missing tax amounts.
+
+        # 4) Iterate the taxes in the sequence order to compute missing tax amounts.
         # Start the computation of accumulated amounts at the total_excluded value.
         base = total_included = total_void = total_excluded
+
+        # Flag indicating the checkpoint used in price_include to avoid rounding issue must be skipped since the base
+        # amount has changed because we are currently mixing price-included and price-excluded include_base_amount
+        # taxes.
+        skip_checkpoint = False
+
+        # Get product tags, account.account.tag objects that need to be injected in all
+        # the tax_tag_ids of all the move lines created by the compute all for this product.
+        product_tag_ids = product.account_tag_ids.ids if product else []
 
         taxes_vals = []
         i = 0
         cumulated_tax_included_amount = 0
         for tax in taxes:
+            price_include = self._context.get('force_price_include', tax.price_include)
+
+            if price_include or tax.is_base_affected:
+                tax_base_amount = base
+            else:
+                tax_base_amount = total_excluded
+
             tax_repartition_lines = (is_refund and tax.refund_repartition_line_ids or tax.invoice_repartition_line_ids).filtered(lambda x: x.repartition_type == 'tax')
             sum_repartition_factor = sum(tax_repartition_lines.mapped('factor'))
 
-            price_include = self._context.get('force_price_include', tax.price_include)
             #compute the tax_amount
             if price_include and tax.include_base_amount_cl:
                 tax_amount = tax.with_context(force_price_include=False)._compute_amount(
                     total_excluded, sign * price_unit, quantity, product, partner, uom_id=uom_id)
-            if price_include and total_included_checkpoints.get(i):
+            if not skip_checkpoint and price_include and total_included_checkpoints.get(i) is not None and sum_repartition_factor != 0:
                 # We know the total to reach for that tax, so we make a substraction to avoid any rounding issues
                 tax_amount = total_included_checkpoints[i] - (base + cumulated_tax_included_amount)
                 cumulated_tax_included_amount = 0
             else:
                 tax_amount = tax.with_context(force_price_include=False)._compute_amount(
-                    base, sign * price_unit, quantity, product, partner, uom_id=uom_id)
+                    tax_base_amount, sign * price_unit, quantity, product, partner)
 
             # Round the tax_amount multiplied by the computed repartition lines factor.
             tax_amount = round(tax_amount, precision_rounding=prec)
             factorized_tax_amount = round(tax_amount * sum_repartition_factor, precision_rounding=prec)
-            if not tax.include_base_amount_cl and price_include and not total_included_checkpoints.get(i):
+
+            if not tax.include_base_amount_cl and price_include and total_included_checkpoints.get(i) is None:
                 cumulated_tax_included_amount += factorized_tax_amount
 
             # If the tax affects the base of subsequent taxes, its tax move lines must
@@ -303,8 +332,14 @@ class SiiTax(models.Model):
             subsequent_taxes = self.env['account.tax']
             subsequent_tags = self.env['account.account.tag']
             if tax.include_base_amount:
-                subsequent_taxes = taxes[i+1:]
-                subsequent_tags = subsequent_taxes.get_tax_tags(is_refund, 'base')
+                subsequent_taxes = taxes[i+1:].filtered('is_base_affected')
+
+                taxes_for_subsequent_tags = subsequent_taxes
+
+                if not include_caba_tags:
+                    taxes_for_subsequent_tags = subsequent_taxes.filtered(lambda x: x.tax_exigibility != 'on_payment')
+
+                subsequent_tags = taxes_for_subsequent_tags.get_tax_tags(is_refund, 'base')
 
             # Compute the tax line amounts by multiplying each factor with the tax amount.
             # Then, spread the tax rounding to ensure the consistency of each line independently with the factorized
@@ -318,21 +353,23 @@ class SiiTax(models.Model):
             total_rounding_error = round(factorized_tax_amount - sum(repartition_line_amounts), precision_rounding=prec)
             nber_rounding_steps = int(abs(total_rounding_error / currency.rounding))
             rounding_error = round(nber_rounding_steps and total_rounding_error / nber_rounding_steps or 0.0, precision_rounding=prec)
-            tax_amount_retencion = 0
+
             for repartition_line, line_amount in zip(tax_repartition_lines, repartition_line_amounts):
 
                 if nber_rounding_steps:
                     line_amount += rounding_error
                     nber_rounding_steps -= 1
-                es_retencion = repartition_line.sii_type in ['R']
-                if es_retencion:
-                    tax_amount_retencion += (sign * line_amount)
+
+                if not include_caba_tags and tax.tax_exigibility == 'on_payment':
+                    repartition_line_tags = self.env['account.account.tag']
+                else:
+                    repartition_line_tags = repartition_line.tag_ids
+
                 taxes_vals.append({
                     'id': tax.id,
                     'name': partner and tax.with_context(lang=partner.lang).name or tax.name,
                     'amount': sign * line_amount,
-                    'is_retention': es_retencion,
-                    'base': round(sign * base, precision_rounding=prec),
+                    'base': round(sign * tax_base_amount, precision_rounding=prec),
                     'sequence': tax.sequence,
                     'account_id': tax.cash_basis_transition_account_id.id if tax.tax_exigibility == 'on_payment' else repartition_line.account_id.id,
                     'analytic': tax.analytic,
@@ -340,7 +377,7 @@ class SiiTax(models.Model):
                     'tax_exigibility': tax.tax_exigibility,
                     'tax_repartition_line_id': repartition_line.id,
                     'group': groups_map.get(tax),
-                    'tag_ids': (repartition_line.tag_ids + subsequent_tags).ids,
+                    'tag_ids': (repartition_line_tags + subsequent_tags).ids + product_tag_ids,
                     'tax_ids': subsequent_taxes.ids,
                 })
 
@@ -350,12 +387,20 @@ class SiiTax(models.Model):
             # Affect subsequent taxes
             if tax.include_base_amount or tax.include_base_amount_cl:
                 base += factorized_tax_amount
+                if not price_include:
+                    skip_checkpoint = True
 
-            total_included += factorized_tax_amount - tax_amount_retencion
+            total_included += factorized_tax_amount
             i += 1
 
+        base_taxes_for_tags = taxes
+        if not include_caba_tags:
+            base_taxes_for_tags = base_taxes_for_tags.filtered(lambda x: x.tax_exigibility != 'on_payment')
+
+        base_rep_lines = base_taxes_for_tags.mapped(is_refund and 'refund_repartition_line_ids' or 'invoice_repartition_line_ids').filtered(lambda x: x.repartition_type == 'base')
+
         return {
-            'base_tags': taxes.mapped(is_refund and 'refund_repartition_line_ids' or 'invoice_repartition_line_ids').filtered(lambda x: x.repartition_type == 'base').mapped('tag_ids').ids,
+            'base_tags': base_rep_lines.tag_ids.ids + product_tag_ids,
             'taxes': taxes_vals,
             'total_excluded': sign * total_excluded,
             'total_included': sign * currency.round(total_included),

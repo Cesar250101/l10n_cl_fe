@@ -46,9 +46,10 @@ class IRSequence(models.Model):
             alert_msg = "Nivel bajo de CAF para {}, quedan {} folios. Recuerde verificar su token apicaf.cl".format(
                 self.sii_document_class_id.name, available,
             )
-            self.env["bus.bus"].sendone(
-                (self._cr.dbname, "ir.sequence", self.env.user.partner_id.id),
-                {"title": "Alerta sobre Folios", "message": alert_msg, "url": "res_config", "type": "dte_notif",},
+            self.env["bus.bus"]._sendone(
+                self.env.user.partner_id,
+                'ir.sequence/display_notification',
+                {"title": "Alerta sobre Folios", "message": alert_msg, "url": "res_config", "type": "dte_notif"}
             )
         return available
 
@@ -77,8 +78,9 @@ class IRSequence(models.Model):
                 )
         if alert_msg:
             _logger.warning(alert_msg)
-            self.env["bus.bus"].sendone(
-                (self._cr.dbname, "ir.sequence", self.env.user.partner_id.id),
+            self.env["bus.bus"]._sendone(
+                self.env.user.partner_id,
+                'ir.sequence/display_notification',
                 {"title": "Alerta sobre Folios", "message": alert_msg, "url": "res_config", "type": "dte_notif",},
             )
             return

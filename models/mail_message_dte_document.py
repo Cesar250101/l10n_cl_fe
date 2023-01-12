@@ -170,33 +170,6 @@ class ProcessMailsDocument(models.Model):
         )
         self.browse([line.get("id") for line in self.env.cr.dictfetchall()]).accept_document()
 
-    def create_document(self):
-        created = []
-        for r in self:
-            if r.move_id and r.state != "draft":
-                continue
-            if self.move_id:
-                resp = [self.move_id.id]
-            else:
-                vals = {
-                    "xml_file": r.xml.encode("ISO-8859-1"),
-                    "filename": r.dte_id.name,
-                    "pre_process": False,
-                    "document_id": r.id,
-                    "option": "accept",
-                }
-                val = self.env["sii.dte.upload_xml.wizard"].sudo().with_context(create_only=True).create(vals)
-                resp = val.confirm(ret=True)
-            created.extend(resp)
-        action = {
-            'name': _('Accepted Moves'),
-            'type': 'ir.actions.act_window',
-            'res_model': 'account.move',
-            'view_mode': 'tree,form',
-        }
-        if created:
-            action['domain'] = [('id', 'in', created)]
-        return action
 
     def accept_document(self):
         created = []
