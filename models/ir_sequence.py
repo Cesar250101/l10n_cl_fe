@@ -3,7 +3,7 @@ import logging
 from datetime import datetime
 import pytz
 
-from odoo import SUPERUSER_ID, api, fields, models, tools
+from odoo import api, fields, models, tools
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
 
@@ -58,7 +58,7 @@ class IRSequence(models.Model):
             self.inspeccionar_folios_sin_usar()
             if self.qty_available >= self.nivel_minimo:
                 return
-        firma = self.env.user.sudo(SUPERUSER_ID).get_digital_signature(self.company_id)
+        firma = self.env.user.sudo().get_digital_signature(self.company_id)
         wiz_caf = self.env["dte.caf.apicaf"].create(
             {"company_id": self.company_id.id, "sequence_id": self.id, "firma": firma.id,}
         )
@@ -201,7 +201,7 @@ www.sii.cl""".format(
             folio = menor.start_nm
             if increment:
                 folio += 1
-            self.sudo(SUPERUSER_ID).write({"number_next": folio})
+            self.sudo().write({"number_next": folio})
             if self.forced_by_caf and self.implementation == "no_gap":
                 self._cr.execute(
                     "SELECT number_next FROM {} WHERE id={} FOR UPDATE NOWAIT".format(self._table, self.id)
@@ -209,7 +209,7 @@ www.sii.cl""".format(
                 self._cr.execute(
                     "UPDATE {} SET number_next={} WHERE id={} ".format(self._table, (folio), self.id)
                 )
-                self.invalidate_cache(["number_next"], [self.id])
+                self.invalidate_model(["number_next"])
                 return True
         return False
 
