@@ -12,9 +12,11 @@
                         <field name="gdr_type" />
                         <field name="gdr_detail" />
                         <field name="impuesto" />
-                        <field name="amount_untaxed_global_dr" />
+                        <field name="amount_untaxed" />
+                        <field name="amount" />
                         <field name="account_id" />
                         <field name="move_id" invisible="1" />
+                        <field name="company_id" invisible="1" />
                     </group>
                 </sheet>
             </form>
