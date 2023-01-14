@@ -32,7 +32,7 @@
                             <field name="final_nm" />
                             <field name="issued_date" />
                             <field name="expiration_date" />
-                            <field name="company_id" />
+                            <field name="company_id" groups="base.group_multi_company"/>
                             <field name="rut_n" />
                             <field name="sequence_id" />
                             <field
@@ -69,7 +69,7 @@
                     <field name="start_nm" />
                     <field name="final_nm" />
                     <field name="expiration_date" />
-                    <field name="company_id" />
+                    <field name="company_id" groups="base.group_multi_company"/>
                     <field name="cantidad_folios_sin_usar" readonly="1"/>
                     <field name="use_level" />
                     <field name="status" />
