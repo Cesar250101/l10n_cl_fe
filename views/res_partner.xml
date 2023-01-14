@@ -10,12 +10,12 @@
                 <field
                     name="activity_description"
                     placeholder="Glosa Descriptiva (Giro)"
-                    attrs="{'invisible': ('parent_id', '!=', False)}"
+                    attrs="{'invisible': [('parent_id', '!=', False)]}"
                 />
                 <field
                     name="acteco_ids"
                     placeholder="Actividades del partner"
-                    attrs="{'invisible': ('parent_id', '!=', False)}"
+                    attrs="{'invisible': [('parent_id', '!=', False)]}"
                     widget="many2many_tags"
                     options="{'no_create': True}"
                 />
