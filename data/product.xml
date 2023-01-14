@@ -2,7 +2,7 @@
 <odoo>
     <record id="product_imp" model="product.template">
         <field name="name">Impuestos Varios</field>
-        <field name="price">0</field>
+        <field name="list_price">0</field>
         <field name="taxes_id" eval="False" />
         <field name="sale_ok" eval="False" />
     </record>
