@@ -13,7 +13,7 @@ Facturación Electrónica para Chile. Mayor información en https://globalrespon
 """,
     "depends": [
         "base",
-        "base_address_city",
+        "base_address_extended",
         "account",
         "purchase",
         "sale_management",
