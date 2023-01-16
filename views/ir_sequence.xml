@@ -14,8 +14,7 @@
                   name="%(action_apicaf_form)d"
                   string="Obtener Folios desde el SII"
                   type="action"
-                  context="{'default_company_id': company_id,
-                          'default_sequence_id': active_id}"
+                  context="{'default_sequence_id': active_id}"
                   attrs="{'invisible': [('is_dte', '=', False)]}"
                   class="btn-primary"
               />
@@ -40,7 +39,7 @@
                   </group>
                   <field
                       name="dte_caf_ids"
-                      context="{'default_sequence_id':active_id, 'default_company_id':company_id}"
+                      context="{'default_sequence_id':active_id}"
                   >
                       <tree string="DTE CAF Files">
                           <field name="name" />
