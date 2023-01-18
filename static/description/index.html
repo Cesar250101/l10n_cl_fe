@@ -6,55 +6,437 @@
         </div>
         <div class="oe_span12 text-justify">
             <p class="oe_mt32">
-              Facturaci&oacute;n Electr&oacute;nica Chilena Directa con el SII.
+                Facturaci&oacute;n Electr&oacute;nica Chilena Directa con el SII.
             </p>
             <p class="oe_mt12">
                 <ul>
-                 <li> El uso de este m&oacute;dulo requiere de aprobar una certificaci&oacute;n de facturador propio de mercado en el SII (O contar ya con ella) <a href="https://globalresponse.cl/slides/canal-publico-1">Para Mayor Informaci&oacute;n Click Aqu&iacute;</a></li>
-                 <li> Debido a que el m&oacute;dulo "Base report xlsx" no est&aacute; publicado en la tienda desde odoo 13.0, se integra el c&oacute;digo desde ahora NO es necesario instalarlo <a href="https://github.com/OCA/reporting-engine">https://github.com/OCA/reporting-engine</a></li>
-                 <li> Se integra la consulta de datos de empresas al repositorio <a href="https://sre.cl">https://sre.cl</a>, para permitir obtener datos digitando el rut</li>
-                 <li> Al instalar este m&oacute;dulo acepta que por defecto estar&aacute; activa la sincronizaci&oacute;n de datos de partners al repositorio <a href="https://sre.cl">https://sre.cl</a>, sin embargo puede desactivarlo en todo momento desde el panel de configuraci&oacute;n general</li>
-                 <li> Integraci&oacute;n con <a href="https://apicaf.cl">https://apicaf.cl</a>, Api que permite emitir folios v&iacute;a api, sin pasar por la p&aacute;gina del SII. El uso El uso y condiciones de la api es seg&uacute;n pol&iacute;ticas expuestas en el sitio web mismo de la api.</li>
+                    <li> El uso de este m&oacute;dulo requiere de aprobar una certificaci&oacute;n de facturador propio de mercado en el SII (O contar ya con ella) <a href="https://globalresponse.cl/slides/canal-publico-1">Para Mayor Informaci&oacute;n Click Aqu&iacute;</a></li>
+                    <li> Debido a que el m&oacute;dulo "Base report xlsx" no est&aacute; publicado en la tienda desde odoo 13.0, se integra el c&oacute;digo, por lo que desde ahora NO es necesario instalarlo <a href="https://github.com/OCA/reporting-engine">https://github.com/OCA/reporting-engine</a></li>
+                    <li> Se integra la consulta de datos de empresas al repositorio <a href="https://sre.cl">https://sre.cl</a>, para permitir obtener datos digitando el rut</li>
+                    <li> Al instalar este m&oacute;dulo acepta que por defecto estar&aacute; activa la sincronizaci&oacute;n de datos de partners al repositorio <a href="https://sre.cl">https://sre.cl</a>, sin embargo puede desactivarlo en todo momento desde el panel de configuraci&oacute;n general</li>
+                    <li> Integraci&oacute;n con <a href="https://apicaf.cl">https://apicaf.cl</a>, Api que permite emitir folios v&iacute;a api, sin pasar por la p&aacute;gina del SII. El uso El uso y condiciones de la api es seg&uacute;n pol&iacute;ticas expuestas en el sitio web mismo de la api.</li>
                 </ul>
             </p>
             <p class="oe_mt12">
             Estado:
-            <ul>
-                <li> Factura Electr&oacute;nica (FAC 33, FNA 34): Ok env&iacute;o, Ok muestra impresa, Ok Certificaci&oacute;n</li>
-                <li> Nota de Cr&eacute;dito Electr&oacute;nica: Ok env&iacute;o, Ok muestra impresa, Ok Certificaci&oacute;n</li>
-                <li> Nota de D&eacute;bito Electr&oacute;nica: Ok env&iacute;o, Ok muestra impresa, Ok Certificaci&oacute;n</li>
-                <li> Recepci&oacute;n XML Intercambio: Ok recepci&oacute;n, Ok respuesta mercader&iacute;as, Ok respuesta Validaci&oacute;n Comercial, Ok Env&iacute;o Recepci&oacute;n al SII, Ok Certificaci&oacute;n</li>
-                <li> Libro de Compra Venta: Ok env&iacute;o al SII, Ok Certificaci&oacute;n (B&aacute;sico y Exentos)</li>
-                <li> Consumo de Folios: Validaci&oacute;n OK, Env&iacute;o OK, Certificaci&oacute;n OK</li>
-                <li> Boleta Electr&oacute;nica por BO ( 39, 41 ): Ok env&iacute;o, Ok muestra impresa, Ok Certificaci&oacute;n,</li>
-                <li> Libro Boletas Electr&oacute;nica: Validaci&oacute;n Ok, Creaci&oacute;n XML OK</li>
-                <li> Boleta Electr&oacute;nica por POS ( 39, 41): Validaci&oacute;n Ok, Muestras Impresas Ticket OK, Generaci&oacute;n XML Ok, Visaulizaci&oacute;n P&uacute;blica Ok, Certificaci&oacute;n OK v&iacute;a <a href="https://gitlab.com/dansanti/l10n_cl_dte_point_of_sale">https://gitlab.com/dansanti/l10n_cl_dte_point_of_sale</a></li>
-                <li> Nota de Cr&eacute;dito Electr&oacute;nica para Boletas ( Solo por BO POS): Validaci&oacute;n Ok, Generaci&oacute;n XML Ok, Muestras Impresas Ticket OK, Certificaci&oacute;n OK v&iacute;a <a href="https://gitlab.com/dansanti/l10n_cl_dte_point_of_sale">https://gitlab.com/dansanti/l10n_cl_dte_point_of_sale</a></li>
-                <li> Gu&iacute;a de Despacho Electr&oacute;nica: Ok env&iacute;o, Ok muestra impresa, Ok Certificaci&oacute;n, v&iacute;a <a href="https://gitlab.com/dansanti/l10n_cl_stock_picking">https://gitlab.com/dansanti/l10n_cl_stock_picking</a></li>
-                <li> Libro Gu&iacute;a Despacho: Ok env&iacute;o, Ok Muestras impresas, Ok Certificaci&oacute;n, v&iacute;a <a href="https://gitlab.com/dansanti/l10n_cl_stock_picking">https://gitlab.com/dansanti/l10n_cl_stock_picking</a></li>
-                <li> Factoring (Cesi&oacute;n de Cr&eacute;ditos): Ok Env&iacute;o, Ok Certificaci&oacute;n, v&iacute;a <a href="https://gitlab.com/dansanti/l10n_cl_dte_factoring">https://gitlab.com/dansanti/l10n_cl_dte_factoring</a></li>
-                <li> Factura de Exportaci&oacute;n Electr&oacute;nica ( 110 con sus NC 111 y ND 112): Ok Env&iacute;o, Ok Certificaci&oacute;n, v&iacute;a <a href="https://gitlab.com/dansanti/l10n_cl_dte_exportacion">https://gitlab.com/dansanti/l10n_cl_dte_exportacion</a></li>
-                <li> Liquidaci&oacute;n de Facturas: No desarrollada</li>
-                <li> Factura de Compra Electr&oacute;nica ( 46 ): Ok env&iacute;o, Ok muestra impresa, Ok Certificaci&oacute;n, (NO confundir con el concepto de ingresar facturas de proveedor, que la mayor&iacute;a le dice de compras, este es un documento de retenci&oacute;n de impuestos, la recepci&oacute;n de documentos proveedor, est&aacute; soportada, con los 4 tipos de respuesta que se deben generar seg&uacute;n normativa del sii)</li>
-           </ul>
-            Impuestos Soportados Para Ventas(Probados en emisi&oacute;n):
-            <ul>
-              <li> IVA</li>
-              <li> Retenci&oacute;n IVA (Necsita verificaci&oacute;n contabilidad retenci&oacute;n)</li>
-              <li> Exentos</li>
-              <li> Espec&iacute;fico Carnes</li>
-              <li> Espec&iacute;fico ILA cervezas</li>
-              <li> Espec&iacute;fico Combustibles (diesel, gasolina 93, gasolina 97)</li>
-            </ul>
             </p>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th class="text-center">Tipo Documento</th>
+                        <th class="text-center">C&oacute;digos</th>
+                        <th class="text-center">Env&iacute;o</th>
+                        <th class="text-center">Consulta</th>
+                        <th class="text-center">Muestra Impresa</th>
+                        <th class="text-center">Certificaci&oacute;n</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Factura</td>
+                        <td align="center">FAC 33, FNA 34</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                    </tr>
+                    <tr>
+                        <td>Nota de Cr&eacute;dito</td>
+                        <td align="center">61</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">Ok</td>
+                        <td align="center">OK</td>
+                    </tr>
+                    <tr>
+                        <td>Nota de D&eacute;bito</td>
+                        <td align="center">56</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                    </tr>
+                    <tr>
+                        <td>Recepci&oacute;n XML Intercambio</td>
+                        <td align="center">Env, Merc, Com</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                    </tr>
+                    <tr>
+                        <td>Libro de Compra-Venta</td>
+                        <td align="center">Compra, Venta</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                    </tr>
+                    <tr>
+                        <td>Boleta (1)</td>
+                        <td align="center">BEL 39, BNA 41</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                    </tr>
+                    <tr>
+                        <td>Consumo de Folios Boletas (1)</td>
+                        <td align="center">CF</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                    </tr>
+                    <tr>
+                        <td>Gu&iacute;a de Despacho (2)</td>
+                        <td align="center">52</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                    </tr>
+                    <tr>
+                        <td>Libro de Gu&iacute;as (2)</td>
+                        <td align="center">LG</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                    </tr>
+                    <tr>
+                        <td>Cesi&oacute;n de Cr&eacute;ditos (3)</td>
+                        <td align="center">CES</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                    </tr>
+                    <tr>
+                        <td>Factura Exportaci&oacute;n (4)</td>
+                        <td align="center">110</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                    </tr>
+                    <tr>
+                        <td>Nota Cr&eacute;dito Exportaci&oacute;n (4)</td>
+                        <td align="center">112</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                    </tr>
+                    <tr>
+                        <td>Nota D&eacute;bito Exportaci&oacute;n (5)</td>
+                        <td align="center">111</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                    </tr>
+                    <tr>
+                        <td>Factura de Compras (5)</td>
+                        <td align="center">46</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                    </tr>
+                    <tr>
+                        <td>Liquidaci&oacute;n de facturas (6)</td>
+                        <td align="center">43</td>
+                        <td align="center">X</td>
+                        <td align="center">X</td>
+                        <td align="center">X</td>
+                        <td align="center">X</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p> (1) Boleta Integrada, pero se peude extneder al PDV <a href="https://gitlab.com/dansanti/l10n_cl_dte_point_of_sale">https://gitlab.com/dansanti/l10n_cl_dte_point_of_sale</a><br> (2) Disponible solo desde este m&oacute;dulo en inventario <a href="https://gitlab.com/dansanti/l10n_cl_stock_picking">https://gitlab.com/dansanti/l10n_cl_stock_picking</a><br> (3) Mediante este m&oacute;dulo se agregan las opciones de timbraje de cesiones solo en facturando <a href="https://gitlab.com/dansanti/l10n_cl_dte_factoring">https://gitlab.com/dansanti/l10n_cl_dte_factoring</a><br> (4) Se agregan las opciones Exportaci&oacute;n solo en Facturando <a href="https://gitlab.com/dansanti/l10n_cl_dte_exportacion">https://gitlab.com/dansanti/l10n_cl_dte_exportacion</a><br> (5) NO confundir con el concepto de ingresar facturas de proveedor, que la mayor&iacute;a le dice de compras, este es un documento de retenci&oacute;n de impuestos, la recepci&oacute;n de documentos proveedor, est&aacute; soportada, con los 4 tipos de respuesta que se deben generar seg&uacute;n normativa del SII<br> (6) Se agregar&aacute; m&oacute;dulo adicional, a&uacute;n no se dearrolla</p>
+            <ul>
+                <li>Impuestos Soportados Para Ventas(Probados en emisi&oacute;n):</li>
+            </ul>
+            <p> A = Anticipado N = Normal R = Retenci&oacute;n D = Adicional E = Espec&iacute;fico</p>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th class="text-center">C&oacute;digo</th>
+                        <th class="text-center">Nombre</th>
+                        <th class="text-center">%</th>
+                        <th class="text-center">Tipo</th>
+                        <th class="text-center">Env&iacute;o</th>
+                        <th class="text-center">Observaci&oacute;n</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td align="center">14</td>
+                        <td align="center">IVA</td>
+                        <td align="center">19</td>
+                        <td align="center">N</td>
+                        <td align="center">OK</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">15</td>
+                        <td align="center">IVA Retenci&oacute;n total</td>
+                        <td align="center">19</td>
+                        <td align="center">R</td>
+                        <td align="center">OK</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">17</td>
+                        <td align="center">IVA al faenamiento de carnes</td>
+                        <td align="center">5</td>
+                        <td align="center">A</td>
+                        <td align="center">OK</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">18</td>
+                        <td align="center">IVA a las carnes</td>
+                        <td align="center">5</td>
+                        <td align="center">A</td>
+                        <td align="center">OK</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">19</td>
+                        <td align="center">IVA a la Harina</td>
+                        <td align="center">12</td>
+                        <td align="center">A</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">23</td>
+                        <td align="center">Impuesto adicional</td>
+                        <td align="center">15</td>
+                        <td align="center">A</td>
+                        <td align="center">X</td>
+                        <td align="center">a) art&iacute;culos oro, platino, marfil b) Joyas, piedras preciosas c) Pieles finas</td>
+                    </tr>
+                    <tr>
+                        <td align="center">24</td>
+                        <td align="center">DL 825/74, ART. 42, letra b)</td>
+                        <td align="center">31.5</td>
+                        <td align="center">D</td>
+                        <td align="center">OK</td>
+                        <td align="center">Licores, Piscos, whisky, aguardiente, y vinos licorosos o aromatizados.</td>
+                    </tr>
+                    <tr>
+                        <td align="center">25</td>
+                        <td align="center">Vinos</td>
+                        <td align="center">20.5</td>
+                        <td align="center">D</td>
+                        <td align="center">OK</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">26</td>
+                        <td align="center">Cervezas y bebidas alcoh&oacute;licas</td>
+                        <td align="center">20.5</td>
+                        <td align="center">D</td>
+                        <td align="center">OK</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">27</td>
+                        <td align="center">Bebidas analcoh&oacute;licas y minerales</td>
+                        <td align="center">10</td>
+                        <td align="center">D</td>
+                        <td align="center">OK</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">271</td>
+                        <td align="center">Bebidas azucaradas</td>
+                        <td align="center">18</td>
+                        <td align="center">D</td>
+                        <td align="center">OK</td>
+                        <td align="center">Bebidas analcoh&oacute;licas y Minerales con elevado contenido de az&uacute;cares. (seg&uacute;n indica la ley)</td>
+                    </tr>
+                    <tr>
+                        <td align="center">28</td>
+                        <td align="center">Impuesto especifico diesel</td>
+                        <td align="center"></td>
+                        <td align="center">E</td>
+                        <td align="center">OK</td>
+                        <td align="center">Compuesto</td>
+                    </tr>
+                    <tr>
+                        <td align="center">30</td>
+                        <td align="center">IVA Legumbres</td>
+                        <td align="center"></td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">31</td>
+                        <td align="center">IVA Silvestre</td>
+                        <td align="center"></td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">32</td>
+                        <td align="center">IVA al Ganado</td>
+                        <td align="center">8</td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">33</td>
+                        <td align="center">IVA a la Madera</td>
+                        <td align="center">8</td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">34</td>
+                        <td align="center">IVA al Trigo</td>
+                        <td align="center">11</td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">35</td>
+                        <td align="center">Impuesto Especifico Gasolinas</td>
+                        <td align="center"></td>
+                        <td align="center">E</td>
+                        <td align="center">OK</td>
+                        <td align="center">Compuesto. Para 95 y 97 octanos</td>
+                    </tr>
+                    <tr>
+                        <td align="center">36</td>
+                        <td align="center">IVA Arroz</td>
+                        <td align="center">10</td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">37</td>
+                        <td align="center">IVA Hidrobiol&oacute;gicas</td>
+                        <td align="center">10</td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">38</td>
+                        <td align="center">IVA Chatarras</td>
+                        <td align="center">19</td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">39</td>
+                        <td align="center">IVA PPA</td>
+                        <td align="center">19</td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">41</td>
+                        <td align="center">IVA Construcci&oacute;n</td>
+                        <td align="center">19</td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center">Solo factura compras</td>
+                    </tr>
+                    <tr>
+                        <td align="center">44</td>
+                        <td align="center">IMPUESTO art 37 Letras e, h, I, l</td>
+                        <td align="center">15</td>
+                        <td align="center">A</td>
+                        <td align="center">X</td>
+                        <td align="center">Tasa del 15% en 1era venta a) Alfombras, tapices b) Casa rodantes c) Caviar d) Armas de aire o gas</td>
+                    </tr>
+                    <tr>
+                        <td align="center">45</td>
+                        <td align="center">Impuesto Pirotecnia</td>
+                        <td align="center">50</td>
+                        <td align="center">A</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">46</td>
+                        <td align="center">IVA ORO</td>
+                        <td align="center">19</td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">47</td>
+                        <td align="center">IVA Cartones</td>
+                        <td align="center">19</td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">48</td>
+                        <td align="center">IVA Frambuesas</td>
+                        <td align="center">14</td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">49</td>
+                        <td align="center">IVA factura Compra sin Retenci&oacute;n</td>
+                        <td align="center">0</td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center">hoy utilizada s&oacute;lo por Bolsa de Productos de Chile, lo cual es validado por el sistema</td>
+                    </tr>
+                    <tr>
+                        <td align="center">50</td>
+                        <td align="center">IVA instrumentos de prepago</td>
+                        <td align="center">19</td>
+                        <td align="center">N</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                    <tr>
+                        <td align="center">51</td>
+                        <td align="center">IVA gas natural</td>
+                        <td align="center"></td>
+                        <td align="center">E</td>
+                        <td align="center">X</td>
+                        <td align="center">Compuesto</td>
+                    </tr>
+                    <tr>
+                        <td align="center">53</td>
+                        <td align="center">Impuesto Suplementos</td>
+                        <td align="center">0.5</td>
+                        <td align="center">R</td>
+                        <td align="center">X</td>
+                        <td align="center"></td>
+                    </tr>
+                </tbody>
+            </table>
             <p class="oe_mt12">
                 Agradecimientos y colaboradores:
                 <ul>
-                 <li> Daniel Santib&aacute;&ntilde;ez Polanco</li>
-                 <li> Daniel Blanco</li>
-                 <li> Nelson Ramirez</li>
-                 <li> Carlos Toledo</li>
-                 <li> Carlos Lopez</li>
+                    <li> Daniel Santib&aacute;&ntilde;ez Polanco</li>
+                    <li> Daniel Blanco</li>
+                    <li> Nelson Ramirez</li>
+                    <li> Carlos Toledo</li>
+                    <li> Carlos Lopez</li>
                 </ul>
             </p>
             <p class="oe_mt12">
