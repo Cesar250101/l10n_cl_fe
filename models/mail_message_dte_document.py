@@ -239,8 +239,8 @@ class ProcessMailsDocument(models.Model):
                 "Claim": claim
             }
         ]
+        key = "RUT%sT%sF%s" % (rut_emisor, tipo_dte, folio)
         try:
-            key = "RUT%sT%sF%s" % (rut_emisor, tipo_dte, folio)
             respuesta = fe.ingreso_reclamo_documento(datos)[key]
         except Exception as e:
             msg = "Error al ingresar Reclamo DTE"
@@ -252,7 +252,8 @@ class ProcessMailsDocument(models.Model):
                 )
             raise UserError("{}: {}".format(msg, str(e)))
         self.claim_description = respuesta
-        if respuesta.codResp in [0, 7]:
+        if respuesta.get(key,
+                         {'codResp': 9})["codResp"] in [0, 7]:
             self.claim = claim
 
     def get_dte_claim(self):
@@ -271,7 +272,8 @@ class ProcessMailsDocument(models.Model):
             key = "RUT%sT%sF%s" % (rut_emisor, tipo_dte, folio)
             respuesta = fe.consulta_reclamo_documento(datos)[key]
             self.claim_description = respuesta
-            if respuesta.codResp in [15]:
+            if respuesta.get(key,
+                         {'codResp': 9})["codResp"] in [15]:
                 for res in respuesta.listaEventosDoc:
                     if self.claim != "ACD":
                         if self.claim != "ERM":

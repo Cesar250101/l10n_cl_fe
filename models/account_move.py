@@ -2094,10 +2094,10 @@ class AccountMove(models.Model):
                 "Claim": claim,
             }
         ]
+        key = "RUT%sT%sF%s" %(rut_emisor,
+                              tipo_dte, str(self.sii_document_number))
         try:
             respuesta = fe.ingreso_reclamo_documento(datos)
-            key = "RUT%sT%sF%s" %(rut_emisor,
-                                  tipo_dte, str(self.sii_document_number))
             self.claim_description = respuesta[key]
         except Exception as e:
             msg = "Error al ingresar Reclamo DTE"
@@ -2109,7 +2109,8 @@ class AccountMove(models.Model):
                 )
             raise UserError("{}: {}".format(msg, str(e)))
         self.claim_description = respuesta
-        if respuesta.codResp in [0, 7]:
+        if respuesta.get(key,
+                         {'codResp': 9})["codResp"] in [0, 7]:
             self.claim = claim
 
 
