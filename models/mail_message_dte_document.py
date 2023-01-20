@@ -252,8 +252,8 @@ class ProcessMailsDocument(models.Model):
                 )
             raise UserError("{}: {}".format(msg, str(e)))
         self.claim_description = respuesta
-        if respuesta.get(key,
-                         {'codResp': 9})["codResp"] in [0, 7]:
+        if if respuesta.get(key,
+                         {'respuesta': {'codResp': 9}})['respuesta']["codResp"] in [0, 7]:
             self.claim = claim
 
     def get_dte_claim(self):
@@ -273,7 +273,7 @@ class ProcessMailsDocument(models.Model):
             respuesta = fe.consulta_reclamo_documento(datos)[key]
             self.claim_description = respuesta
             if respuesta.get(key,
-                         {'codResp': 9})["codResp"] in [15]:
+                             {'respuesta': {'codResp': 9}})['respuesta']["codResp"] in [15]:
                 for res in respuesta.listaEventosDoc:
                     if self.claim != "ACD":
                         if self.claim != "ERM":
