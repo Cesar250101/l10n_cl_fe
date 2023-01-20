@@ -9,7 +9,7 @@
               <field name="sii_document_class_id" options="{'no_open': True, 'no_create': True}" />
               <field name="is_dte" />
               <field name="forced_by_caf" attrs="{'invisible': [('is_dte', '=', False)]}" />
-              <field name="qty_available" attrs="{'invisible': [('is_dte', '=', False)], 'readonly': 1}" />
+              <field name="qty_available" attrs="{'invisible': [('is_dte', '=', False)]}" readonly="1" />
               <button
                   name="%(action_apicaf_form)d"
                   string="Obtener Folios desde el SII"
