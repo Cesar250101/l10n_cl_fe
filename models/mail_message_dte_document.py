@@ -252,7 +252,7 @@ class ProcessMailsDocument(models.Model):
                 )
             raise UserError("{}: {}".format(msg, str(e)))
         self.claim_description = respuesta
-        if if respuesta.get(key,
+        if respuesta.get(key,
                          {'respuesta': {'codResp': 9}})['respuesta']["codResp"] in [0, 7]:
             self.claim = claim
 
