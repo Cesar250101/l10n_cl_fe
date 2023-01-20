@@ -38,14 +38,6 @@ except ImportError:
     _logger.warning("no se ha cargado PIL")
 
 
-TYPE2JOURNAL = {
-    "out_invoice": "sale",
-    "in_invoice": "purchase",
-    "out_refund": "sale",
-    "in_refund": "purchase",
-}
-
-
 class Referencias(models.Model):
     _name = "account.move.referencias"
     _description = "Línea de referencia de Documentos DTE"
@@ -344,7 +336,8 @@ class AccountMove(models.Model):
         'line_ids.amount_residual',
         'line_ids.amount_residual_currency',
         'line_ids.payment_id.state',
-        'line_ids.full_reconcile_id',)
+        'line_ids.full_reconcile_id',
+        'global_descuentos_recargos.amount_untaxed')
     def _compute_amount(self):
         for move in self:
             if move.payment_state == 'invoicing_legacy':
@@ -659,11 +652,10 @@ class AccountMove(models.Model):
         return to_post
 
     @contextmanager
-    def _sync_rounding_lines(self, container):
+    def _sync_gdr_lines(self, container):
         yield
         for invoice in container['records']:
             invoice._recompute_global_gdr_lines()
-            invoice._recompute_cash_rounding_lines()
 
     def _get_move_imps(self):
         imps = {}
@@ -768,6 +760,7 @@ class AccountMove(models.Model):
                     line_type='tax',
                     container=tax_container,
                 ))
+                stack.enter_context(self._sync_gdr_lines(invoice_container))
                 stack.enter_context(self._sync_dynamic_line(
                     existing_key_fname='epd_key',
                     needed_vals_fname='line_ids.epd_needed',
@@ -1192,8 +1185,6 @@ class AccountMove(models.Model):
                 total_gr += gdr_amount
                 total_gr_taxed += gdr.amount
                 _apply_global_gdr(self, gdr_amount, gdr_amount_currency, gr, gdr, taxes)
-        self.amount_untaxed_global_discount = total_gd
-        self.amount_untaxed_global_recargo = total_gr
         gds.unlink()
         grs.unlink()
 
@@ -1437,7 +1428,7 @@ class AccountMove(models.Model):
         Receptor["RznSocRecep"] = self._acortar_str(commercial_partner_id.name, 100)
         if not self.partner_id or Receptor["RUTRecep"] == "66666666-6":
             return Receptor
-        if not self.es_boleta() and not self.es_nc_boleta() and self.move_type not in ["in_invoice", "in_refund"]:
+        if not self.es_boleta() and not self.es_nc_boleta():
             GiroRecep = self.acteco_id.name or commercial_partner_id.activity_description.name
             if not GiroRecep:
                 raise UserError(_("Seleccione giro del partner"))

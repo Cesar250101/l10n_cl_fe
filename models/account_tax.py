@@ -557,7 +557,6 @@ class SIITax(models.Model):
                 'price_total': price_subtotal,
             }
             tax_values_list = []
-
         return to_update_vals, tax_values_list
 
     @api.model
