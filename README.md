@@ -57,13 +57,13 @@ Se crea este repositorio, para dar un enfoque de firma electrónica directa con 
   |   26   | Cervezas y bebidas alcohólicas    | 20.5 |   D  |   OK  |                                                                                                    |
   |   27   | Bebidas analcohólicas y minerales |  10  |   D  |   OK  |                                                                                                    |
   |   271  | Bebidas azucaradas                |  18  |   D  |   OK  | Bebidas analcohólicas y Minerales con elevado contenido de azúcares. (según indica la ley)         |
-  |   28   | Impuesto especifico diesel        |      |   E  |   OK  | Compuesto                                                                                          |
+  |   28   | Impuesto especifico diesel        |      |   E  |   OK  | Compuesto,Autosincronización MEPCO con diariooficial.cl                                            |
   |   30   | IVA Legumbres                     |      |   R  |   X   |                                                                                                    |
   |   31   | IVA Silvestre                     |      |   R  |   X   |                                                                                                    |
   |   32   | IVA al Ganado                     |   8  |   R  |   X   |                                                                                                    |
   |   33   | IVA a la Madera                   |   8  |   R  |   X   |                                                                                                    |
   |   34   | IVA al Trigo                      |  11  |   R  |   X   |                                                                                                    |
-  |   35   | Impuesto Especifico Gasolinas     |      |   E  |   OK  | Compuesto. Para  95 y 97  octanos                                                                  |
+  |   35   | Impuesto Especifico Gasolinas     |      |   E  |   OK  | Compuesto. Para  95 y 97  octanos, Autosincronización MEPCO con diariooficial.cl                   |
   |   36   | IVA Arroz                         |  10  |   R  |   X   |                                                                                                    |
   |   37   | IVA Hidrobiológicas               |  10  |   R  |   X   |                                                                                                    |
   |   38   | IVA Chatarras                     |  19  |   R  |   X   |                                                                                                    |
@@ -76,7 +76,7 @@ Se crea este repositorio, para dar un enfoque de firma electrónica directa con 
   |   48   | IVA Frambuesas                    |  14  |   R  |   X   |                                                                                                    |
   |   49   | IVA factura Compra sin Retención  |   0  |   R  |   X   | hoy utilizada sólo por Bolsa de Productos de Chile, lo cual es validado por el sistema             |
   |   50   | IVA instrumentos de prepago       |  19  |   N  |   X   |                                                                                                    |
-  |   51   | IVA gas natural                   |      |   E  |   X   | Compuesto                                                                                          |
+  |   51   | IVA gas natural                   |      |   E  |   X   | Compuesto,Autosincronización MEPCO con diariooficial.cl                                            |
   |   53   | Impuesto Suplementos              |  0.5 |   R  |   X   |                                                                                                    |
 
  Si tiene dudas sobre el funcionamiento y consecuencias, recordar visitar <a href="https://globalresponse.cl/forum/how-to">la documentación pública</a> o en <a href="www.sii.cl">www.sii.cl</a> o <a href="https://globalresponse.cl/helpdesk/">realizar una consulta a soporte(de pago)</a> o <a href="https://globalresponse.cl/forum/1">postear en foro(gratuito)</a>
