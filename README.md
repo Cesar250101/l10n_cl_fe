@@ -83,14 +83,15 @@ Se crea este repositorio, para dar un enfoque de firma electrónica directa con 
 
   - Otras Funcionalidades
 
-  |     Funcionalidad      |                        Estado en código                        | Declaración XML | Resultado SII |                                   Observación                                   |
-  |:----------------------:|:--------------------------------------------------------------:|:---------------:|:-------------:|:-------------------------------------------------------------------------------:|
-  |    Descuento Global    | Implementado en 90%                                            |        OK       |       OK      | Se necesitan pruebas  combinaciones afecto-exento  y otras combinaciones de uso |
-  |     Recargo Global     | Implementado en 90%                                            |        OK       |       OK      | Se necesitan pruebas  combinaciones afecto-exento  y otras combinaciones de uso |
-  | Ley Redondeo Efectivo  | Implementado por defecto por odoo                              |        X        |       X       |                                  En desarrollo                                  |
-  |  Montos No Facturables | Implementado por defecto por odoo,  se agregan indicadores DTE |        X        |       X       |                                  En desarrollo                                  |
-  |  Líneas Informativas   | Implementado por defecto por odoo,  se agregan indicadores DTE |        X        |       X       |                                  En desarrollo                                  |
-  |  Montos Otras Monedas  | Implementado por defecto por odoo,  se agregan indicadores DTE |        OK       |       OK      |            Se necesitan mas pruebas  en casos no factura exportación            |
+  |     Funcionalidad      |                        Estado en código                        | Declaración XML | Resultado SII |                                            Observación                                          |
+  |:----------------------:|:--------------------------------------------------------------:|:---------------:|:-------------:|:-----------------------------------------------------------------------------------------------:|
+  |    Descuento Global    | Implementado en 90%                                            |        OK       |       OK      |          Se necesitan pruebas  combinaciones afecto-exento  y otras combinaciones de uso        |
+  |     Recargo Global     | Implementado en 90%                                            |        OK       |       OK      |          Se necesitan pruebas  combinaciones afecto-exento  y otras combinaciones de uso        |
+  | Ley Redondeo Efectivo  | Implementado por defecto por odoo                              |        X        |       X       |                                             En desarrollo                                       |
+  |  Montos No Facturables | Implementado por defecto por odoo,  se agregan indicadores DTE |        X        |       X       |                                             En desarrollo                                       |
+  |  Líneas Informativas   | Implementado por defecto por odoo,  se agregan indicadores DTE |        X        |       X       |                                             En desarrollo                                       |
+  |  Montos Otras Monedas  | Implementado por defecto por odoo,  se agregan indicadores DTE |        OK       |       OK      |                    Se necesitan mas pruebas  en casos no factura exportación                    |
+  | Boleta Honorarios 71   | Implementado Retención, falta recepción XML específico         |    No aplica    |       X       | Se puede Registrar emisiones o recepciones, pero no hay código para la autorecepción de XML aún |
 
  Agradecimientos y colaboradores:
 
