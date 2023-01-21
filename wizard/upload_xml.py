@@ -368,7 +368,7 @@ class UploadXMLWizard(models.TransientModel):
         if not query:
             query = [("name", "=", NmbItem)]
         product_id = self.env["product.product"].search(query)
-        query2 = [("name", "=", document_id.partner_id.id)]
+        query2 = [("partner_id", "=", document_id.partner_id.id)]
         if default_code:
             query2.append(("product_code", "=", default_code))
         else:
@@ -400,7 +400,7 @@ class UploadXMLWizard(models.TransientModel):
                     "total_excluded"
                 ]
             supplier_info = {
-                "name": document_id.partner_id.id,
+                "partner_id": document_id.partner_id.id,
                 "product_name": NmbItem,
                 "product_code": default_code,
                 "product_tmpl_id": product_id.product_tmpl_id.id,
