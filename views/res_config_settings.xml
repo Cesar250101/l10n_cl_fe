@@ -130,6 +130,13 @@
                                         class="btn-link"
                                     />
                                 </div>
+                                <button
+                                    name="%(action_apicaf_form)d"
+                                    string="Obtener Folios desde el SII"
+                                    type="action"
+                                    context="{}"
+                                    class="btn-primary"
+                                />
                             </div>
                         </div>
                         <h2>Otras Opciones</h2>

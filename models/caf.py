@@ -52,8 +52,24 @@ has been exhausted.""",
     )
     sequence_id = fields.Many2one("ir.sequence", string="Sequence",)
     use_level = fields.Float(string="Use Level", compute="_used_level",)
-    cantidad_folios_sin_usar = fields.Integer(string="Cantidad folios sin usar", default=0)
-    folios_sin_usar = fields.Text(string="Folios sin usar")
+    cantidad_folios_sin_usar = fields.Integer(
+        string="Cantidad folios sin usar",
+        default=0)
+    folios_sin_usar = fields.Text(
+        string="Folios sin usar")
+    cantidad_folios_anulados = fields.Integer(
+        string="Cantidad folios anulados",
+        default=0)
+    folios_anulados = fields.Text(
+        string="Folios anulados")
+    cantidad_folios_vencidos_sin_anular = fields.Integer(
+        string="Cantidad folios vencidos sin anular",
+        default=0)
+    cantidad_folios_vencidos = fields.Integer(
+        string="Cantidad folios vencidos",
+        default=0)
+    folios_vencidos = fields.Text(
+        string="Folios Vencidos")
     _sql_constraints = [
         ("filename_unique", "unique(filename)", "Error! Filename Already Exist!"),
     ]
@@ -150,3 +166,62 @@ to work properly!"""
 
     def decode_caf(self):
         return etree.fromstring(self.caf_string)
+
+    def expirar_folios(self):
+        query = '''SELECT numero
+FROM generate_series({0}, {1}) numero
+WHERE NOT EXISTS (
+    SELECT 1
+    FROM account_move m
+    WHERE m.sii_document_number = numero and m.document_class_id={2}
+);'''.format(
+    self.start_nm,
+    self.final_nm,
+    self.sequence_id.sii_document_class_id.id
+)
+        folios_vencidos = []
+        for x in self._cr.fetchall():
+            self.eliminar_folio_sin_usar(x[0])
+            folios_vencidos.append(x[0])
+        self.write({
+            'folios_vencidos': str(folios_vencidos),
+            'cantidad_folios_vencidos': len(folios_vencidos),
+            'cantidad_folios_vencidos_sin_anular': len(folios_vencidos)
+            })
+
+    def anular_folio(self, desde, hasta=False):
+        if not hasta:
+            hasta = desde
+        wiz = self.env["dte.caf.apicaf"].create({
+            'operacion': 'anular',
+            'comany_id': self.company_id.id,
+            'firma': self.env.user.get_digital_signature(self.company_id).id,
+
+        })
+        linea = False
+        for l in wiz.lineas_disponibles:
+            if l.inicial<=desde <= line.final:
+                linea = l
+        wiz.write({
+            'folio_ini': desde,
+            'foio_fin': hasta,
+            'motivo': "Vencido",
+            'linea_disponible_seleccionada': linea.id
+        })
+        wiz.obtener_caf()
+        wiz.confirmar()
+        self.cantidad_folios_anulados += len(hasta+1-desde)
+
+    def after_anular_folios(self, inicio, final):
+        folios_vencidos = ast.literal_eval(self.folios_vencidos or '[]')
+        folios_sin_usar = self.obtener_folios_sin_usar()
+        for r in range(inicio, final):
+            if r in folios_vencidos:
+                folios_vencidos.remove(r)
+            if r in folios_sin_usar:
+                self.eliminar_folio_sin_usar(r)
+        self.write({
+            'folios_vencidos': str(folios_vencidos),
+            'cantidad_folios_vencidos': len(folios_vencidos),
+            'cantidad_folios_vencidos_sin_anular': len(folios_vencidos)
+            })

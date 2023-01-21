@@ -15,6 +15,16 @@ class IRSequence(models.Model):
 
     @api.model
     def check_cafs(self):
+        self._cr.execute("SELECT id FROM dte_caf WHERE expiration_date <= NOW() and cantidad_folios_sin_usar > 0")
+        for r in self.env["dte_caf"].sudo().browse([x[0] for x in self._cr.fetchall()]):
+            try:
+                r.expirar_folios()
+            except:
+                _logger.warning("no se pudo auto anular")
+            try:
+                r.auto_anular()
+            except:
+                _logger.warning("no se pudo auto anular")
         self._cr.execute("SELECT id FROM ir_sequence WHERE autoreponer_caf and qty_available < nivel_minimo")
         for r in self.env["ir.sequence"].sudo().browse([x[0] for x in self._cr.fetchall()]):
             try:

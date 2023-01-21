@@ -91,33 +91,38 @@
                                   <field name="selected" />
                                   <field name="sequence" invisible="1" />
                                   <field name="form_name" invisible="1" />
+                                  <field name="caf_id" invisible="1" />
                               </tree>
                           </field>
+                          <field name="linea_disponible_seleccionada"/>
                       </group>
-                      <group
-                          attrs="{'invisible': ['|', ('id_peticion', '=', 0), ('an_etapa', '!=', 'an_motivo')]}"
-                          string="Ingrese Rango a anular"
-                      >
-                          <field name="api_folio_ini" readonly='1' />
-                          <field name="api_folio_fin" readonly='1' />
-                          <div>
-                              <ul>
-                                  <li
-                                  >Recordar de que debe ser rango continuado, incluso si hay documentos ya recibidos por el SII, se anularán solamente los que no esten recibidos</li>
-                                  <li>Ejemplo:</li>
-                                  <li>CAF de la secuencia 1 - 10</li>
-                                  <li>Anular Solio folio 3 y 8 , pero 4,5,6,7 están recibidos</li>
-                                  <li>Folio ini = 3 , folio fin = 8</li>
-                                  <li>El SII anulará solamente los folios 3 y 8 </li>
-                                  <li>NO se puede anular Folio ya recibido aunque sea incluído en el rango</li>
-                                  <li
-                                  >Para anular un folio recibido, debe seguir el procedimiento correspondiente al tipo de documento ( ejemplo, para factura crear una NC de tipo anula documento)</li>
-                              </ul>
-                          </div>
-                          <field name="folio_ini" />
-                          <field name="folio_fin" />
-                          <field name="motivo" />
-                      </group>
+                      <div attrs="{'invisible': ['|', ('id_peticion', '=', 0), ('an_etapa', '!=', 'an_motivo')]}">
+                        <group
+                            string="Ingrese Rango a anular"
+                        >
+                            <field name="api_folio_ini" readonly='1' />
+                            <field name="api_folio_fin" readonly='1' />
+                        </group>
+                            <div>
+                                <ul>
+                                    <li
+                                    >Recordar de que debe ser rango continuado, incluso si hay documentos ya recibidos por el SII, se anularán solamente los que no esten recibidos</li>
+                                    <li>Ejemplo:</li>
+                                    <li>CAF de la secuencia 1 - 10</li>
+                                    <li>Anular Solio folio 3 y 8 , pero 4,5,6,7 están recibidos</li>
+                                    <li>Folio ini = 3 , folio fin = 8</li>
+                                    <li>El SII anulará solamente los folios 3 y 8 </li>
+                                    <li>NO se puede anular Folio ya recibido aunque sea incluído en el rango</li>
+                                    <li
+                                    >Para anular un folio recibido, debe seguir el procedimiento correspondiente al tipo de documento ( ejemplo, para factura crear una NC de tipo anula documento)</li>
+                                </ul>
+                            </div>
+                        <group>
+                            <field name="folio_ini" />
+                            <field name="folio_fin" />
+                            <field name="motivo" />
+                        </group>
+                      </div>
                       <group attrs="{'invisible': [('message', '=', False)]}">
                           <field name="message" readonly="1" />
                           <button
