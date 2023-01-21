@@ -49,7 +49,7 @@ Se crea este repositorio, para dar un enfoque de firma electrónica directa con 
   |   14   | IVA                               |  19  |   N  |   OK  |                                                                                                    |
   |   15   | IVA Retención total               |  19  |   R  |   OK  |                                                                                                    |
   |   17   | IVA al faenamiento de carnes      |   5  |   A  |   OK  |                                                                                                    |
-  |   18   | IVA a las carnes                   |   5  |   A  |   OK  |                                                                                                    |
+  |   18   | IVA a las carnes                  |   5  |   A  |   OK  |                                                                                                    |
   |   19   | IVA a la Harina                   |  12  |   A  |   X   |                                                                                                    |
   |   23   | Impuesto adicional                |  15  |   A  |   X   | a) artículos oro, platino, marfil b) Joyas, piedras preciosas c) Pieles finas                      |
   |   24   | DL 825/74, ART. 42, letra b)      | 31.5 |   D  |   OK  | Licores, Piscos, whisky, aguardiente, y vinos licorosos o aromatizados.                            |
@@ -81,6 +81,16 @@ Se crea este repositorio, para dar un enfoque de firma electrónica directa con 
 
  Si tiene dudas sobre el funcionamiento y consecuencias, recordar visitar <a href="https://globalresponse.cl/forum/how-to">la documentación pública</a> o en <a href="www.sii.cl">www.sii.cl</a> o <a href="https://globalresponse.cl/helpdesk/">realizar una consulta a soporte(de pago)</a> o <a href="https://globalresponse.cl/forum/1">postear en foro(gratuito)</a>
 
+  - Otras Funcionalidades
+
+  |     Funcionalidad      |                        Estado en código                        | Declaración XML | Resultado SII |                                   Observación                                   |
+  |:----------------------:|:--------------------------------------------------------------:|:---------------:|:-------------:|:-------------------------------------------------------------------------------:|
+  |    Descuento Global    | Implementado en 90%                                            |        OK       |       OK      | Se necesitan pruebas  combinaciones afecto-exento  y otras combinaciones de uso |
+  |     Recargo Global     | Implementado en 90%                                            |        OK       |       OK      | Se necesitan pruebas  combinaciones afecto-exento  y otras combinaciones de uso |
+  | Ley Redondeo Efectivo  | Implementado por defecto por odoo                              |        X        |       X       |                                  En desarrollo                                  |
+  |  Montos No Facturables | Implementado por defecto por odoo,  se agregan indicadores DTE |        X        |       X       |                                  En desarrollo                                  |
+  |  Líneas Informativas   | Implementado por defecto por odoo,  se agregan indicadores DTE |        X        |       X       |                                  En desarrollo                                  |
+  |  Montos Otras Monedas  | Implementado por defecto por odoo,  se agregan indicadores DTE |        OK       |       OK      |            Se necesitan mas pruebas  en casos no factura exportación            |
 
  Agradecimientos y colaboradores:
 
