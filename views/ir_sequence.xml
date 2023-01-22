@@ -26,15 +26,19 @@
                 </header>
                   <group>
                       <field name="nivel_minimo" />
+                  </group>
                       <div class="text-muted">Solo se lanzará una alerta si no está marcado autoreponer</div>
+                  <group>
                       <field name="autoreponer_caf" attrs="{'invisible': [('is_dte', '=', False)]}" />
                       <field
                           name="autoreponer_cantidad"
                           attrs="{'invisible': [('autoreponer_caf', '=', False)]}"
                       />
+                  </group>
                       <div
                           class="text-muted"
                       >Cantidad a solicitar por CAF cuando se llegue al mínimo de la secuencia</div>
+                  <group>
                       <field name="folios_sin_usar" readonly="1"/>
                   </group>
                   <field
