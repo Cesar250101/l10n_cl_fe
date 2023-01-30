@@ -16,7 +16,7 @@ class IRSequence(models.Model):
     @api.model
     def check_cafs(self):
         self._cr.execute("SELECT id FROM dte_caf WHERE expiration_date <= NOW() and cantidad_folios_sin_usar > 0")
-        for r in self.env["dte_caf"].sudo().browse([x[0] for x in self._cr.fetchall()]):
+        for r in self.env["dte.caf"].sudo().browse([x[0] for x in self._cr.fetchall()]):
             try:
                 r.expirar_folios()
             except:
