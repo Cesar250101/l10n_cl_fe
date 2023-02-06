@@ -93,8 +93,7 @@ E = Específico
 |     Declaración Formatos Impresión Ticket     | En caso Facturando/Contabilidad, ticket PDF. En casos PdV solo boleta desde PdV |       Ok        |      Ok       | Por defecto solo Ticket PDF, Para formatos térmicos, solo boleta en PdV, de lo contrario con módulos de pago <a href="https://globalresponse.cl/shop/product/imprimir-a-termica-77">print_to_thermal</a> |
 | Declaración Montos Brutos (Impuesto Incluido) |                     Hecho, pero puede que falte algún caso                      |       Ok        |      Ok       |                           Aplicable solo a Facturas con impuestos afectos o exentos, en caso compuestos o específicos deben marcar desglose de impuesto en la ficha impuestos                            |
 
-Si tiene dudas sobre el funcionamiento y consecuencias, recordar visitar <a href="https://globalresponse.cl/forum/how-to">la documentación pública</a> o en <a href="www.sii.cl">www.sii.cl</a> o <a href="https://globalresponse.cl/helpdesk/">realizar una consulta a soporte(de pago)</a> o <a href="https://globalresponse.cl/forum/1">postear en foro(gratuito)</a>
-
+Si tiene dudas sobre el funcionamiento y consecuencias, recordar visitar <a href="https://globalresponse.cl/forum/how-to">la documentación pública</a> o en <a href="www.sii.cl">www.sii.cl</a> o <a href="https://globalresponse.cl/helpdesk/">realizar una consulta a soporte(de pago)</a> o <a href="https://globalresponse.cl/forum/1">postear en foro(gratuito)</a>. También pueden suscribirse en el <a href="https://www.youtube.com/@dansanti">canal Youtube</a> para videos en vivo
 
 Agradecimientos y colaboradores:
 
