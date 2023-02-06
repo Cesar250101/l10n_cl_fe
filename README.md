@@ -79,8 +79,6 @@ E = Específico
 |   51   |          IVA gas natural          |      |  E   |   X   | Compuesto,Autosincronización MEPCO con diariooficial.cl                                            |
 |   53   |       Impuesto Suplementos        | 0.5  |  R   |   X   |                                                                                                    |
 
-Si tiene dudas sobre el funcionamiento y consecuencias, recordar visitar <a href="https://globalresponse.cl/forum/how-to">la documentación pública</a> o en <a href="www.sii.cl">www.sii.cl</a> o <a href="https://globalresponse.cl/helpdesk/">realizar una consulta a soporte(de pago)</a> o <a href="https://globalresponse.cl/forum/1">postear en foro(gratuito)</a>
-
 - Otras Funcionalidades
 
 |                 Funcionalidad                 |                                Estado en código                                 | Declaración XML | Resultado SII |                                                                                               Observación                                                                                                |
@@ -94,6 +92,9 @@ Si tiene dudas sobre el funcionamiento y consecuencias, recordar visitar <a href
 |             Boleta Honorarios 71              |             Implementado Retención, falta recepción XML específico              |    No aplica    |       X       |                                                     Se puede Registrar emisiones o recepciones, pero no hay código para la autorecepción de XML aún                                                      |
 |     Declaración Formatos Impresión Ticket     | En caso Facturando/Contabilidad, ticket PDF. En casos PdV solo boleta desde PdV |       Ok        |      Ok       | Por defecto solo Ticket PDF, Para formatos térmicos, solo boleta en PdV, de lo contrario con módulos de pago <a href="https://globalresponse.cl/shop/product/imprimir-a-termica-77">print_to_thermal</a> |
 | Declaración Montos Brutos (Impuesto Incluido) |                     Hecho, pero puede que falte algún caso                      |       Ok        |      Ok       |                           Aplicable solo a Facturas con impuestos afectos o exentos, en caso compuestos o específicos deben marcar desglose de impuesto en la ficha impuestos                            |
+
+Si tiene dudas sobre el funcionamiento y consecuencias, recordar visitar <a href="https://globalresponse.cl/forum/how-to">la documentación pública</a> o en <a href="www.sii.cl">www.sii.cl</a> o <a href="https://globalresponse.cl/helpdesk/">realizar una consulta a soporte(de pago)</a> o <a href="https://globalresponse.cl/forum/1">postear en foro(gratuito)</a>
+
 
 Agradecimientos y colaboradores:
 
