@@ -1519,10 +1519,8 @@ class AccountMove(models.Model):
                                             self.company_id,
                                             self.invoice_date)
         Totales["MntTotOtrMnda"] = MntTotal
-        # Totales['MontoNF']
         # Totales['TotalPeriodo']
         # Totales['SaldoAnterior']
-        # Totales['VlrPagar']
         return Totales
 
     def _totales_normal(self, currency_id, totales):
@@ -1572,11 +1570,18 @@ class AccountMove(models.Model):
                 self.company_id,
                 self.invoice_date)
         Totales["MntTotal"] = currency_id.round(MntTotal)
-        if totales['MontoNF'] > 0:
+        if totales['MontoNF']:
             Totales['MontoNF'] = totales['MontoNF']
-        # Totales['TotalPeriodo']
+            Totales['TotalPeriodo'] = MntTotal + totales['MontoNF']
         # Totales['SaldoAnterior']
-        # Totales['VlrPagar']
+        VlrPagar = totales['VlrPagar']
+        if currency_id != self.currency_id:
+            VlrPagar = currency_id._convert(
+                totales['VlrPagar'],
+                self.currency_id,
+                self.company_id,
+                self.invoice_date)
+        Totales["VlrPagar"] = currency_id.round(VlrPagar)
         return Totales
 
     def _es_exento(self):
@@ -1625,7 +1630,9 @@ class AccountMove(models.Model):
             raise UserError("Debe ir almenos un producto afecto")
         totales['MntTotal'] = totales['MntNeto'] + totales['MntExe'] + \
             totales['MntIVA'] + totales['OtrosImp'] - totales['MntRet'] - \
-            totales['CredEC'] - totales['MontoNF']
+            totales['CredEC'] + totales['MontoNF']
+        if not self.document_class_id.es_exportacion():
+            totales['VlrPagar'] = totales['MntTotal']
         return totales
 
     def currency_base(self):
@@ -1715,10 +1722,13 @@ class AccountMove(models.Model):
                     raise UserError("Con impuestos adicionales, la configuración impuesto incluído debe llevar marcado desglose de impuesto en la ficha del impuesto por obligación")
             if details.get('IndExe'):
                 lines['IndExe'] = details['IndExe']
-                if details['IndExe'] == 1:
+                if details['IndExe'] not in [2, 6]:
                     MntExe += details['MntExe']
-                else:
-                    MontoNF += details['MntExe']
+                elif details['IndExe'] in [2, 6]:
+                    if details['IndExe'] == 2:
+                        MontoNF += details['MntExe']
+                    else:
+                        MontoNF -= details['MntExe']
             # if line.product_id.move_type == 'events':
             #   lines['ItemEspectaculo'] =
             #            if self.es_boleta():
@@ -1808,6 +1818,18 @@ class AccountMove(models.Model):
             if lines.get("PrcItem", 1) == 0:
                 del lines["PrcItem"]
             invoice_lines.append(lines)
+        if self.invoice_cash_rounding_id:
+            cash_rounding = self.move_ids.filtered(lambda l: l.display_type=='rounding')
+            sign = self.direction_sign
+            MontoItem = cash_rounding.balance * sign
+            MontoNF += MontoItem
+            lines.append({
+                'NroLinDet': len(self.invoice_lines) +1,
+                'NmbItem': cash_rounding.name,
+                'QtyItem': 1,
+                'MontoItem': MontoItem if MontoItem > 0 else MontoItem * -1,
+                'IndExe': 2 if MontoItem > 0 else 6
+            })
         return {
             "Detalle": invoice_lines,
             "MntExe": MntExe,
@@ -1846,8 +1868,8 @@ class AccountMove(models.Model):
 
     def _dte(self, n_atencion=None):
         dte = {}
-        invoice_lines = self._invoice_lines()
-        dte["Encabezado"] = self._encabezado(invoice_lines)
+        resumen = self._invoice_lines()
+        dte["Encabezado"] = self._encabezado(resumen)
         lin_ref = 1
         ref_lines = []
         if self._context.get("set_pruebas", False):

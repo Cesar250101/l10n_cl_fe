@@ -459,16 +459,16 @@
                     <tr>
                         <td align="center">Ley Redondeo Efectivo</td>
                         <td align="center">Implementado por defecto por odoo</td>
-                        <td align="center">X</td>
-                        <td align="center">X</td>
-                        <td align="center">En desarrollo</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center"></td>
                     </tr>
                     <tr>
                         <td align="center">Montos No Facturables</td>
-                        <td align="center">Implementado por defecto por odoo, se agregan indicadores DTE</td>
-                        <td align="center">X</td>
-                        <td align="center">X</td>
-                        <td align="center">En desarrollo</td>
+                        <td align="center">Implementado por defecto por odoo, se necesitan pruebas de algunos casos de uso</td>
+                        <td align="center">Ok</td>
+                        <td align="center">Ok</td>
+                        <td align="center">Se necesitan pruebas</td>
                     </tr>
                     <tr>
                         <td align="center">L&iacute;neas Informativas</td>
@@ -491,6 +491,20 @@
                         <td align="center">X</td>
                         <td align="center">Se puede Registrar emisiones o recepciones, pero no hay c&oacute;digo para la autorecepci&oacute;n de XML a&uacute;n</td>
                     </tr>
+                    <tr>
+                        <td align="center">Declaraci&oacute;n Formatos Impresi&oacute;n Ticket</td>
+                        <td align="center">En caso Facturando/Contabilidad, ticket PDF. En casos PdV solo boleta desde PdV</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">Por defecto solo Ticket PDF, Para formatos t&eacute;rmicos, solo boleta en PdV, de lo contrario con m&oacute;dulos de pago como <a href="https://globalresponse.cl/shop/product/imprimir-a-termica-77">print_to_thermal</a></td>
+                    </tr>
+                    <tr>
+                        <td align="center">Declaraci&oacute;n Montos Brutos (Impuesto Incluido)</td>
+                        <td align="center">Hecho, pero puede que falte alg&uacute;n caso</td>
+                        <td align="center">OK</td>
+                        <td align="center">OK</td>
+                        <td align="center">Aplicable solo a Facturas con impuestos afectos o exentos, en caso compuestos o espec&iacute;ficos deben marcar desglose de impuesto en la ficha impuestos</td>
+                    </tr>
                 </tbody>
             </table>
             <p class="oe_mt12">
@@ -501,6 +515,7 @@
                     <li> Nelson Ramirez</li>
                     <li> Carlos Toledo</li>
                     <li> Carlos Lopez</li>
+                    <li> Camilo Bustos</li>
                 </ul>
             </p>
             <p class="oe_mt12">

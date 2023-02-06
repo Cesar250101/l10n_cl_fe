@@ -355,6 +355,7 @@
                                 <span t-field="o.narration" />
                             </p>
                         </div>
+                        <t t-set="tax_totals" t-value="o.tax_totals"/>
                         <div id="total" t-attf-class="#{'col-4' if report_move_type != 'html' else 'col-md-5'}">
                             <table class="table table-sm">
                                 <t t-if="o.global_descuentos_recargos">
@@ -440,16 +441,18 @@
                                   </tr>
 
                               </t>
-
+                                <t t-set="has_rounding" t-value="'formatted_amount_total_rounded' in tax_totals"/>
                                 <tr class="border-black" style="max-height:12px; font-size:12px !important;">
-                                    <td>
-                                        <strong>Total</strong>
-                                    </td>
+                                    <t t-if="has_rounding"><td>Total</td></t>
+                                    <t t-else=""><td><strong>Total</strong></td></t>
                                     <td class="text-right">
-                                        <span
-                                            t-field="o.amount_total"
-                                            t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"
-                                        />
+                                        <span t-esc="tax_totals['formatted_amount_total']"/>
+                                    </td>
+                                </tr>
+                                <tr t-if="has_rounding">
+                                    <td><strong>Total Redondeado</strong></td>
+                                    <td class="text-end">
+                                        <span t-esc="tax_totals['formatted_amount_total_rounded']"/>
                                     </td>
                                 </tr>
                             </table>

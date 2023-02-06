@@ -264,8 +264,7 @@ class UploadXMLWizard(models.TransientModel):
         return res
 
     def _buscar_impuesto(self, type="purchase", name="Impuesto", amount=0,
-                         sii_code=0, IndExe=None,
-                         company_id=False):
+                        sii_code=0, ind_exe=False, company_id=False):
         query = [
             ("amount", "=", amount),
             ("sii_code", "=", sii_code),
@@ -273,8 +272,9 @@ class UploadXMLWizard(models.TransientModel):
             ("activo_fijo", "=", False),
             ("company_id", "=", company_id.id),
             ("credec", '=', False),
+            ("ind_exe", '=', ind_exe),
         ]
-        if amount == 0 and sii_code == 0 and IndExe is None:
+        if amount == 0 and sii_code == 0:
             query.append(("name", "=", name))
         imp = self.env["account.tax"].search(query)
         if not imp:
@@ -300,17 +300,16 @@ class UploadXMLWizard(models.TransientModel):
         if IndExe is None and not exenta:
             amount = 19
             sii_code = 14
-        else:
-            IndExe = True
+        ind_exe = IndExe.text if IndExe is not None else False
         imp = self._buscar_impuesto(amount=amount,
                                     type="purchase",
                                     sii_code=sii_code,
-                                    IndExe=IndExe,
+                                    ind_exe=ind_exe,
                                     company_id=company_id)
         imp_sale = self._buscar_impuesto(amount=amount,
                                     type="sale",
                                     sii_code=sii_code,
-                                    IndExe=IndExe,
+                                    ind_exe=ind_exe,
                                     company_id=company_id)
         uom = 'UnmdItem'
         price = float(line.find("PrcItem").text if line.find("PrcItem") is not None else line.find("MontoItem").text)
@@ -427,6 +426,8 @@ class UploadXMLWizard(models.TransientModel):
             discount = float(line.find("DescuentoPct").text)
         price = float(line.find("PrcItem").text) if line.find("PrcItem") is not None else price_subtotal
         DscItem = line.find("DscItem")
+        IndExe = line.find("IndExe")
+        ind_exe = IndExe.text if IndExe is not None else False
         data.update(
             {
                 "sequence": line.find("NroLinDet").text,
@@ -434,6 +435,7 @@ class UploadXMLWizard(models.TransientModel):
                 "discount": discount,
                 "quantity": line.find("QtyItem").text if line.find("QtyItem") is not None else 1,
                 "price_subtotal": price_subtotal,
+                "ind_exe": ind_exe,
             }
         )
         if not document:
@@ -445,26 +447,23 @@ class UploadXMLWizard(models.TransientModel):
                 {"new_product": product_id, "product_description": DscItem.text if DscItem is not None else "",}
             )
         else:
-            IndExe = line.find("IndExe")
             amount = 0
             sii_code = 0
             tax_ids = self.env["account.tax"]
             if IndExe is None and not exenta:
                 amount = 19
                 sii_code = 14
-            else:
-                IndExe = True
             tax_ids += self._buscar_impuesto(
                 type="purchase" if self.type == "compras" else "sale",
-                amount=amount, sii_code=sii_code,
-                IndExe=IndExe, company_id=company_id
+                amount=amount, sii_code=sii_code, ind_exe=ind_exe,
+                company_id=company_id
             )
             if line.find("CodImpAdic") is not None:
                 amount = 19
                 tax_ids += self._buscar_impuesto(
                     type="purchase" if self.type == "compras" else "sale",
                     amount=amount, sii_code=line.find("CodImpAdic").text,
-                    IndExe=IndExe, company_id=company_id
+                    company_id=company_id
                 )
             if IndExe is None:
                 tax_include = False
@@ -619,11 +618,13 @@ class UploadXMLWizard(models.TransientModel):
             RznSoc = Emisor.find("RznSoc")
             if RznSoc is None:
                 RznSoc = Emisor.find("RznSocEmisor")
+            monto_no_facturable = Encabezado.find("Totales/MontoNF").text if Encabezado.find("Totales/MontoNF") is not None else 0
             invoice.update(
                 {
                     "number": Folio,
                     "new_partner": RUT + " " + RznSoc.text,
                     "amount": Encabezado.find("Totales/MntTotal").text,
+                    "monto_no_facturable": monto_no_facturable,
                 }
             )
         return invoice

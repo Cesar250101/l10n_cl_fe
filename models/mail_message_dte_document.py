@@ -29,6 +29,7 @@ class ProcessMailsDocument(models.Model):
         "sii.document_class", string="Tipo de Documento", readonly=True, oldname="sii_document_class_id",
     )
     amount = fields.Monetary(string="Monto", readonly=True,)
+    monto_no_facturable = fields.Monetary(string="Monto no Facturable", readonly=True,)
     currency_id = fields.Many2one(
         "res.currency", string="Moneda", readonly=True, default=lambda self: self.env.user.company_id.currency_id,
     )
@@ -313,6 +314,16 @@ class ProcessMailsDocumentLines(models.Model):
     product_uom_id = fields.Many2one('uom.uom', string='Unit of Measure', readonly=True)
     currency_id = fields.Many2one(
         "res.currency", string="Moneda", readonly=True, default=lambda self: self.env.user.company_id.currency_id,
+    )
+    ind_exe = fields.Selection([
+            ('1', 'No afecto o exento de IVA (10)'),
+            ('2', 'Producto o servicio no es facturable'),
+            ('3', 'Garantía de depósito por envases (Cervezas, Jugos, Aguas Minerales, Bebidas Analcohólicas u otros autorizados por Resolución especial)'),
+            ('4', 'Ítem No Venta. (Para facturas y guías de despacho (ésta última con Indicador Tipo de Traslado de Bienes igual a 1) y este ítem no será facturado.'),
+            ('5', 'Ítem a rebajar. Para guías de despacho NO VENTA que rebajan guía anterior. En el área de referencias se debe indicar la guía anterior.'),
+            ('6', 'Producto o servicio no facturable negativo (excepto en liquidaciones-factura)'),
+        ],
+        string="Indicador Exento"
     )
 
 

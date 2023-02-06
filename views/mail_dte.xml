@@ -123,6 +123,7 @@
                         </group>
                         <group>
                             <field name="amount" />
+                            <field name="monto_no_facturable" />
                             <field name="currency_id" />
                             <field name="move_id" />
                             <field name="company_id" />
@@ -140,6 +141,7 @@
                                     <field name="quantity" />
                                     <field name="price_unit" />
                                     <field name="price_subtotal" />
+                                    <field name="ind_exe" />
                                     <field name="currency_id" invisible="True" />
                                 </tree>
                             </field>
