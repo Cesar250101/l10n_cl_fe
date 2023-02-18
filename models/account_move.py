@@ -372,7 +372,7 @@ class AccountMove(models.Model):
                         if line.tax_repartition_line_id.sii_type in ['R', 'A']:
                             total_retencion += line.balance
                             total_retencion_currency += line.amount_currency
-                            if line.tax_line_id.credec:
+                            if line.tax_repartition_line_id.credec:
                                 total_tax -= line.balance
                                 total_tax_currency -= line.amount_currency
                             total -= (sign * line.balance)
@@ -1612,8 +1612,7 @@ class AccountMove(models.Model):
                 if sii_code in [14, 15]:
                     if totales['TasaIVA'] == 0:
                         totales['TasaIVA'] = round(t.tax_line_id.amount, 2)
-                    totales['MntIVA'] += balance
-                    if es_retencion and t.tax_line_id.credec:
+                    if t.tax_repartition_line_id.credec:
                         totales['CredEC'] += balance
                     elif es_retencion:
                         totales['MntRet'] += balance
@@ -1629,8 +1628,8 @@ class AccountMove(models.Model):
                                                                 60, 61, 55, 56]:
             raise UserError("Debe ir almenos un producto afecto")
         totales['MntTotal'] = totales['MntNeto'] + totales['MntExe'] + \
-            totales['MntIVA'] + totales['OtrosImp'] - totales['MntRet'] - \
-            totales['CredEC'] + totales['MontoNF']
+            totales['MntIVA'] + totales['OtrosImp'] + totales['MontoNF'] - \
+            totales['CredEC'] - totales['MntRet']
         if not self.document_class_id.es_exportacion():
             totales['VlrPagar'] = totales['MntTotal']
         return totales

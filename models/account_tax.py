@@ -75,8 +75,7 @@ class SIITax(models.Model):
             if self._context.get("date"):
                 mepco = self._target_mepco(self._context.get("date"))
                 amount_tax = mepco.amount
-            factor = self.uom_id._compute_quantity(1, uom_id)
-            amount_tax = amount_tax / factor
+            amount_tax = self.uom_id._compute_price(amount_tax, uom_id)
         return amount_tax
 
     def _fix_composed_included_tax(self, base, quantity, uom_id):
@@ -317,7 +316,7 @@ class SIITax(models.Model):
                         incl_fixed_amount += abs(quantity) * tax.amount * sum_repartition_factor * abs(fixed_multiplicator)
                     else:
                         # tax.amount_type == other (python)
-                        tax_amount = tax._compute_amount(base, sign * price_unit, quantity, product, partner, fixed_multiplicator) * sum_repartition_factor
+                        tax_amount = tax._compute_amount(base, sign * price_unit, quantity, product, partner, fixed_multiplicator, uom_id=uom_id) * sum_repartition_factor
                         incl_fixed_amount += tax_amount
                         # Avoid unecessary re-computation
                         cached_tax_amounts[i] = tax_amount
@@ -370,7 +369,7 @@ class SIITax(models.Model):
                 cumulated_tax_included_amount = 0
             else:
                 tax_amount = tax.with_context(force_price_include=False)._compute_amount(
-                    tax_base_amount, sign * price_unit, quantity, product, partner, fixed_multiplicator)
+                    tax_base_amount, sign * price_unit, quantity, product, partner, fixed_multiplicator, uom_id=uom_id)
 
             # Round the tax_amount multiplied by the computed repartition lines factor.
             tax_amount = round(tax_amount, precision_rounding=prec)
@@ -908,30 +907,44 @@ class SIITax(models.Model):
         ):
             return base_amount * self.retencion / 100
 
-    def _list_from_diario(self, day, year, month):
+    def _list_from_diario(self, day, year, month, i=1):
+        if i == 4:
+            return {}
         date = datetime.strptime("{}-{}-{}".format(day, month, year), "%d-%m-%Y").astimezone(pytz.UTC)
-        t = date - relativedelta.relativedelta(days=1)
+        t = date - relativedelta.relativedelta(days=i)
         t_date = "date={}-{}-{}".format(t.strftime("%d"), t.strftime("%m"), t.strftime("%Y"))
         url = "https://www.diariooficial.interior.gob.cl/edicionelectronica/"
-        resp = pool.request("GET", "{}select_edition.php?{}".format(url, t_date))
+        data = _cache_list_page.get(t_date)
+        if not data:
+            resp = pool.request("GET", "{}select_edition.php?{}".format(url, t_date))
+            data = _cache_list_page[t_date] = resp.data.decode("utf-8")
         target = 'a href="index.php[?]%s&edition=([0-9]*)&v=1"' % t_date
-        url2 = re.findall(target, resp.data.decode("utf-8"))
-        resp2 = pool.request("GET", "{}index.php?{}&edition={}".format(url, t_date, url2[0]))
+        url2 = re.findall(target, data)
+        if not url2:
+            return self._list_from_diario(day, year, month, (i+1))
+        data2 = _cache_page_2.get(url2[0])
+        if not data2:
+            resp2 = pool.request("GET", "{}index.php?{}&edition={}".format(url, t_date, url2[0]))
+            data2 = _cache_page_2[url2[0]] = resp2.data.decode("utf-8")
         # target = 'Determina el componente variable para el cálculo del impuesto específico establecido en la ley N° 18.502 [a-zA-Z \r\n</>="_0-9]* href="([a-zA-Z 0-9/.:]*)"'
         target = '18.502[\\W]* [a-zA-Z \r\n<\\/>="_0-9]* href="([a-zA-Z 0-9\\/.:]*)"'
-        url3 = re.findall(target, resp2.data.decode("utf-8"))
+        url3 = re.findall(target, data2)
         if not url3:
-            return {}
-        return {date: url3[0].replace("http", "https")}
+            _logger.warning("iter "+str(i))
+            return self._list_from_diario(day, year, month, (i+1))
+        return {date: url3[0].replace("http:", "https:")}
 
     def _get_from_diario(self, url):
-        resp = pool.request("GET", url)
-        doc = fitz.open(stream=resp.data, filetype="pdf")
+        data = _cache_page.get(url)
+        if not data:
+            resp = pool.request("GET", url)
+            data = _cache_page[url] = resp.data
+        doc = fitz.open(stream=data, filetype="pdf")
         target = "Gasolina Automotriz de[\n ]93 octanos[\n ]\\(*en UTM\\/m[\\w]\\)"
         if self.mepco == "gasolina_97":
             target = "Gasolina Automotriz de[\n ]97 octanos[\n ]\\(en UTM\\/m[\\w]\\)"
         elif self.mepco == "diesel":
-            target = "Petr[\\w]leo Di[\\w]sel[\n ]\\(en UTM\\/m[\\w]\\)"
+            target = "Petr[\\w]leo [dD]i[\\w]sel[\n ]\\(en UTM\\/m[\\w]\\)"
         elif self.mepco == "gas_licuado":
             target = "Gas Licuado del Petróleo de Consumo[\n ]Vehicular[\n ]\\(en UTM\\/m[\\w]\\)"
         elif self.mepco == "gas_natural":
@@ -941,7 +954,7 @@ class SIITax(models.Model):
 
     def _connect_sii(self, year, month):
         month = meses[int(month)].lower()
-        url = "http://www.sii.cl/valores_y_fechas/mepco/mepco%s.htm" % year
+        url = "https://www.sii.cl/valores_y_fechas/mepco/mepco%s.htm" % year
         resp = pool.request("GET", url)
         sii = html.fromstring(resp.data)
         return sii.findall('.//div[@id="pp_%s"]/div/table' % (month))
@@ -964,7 +977,7 @@ class SIITax(models.Model):
             line = 3
         elif self.mepco == "diesel":
             line = 5
-        val = tables[target[1]].findall("tr")[line].findall("td")[4].text.replace(".", "").replace(",", ".")
+        val = tables[target].findall("tr")[line].findall("td")[4].text.replace(".", "").replace(",", ".")
         return val
 
     def prepare_mepco(self, date, currency_id=False):
@@ -972,7 +985,11 @@ class SIITax(models.Model):
         year = date.strftime("%Y")
         month = date.strftime("%m")
         day = date.strftime("%d")
-        rangos = self._list_from_diario(day, year, month)
+        try:
+            rangos = self._list_from_sii(year, month)
+        except Exception as e:
+            _logger.warning(str(e), exc_info=True)
+            return {'found': self._target_mepco((date - relativedelta.relativedelta(days=1)), currency_id)}
         ant = datetime.now(tz)
         target = (ant, 0)
         for k, v in rangos.items():
@@ -981,8 +998,9 @@ class SIITax(models.Model):
                 break
             ant = k
         if not rangos or target[0] > date:
-            return self.prepare_mepco((date - relativedelta.relativedelta(days=1)), currency_id)
+            return {'found': self._target_mepco((date - relativedelta.relativedelta(days=1)), currency_id)}
         val = self._get_from_diario(target[1])
+        #val = self._get_from_sii(year, month, target[1])
         utm = self.env["res.currency"].sudo().search([("name", "=", "UTM")])
         amount = utm._convert(float(val), currency_id, self.company_id, date)
         return {
@@ -995,7 +1013,6 @@ class SIITax(models.Model):
             "currency_id": currency_id.id,
             "factor": float(val),
         }
-
 
     def actualizar_mepco(self):
         self.verify_mepco(date_target=False, currency_id=False, force=True)
