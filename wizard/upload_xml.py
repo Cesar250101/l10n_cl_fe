@@ -266,17 +266,17 @@ class UploadXMLWizard(models.TransientModel):
     def _buscar_impuesto(self, type="purchase", name="Impuesto", amount=0,
                         sii_code=0, ind_exe=False, company_id=False):
         query = [
-            ("amount", "=", amount),
-            ("sii_code", "=", sii_code),
-            ("type_tax_use", "=", type),
-            ("activo_fijo", "=", False),
-            ("company_id", "=", company_id.id),
+            ("tax_id.amount", "=", amount),
+            ("tax_id.sii_code", "=", sii_code),
+            ("tax_id.type_tax_use", "=", type),
+            ("tax_id.activo_fijo", "=", False),
+            ("tax_id.company_id", "=", company_id.id),
+            ("tax_id.ind_exe", '=', ind_exe),
             ("credec", '=', False),
-            ("ind_exe", '=', ind_exe),
         ]
         if amount == 0 and sii_code == 0:
             query.append(("name", "=", name))
-        imp = self.env["account.tax"].search(query)
+        imp = self.env["account.tax.repartition.line"].search(query, limit=1)
         if not imp:
             imp = (
                 self.env["account.tax"]
@@ -291,7 +291,7 @@ class UploadXMLWizard(models.TransientModel):
                     }
                 )
             )
-        return imp
+        return imp.tax_id
 
     def get_product_values(self, line, company_id, price_included=False, exenta=False):
         IndExe = line.find("IndExe")
