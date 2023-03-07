@@ -783,7 +783,8 @@ class UploadXMLWizard(models.TransientModel):
                 "|",
                 ("partner_id.vat", "=", self.format_rut(Emisor.find("RUTEmisor").text)),
                 ("new_partner", "=", new_partner),
-            ]
+            ],
+            limit=1,
         )
 
     def _create_pre(self, documento, company_id):
