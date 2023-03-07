@@ -578,8 +578,7 @@ class UploadXMLWizard(models.TransientModel):
             partner_id = partner_id.id
         try:
             name = self.filename.decode("ISO-8859-1").encode("UTF-8")
-        except Exception as ex:
-            _logger.error(tools.ustr(ex), exc_info=True)
+        except:
             name = self.filename.encode("UTF-8")
         ted_string = b""
         if documento.find("TED") is not None:
