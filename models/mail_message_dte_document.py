@@ -325,6 +325,17 @@ class ProcessMailsDocumentLines(models.Model):
         ],
         string="Indicador Exento"
     )
+    company_id = fields.Many2one(
+        related='document_id.company_id', store=True, readonly=True, precompute=True,
+        index=True,
+    )
+    tax_ids = fields.Many2many(
+        comodel_name='account.tax',
+        string="Taxes",
+        readonly=True,
+        context={'active_test': False},
+        check_company=True,
+    )
 
 
 class MMDTEDGlobalDescuentoRecargo(models.Model):
