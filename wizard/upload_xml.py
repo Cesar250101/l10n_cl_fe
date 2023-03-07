@@ -679,7 +679,8 @@ class UploadXMLWizard(models.TransientModel):
                 imp = self._buscar_impuesto(
                     type="purchase" if self.type == "compras" else "sale",
                     name="OtrosImps_" + i.find("TipoImp").text,
-                    sii_code=i.find("TipoImp").text)
+                    sii_code=i.find("TipoImp").text,
+                    company_id=company_id)
                 price = float(i.find("MontoImp").text)
                 price_subtotal = float(i.find("MontoImp").text)
                 if price_included:
