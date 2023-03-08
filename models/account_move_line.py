@@ -58,7 +58,7 @@ class AccountInvoiceLine(models.Model):
                     product=line.product_id,
                     partner=line.partner_id,
                     is_refund=line.is_refund,
-                    uom_id=line.uom_id
+                    uom_id=line.product_uom_id
                 )
                 line.price_subtotal = taxes_res['total_excluded']
                 line.price_total = taxes_res['total_included']
