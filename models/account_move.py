@@ -1574,7 +1574,7 @@ class AccountMove(models.Model):
             Totales['MontoNF'] = totales['MontoNF']
             Totales['TotalPeriodo'] = MntTotal + totales['MontoNF']
         # Totales['SaldoAnterior']
-        VlrPagar = totales['VlrPagar']
+        VlrPagar = totales.get('VlrPagar', 0)
         if currency_id != self.currency_id:
             VlrPagar = currency_id._convert(
                 totales['VlrPagar'],
