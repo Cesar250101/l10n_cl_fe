@@ -141,6 +141,7 @@
                                     <field name="quantity" />
                                     <field name="price_unit" />
                                     <field name="price_subtotal" />
+                                    <field name="tax_ids" />
                                     <field name="ind_exe" />
                                     <field name="currency_id" invisible="True" />
                                 </tree>

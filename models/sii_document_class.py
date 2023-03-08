@@ -58,3 +58,6 @@ class SIIDocumentClass(models.Model):
 
     def es_guia(self):
         return self.sii_code in [50, 52]
+
+    def es_nc(self):
+        return self.sii_code in [60, 61] or self.es_nc_exportacion()
