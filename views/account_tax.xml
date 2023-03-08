@@ -24,6 +24,12 @@
               <field name="ind_exe" />
             </field>
 
+            <field name="mepco" position="before">
+              <field name="mepco_origen" attrs="{
+                'invisible': [('mepco', '=', False)],
+                'required': [('mepco', '!=', False)]}" />
+            </field>
+
             <field name="include_base_amount" position="before">
               <field name="include_base_amount_cl" />
             </field>

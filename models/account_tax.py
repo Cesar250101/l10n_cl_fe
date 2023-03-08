@@ -23,7 +23,21 @@ except ImportError:
 try:
     import fitz
 except Exception as e:
+    fitz = False
     _logger.warning("error en PyMUPDF: %s" % str(e))
+try:
+    from io import BytesIO
+except Exception as e:
+    _logger.warning("error en BytesIO: %s" % str(e))
+try:
+    from Pil import Image
+except Exception as e:
+    _logger.warning("error en PIl: %s" % str(e))
+try:
+    import pytesseract
+except Exception as e:
+    pytesseract = False
+    _logger.warning("error en pytesseract: %s" % str(e))
 
 meses = {
     1: "Enero",
@@ -39,6 +53,9 @@ meses = {
     11: "Noviembre",
     12: "Diciembre",
 }
+_cache_page = {}
+_cache_list_page = {}
+_cache_page_2 = {}
 
 
 class SIITax(models.Model):
@@ -57,6 +74,30 @@ class SIITax(models.Model):
     include_base_amount_cl = fields.Boolean(
         string="Base Precio Incluído Chileno"
     )
+    mepco_origen = fields. Selection([
+        ('sii', 'Página del SII'),
+        ('diario', 'Página DiarioOficial.cl'),
+        ('pdf', 'PDF subido según formato DiarioOficial'),
+        ('manual', 'Manual'),
+        ],
+        string="Origen actualización Mepco",
+        default=lambda self: 'diario' if self.mepco else 'manual',
+    )
+
+    @api.onchange('mepco_origen')
+    def _verificar_dependencias_python(self):
+        if self.mepco_origen in ['diario', 'pdf']:
+            if not fitz:
+                raise UserError("Debe instalar la dependencia python PyMuPDF y luego reiniciar el servicio de odoo")
+            elif fitz.version < "1.21.1":
+                raise UserError("Debe actualizar la dependencia python PyMuPDF>=1.21.1 y luego reiniciar el servicio de odoo")
+            if not pytesseract:
+                raise UserError("Debe instalar la dependencia python pytesseract\
+                                y tambien los paquetes deb con sudo apt install \
+                                tesseract-ocr libtesseract-dev y luego reiniciar \
+                                el servicio de odoo")
+            elif pytesseract.__version__ < "0.3.10":
+                raise UserError("Debe actualizar la dependencia python pytesseract>=0.3.10 y luego reiniciar el servicio de odoo")
 
     def es_adicional(self):
         return self.sii_code in [24, 25, 26, 27, 271]
@@ -935,21 +976,60 @@ class SIITax(models.Model):
         return {date: url3[0].replace("http:", "https:")}
 
     def _get_from_diario(self, url):
+        self._verificar_dependencias_python()
         data = _cache_page.get(url)
         if not data:
             resp = pool.request("GET", url)
             data = _cache_page[url] = resp.data
         doc = fitz.open(stream=data, filetype="pdf")
-        target = "Gasolina Automotriz de[\n ]93 octanos[\n ]\\(*en UTM\\/m[\\w]\\)"
-        if self.mepco == "gasolina_97":
-            target = "Gasolina Automotriz de[\n ]97 octanos[\n ]\\(en UTM\\/m[\\w]\\)"
-        elif self.mepco == "diesel":
-            target = "Petr[\\w]leo [dD]i[\\w]sel[\n ]\\(en UTM\\/m[\\w]\\)"
-        elif self.mepco == "gas_licuado":
-            target = "Gas Licuado del Petróleo de Consumo[\n ]Vehicular[\n ]\\(en UTM\\/m[\\w]\\)"
-        elif self.mepco == "gas_natural":
-            target = "Gas Natural Comprimido de Consumo Vehicular"
-        val = re.findall("%s\n[0-9.,-]*\n[0-9.,-]*\n([0-9.,-]*)" % target, doc.loadPage(1).getText())
+        imagenes = doc.load_page(1).get_images()
+        if len(imagenes) > 2:
+            imagen = images[1]
+            # Extrae la imagen y conviértela a texto utilizando pytesseract
+            pix = fitz.Pixmap(doc, imagen[0])
+            imagen_bytes = pix.tobytes("png")
+            # Convierte la imagen a otro formato compatible con pytesseract
+            imagen_pil = Image.open(BytesIO(imagen_bytes))
+            imagen_pil = imagen_pil.convert('RGB')
+            imagen_bytesio = BytesIO()
+            imagen_pil.save(imagen_bytesio, format='PNG')
+            imagen_bytes = imagen_bytesio.getvalue()
+
+            # Extrae el texto de la imagen usando pytesseract
+            texto = pytesseract.image_to_string(Image.open(BytesIO(imagen_bytes)))
+            i = 0
+            target_i = 0
+            if self.mepco == "gasolina_97":
+                target_i = 1
+            elif self.mepco == "diesel":
+                target_i = 2
+            elif self.mepco == "gas_licuado":
+                target_i = 3
+            elif self.mepco == "gas_natural":
+                target_i = 4
+            val = False
+            for l in texto.splitlines():
+                if not l or l.isspace():
+                    continue
+                val = l.split(' ')[-1]
+                try:
+                    float(val.replace(',', '.'))
+                    if i == target_i:
+                        break
+                    i += 1
+                except:
+                    val = False
+        else:
+            target = "Gasolina Automotriz de[\n ]93 octanos[\n ]\\(*en UTM\\/m[\\w]\\)"
+            if self.mepco == "gasolina_97":
+                target = "Gasolina Automotriz de[\n ]97 octanos[\n ]\\(en UTM\\/m[\\w]\\)"
+            elif self.mepco == "diesel":
+                target = "Petr[\\w]leo [dD]i[\\w]sel[\n ]\\(en UTM\\/m[\\w]\\)"
+            elif self.mepco == "gas_licuado":
+                target = "Gas Licuado del Petróleo de Consumo[\n ]Vehicular[\n ]\\(en UTM\\/m[\\w]\\)"
+            elif self.mepco == "gas_natural":
+                target = "Gas Natural Comprimido de Consumo Vehicular"
+            val = re.findall("%s\n[0-9.,-]*\n[0-9.,-]*\n([0-9.,-]*)" % target, doc.loadPage(1).getText())
         return val[0].replace(".", "").replace(",", ".")
 
     def _connect_sii(self, year, month):
@@ -986,9 +1066,12 @@ class SIITax(models.Model):
         month = date.strftime("%m")
         day = date.strftime("%d")
         try:
-            rangos = self._list_from_sii(year, month)
+            if self.mepco_origen in ['diario', 'pdf']:
+                rangos = self._list_from_diario(day, year, month)
+            elif self.mepco_origen == 'sii':
+                rangos = self._list_from_sii(year, month)
         except Exception as e:
-            _logger.warning(str(e), exc_info=True)
+            _logger.warning("Error obteniendo mepco: ", exc_info=True)
             return {'found': self._target_mepco((date - relativedelta.relativedelta(days=1)), currency_id)}
         ant = datetime.now(tz)
         target = (ant, 0)
@@ -999,8 +1082,10 @@ class SIITax(models.Model):
             ant = k
         if not rangos or target[0] > date:
             return {'found': self._target_mepco((date - relativedelta.relativedelta(days=1)), currency_id)}
-        val = self._get_from_diario(target[1])
-        #val = self._get_from_sii(year, month, target[1])
+        if self.mepco_origen in ['diario', 'pdf']:
+            val = self._get_from_diario(target[1])
+        elif self.origen == 'sii':
+            val = self._get_from_sii(year, month, target[1])
         utm = self.env["res.currency"].sudo().search([("name", "=", "UTM")])
         amount = utm._convert(float(val), currency_id, self.company_id, date)
         return {
