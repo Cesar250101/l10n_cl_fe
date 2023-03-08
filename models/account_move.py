@@ -1908,7 +1908,7 @@ class AccountMove(models.Model):
                     ref_lines["CodCaja"] = self.journal_id.point_of_sale_id.name
                 ref_lines.append(ref_line)
                 lin_ref += 1
-        dte["Detalle"] = invoice_lines["Detalle"]
+        dte["Detalle"] = resumen["Detalle"]
         dte["DscRcgGlobal"] = self._gdr()
         dte["Referencia"] = ref_lines
         dte["CodIVANoRec"] = self.no_rec_code
