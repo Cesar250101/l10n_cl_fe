@@ -89,7 +89,7 @@ class SIITax(models.Model):
         if self.mepco_origen in ['diario', 'pdf']:
             if not fitz:
                 raise UserError("Debe instalar la dependencia python PyMuPDF y luego reiniciar el servicio de odoo")
-            elif fitz.version < "1.21.1":
+            elif fitz.version[0] < "1.21.1":
                 raise UserError("Debe actualizar la dependencia python PyMuPDF>=1.21.1 y luego reiniciar el servicio de odoo")
             if not pytesseract:
                 raise UserError("Debe instalar la dependencia python pytesseract\
