@@ -278,7 +278,12 @@ class UploadXMLWizard(models.TransientModel):
             ("credec", '=', False),
         ]
         if amount == 0 and sii_code == 0:
-            query.append(("name", "=", name))
+            name = "Exento Venta"
+            if type == "purchase":
+                name = "Exento Compra"
+            query.append(( target + "name", "=", name))
+        elif amount != 19 and sii_code not in [14, 15]:
+            query.append((target + "name", "=", name))
         imp = self.env["account.tax.repartition.line"].search(query, limit=1)
         if not imp:
             imp = (
@@ -376,13 +381,13 @@ class UploadXMLWizard(models.TransientModel):
         if not query:
             query = [("name", "=", NmbItem)]
         product_id = self.env["product.product"].search(query)
-        query2 = [("partner_id", "=", document_id.partner_id.id)]
-        if default_code:
-            query2.append(("product_code", "=", default_code))
-        else:
-            query2.append(("product_name", "=", NmbItem))
         product_supplier = False
         if not product_id and self.type == "compras":
+            query2 = [("partner_id", "=", document_id.partner_id.id)]
+            if default_code:
+                query2.append(("product_code", "=", default_code))
+            else:
+                query2.append(("product_name", "=", NmbItem))
             product_supplier = self.env["product.supplierinfo"].search(query2)
             if product_supplier and not product_supplier.product_tmpl_id.active:
                 raise UserError(_("Plantilla Producto para el proveedor marcado como archivado"))
@@ -889,6 +894,7 @@ class UploadXMLWizard(models.TransientModel):
                     inv._post()
                 Totales = documento.find("Encabezado/Totales")
                 monto_xml = float(Totales.find("MntTotal").text)
+                self.env.cr.commit()
                 if inv.amount_total == monto_xml:
                     continue
                 inv.button_draft()
@@ -920,7 +926,6 @@ class UploadXMLWizard(models.TransientModel):
                 _logger.warning(msg, exc_info=True)
                 if self.document_id:
                     self.document_id.message_post(body=msg)
-
         if created and self.option not in [False, "upload"] and self.type == "compras"  and not self.env.context.get('create_only', False):
             datos = {
                 "move_ids": [(6, 0, created)],
