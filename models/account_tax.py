@@ -984,7 +984,7 @@ class SIITax(models.Model):
         doc = fitz.open(stream=data, filetype="pdf")
         imagenes = doc.load_page(1).get_images()
         if len(imagenes) > 2:
-            imagen = imagenes[1]
+            imagen = imagenes[2]
             # Extrae la imagen y conviértela a texto utilizando pytesseract
             pix = fitz.Pixmap(doc, imagen[0])
             imagen_bytes = pix.tobytes("png")
@@ -1013,9 +1013,10 @@ class SIITax(models.Model):
                     continue
                 val = l.split(' ')[-1]
                 try:
-                    float(val.replace(',', '.'))
+                    val = val.replace(',', '.')
+                    float(val)
                     if i == target_i:
-                        break
+                        return val
                     i += 1
                 except:
                     val = False
