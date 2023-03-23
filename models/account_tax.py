@@ -30,7 +30,7 @@ try:
 except Exception as e:
     _logger.warning("error en BytesIO: %s" % str(e))
 try:
-    from Pil import Image
+    from PIL import Image
 except Exception as e:
     _logger.warning("error en PIl: %s" % str(e))
 try:
@@ -984,7 +984,7 @@ class SIITax(models.Model):
         doc = fitz.open(stream=data, filetype="pdf")
         imagenes = doc.load_page(1).get_images()
         if len(imagenes) > 2:
-            imagen = images[1]
+            imagen = imagenes[1]
             # Extrae la imagen y conviértela a texto utilizando pytesseract
             pix = fitz.Pixmap(doc, imagen[0])
             imagen_bytes = pix.tobytes("png")
