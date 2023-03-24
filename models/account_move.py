@@ -996,7 +996,9 @@ class AccountMove(models.Model):
                     if line.currency_id:
                         line._onchange_currency()
             reverse_move._recompute_dynamic_lines(recompute_all_taxes=False)
-        reverse_moves._check_balanced()
+
+        container = {'records': self}
+        reverse_moves._check_balanced(container)
 
         # Reconcile moves together to cancel the previous one.
         if cancel:

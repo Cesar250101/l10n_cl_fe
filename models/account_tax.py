@@ -74,7 +74,7 @@ class SIITax(models.Model):
     include_base_amount_cl = fields.Boolean(
         string="Base Precio Incluído Chileno"
     )
-    mepco_origen = fields. Selection([
+    mepco_origen = fields.Selection([
         ('sii', 'Página del SII'),
         ('diario', 'Página DiarioOficial.cl'),
         ('pdf', 'PDF subido según formato DiarioOficial'),

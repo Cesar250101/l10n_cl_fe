@@ -1,10 +1,9 @@
 import json
 import logging
-
+import re
 from odoo import api, fields, models, tools
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
-import re
 
 _logger = logging.getLogger(__name__)
 try:
@@ -327,8 +326,10 @@ class ResPartner(models.Model):
                 else:
                     message = str(resp.data)
             else:
-                data = json.loads(resp.data.decode("ISO-8859-1"))
-                message = data.get('message')
+                if resp.data != False and resp.data != None:
+                    message = str(resp.data)
+                else:
+                    message = False
             if message:
                 self.env["bus.bus"].sendone(
                     (self._cr.dbname, "res.partner", self.env.user.partner_id.id),
