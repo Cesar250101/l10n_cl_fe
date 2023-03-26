@@ -20,7 +20,7 @@ class SaleAdvancePaymentInv(models.TransientModel):
     def _default_journal_document_class_id(self):
         if not self.env["ir.model"].search([("model", "=", "sii.document_class")]):
             return False
-        journal = self.journal_id.id or self.env["account.move"].default_get(["journal_id"])["journal_id"]
+        journal = self.journal_id.id or self.env["account.move"]._search_default_journal().id
         jdc = self.env["account.journal.sii_document_class"].search(
             [("journal_id", "=", journal), ("sii_document_class_id.document_type", "in", ['invoice']),], limit=1
         )
@@ -40,7 +40,7 @@ class SaleAdvancePaymentInv(models.TransientModel):
 
     journal_id = fields.Many2one(
         'account.journal',
-        default=lambda self: self.env['account.move'].with_context(default_move_type='out_invoice')._get_default_journal(),
+        default=lambda self: self.env['account.move'].with_context(default_move_type='out_invoice')._search_default_journal(),
         domain="[('type', '=', 'sale')]"
     )
     document_class_ids = fields.Many2many(
