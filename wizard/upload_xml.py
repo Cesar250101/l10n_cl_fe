@@ -286,10 +286,7 @@ class UploadXMLWizard(models.TransientModel):
             query.append((target + "name", "=", name))
         imp = self.env["account.tax.repartition.line"].search(query, limit=1)
         if not imp:
-            imp = (
-                self.env["account.tax"]
-                .sudo()
-                .create(
+            return self.env["account.tax"].sudo().create(
                     {
                         "amount": amount,
                         "name": name,
@@ -298,7 +295,6 @@ class UploadXMLWizard(models.TransientModel):
                         "company_id": company_id.id,
                     }
                 )
-            )
         return imp.tax_id
 
     def get_product_values(self, line, company_id, price_included=False,
@@ -433,10 +429,12 @@ class UploadXMLWizard(models.TransientModel):
         data = {}
         product_id = self._buscar_producto(document_id, line, company_id,
                                          price_included, exenta, refund)
+        uom_id = False
         if not isinstance(product_id, str):
             data.update(
                 {"product_id": product_id.id,}
             )
+            uom_id = product_id.uom_id.id
         elif not product_id:
             return False
         price_subtotal = float(line.find("MontoItem").text)
@@ -457,64 +455,60 @@ class UploadXMLWizard(models.TransientModel):
                 "ind_exe": ind_exe,
             }
         )
-        if not document:
-            data.update({
-                "name": DscItem.text if DscItem is not None else line.find("NmbItem").text,
-            })
         if document:
             data.update(
                 {"new_product": product_id, "product_description": DscItem.text if DscItem is not None else "",}
             )
-        else:
-            amount = 0
-            sii_code = 0
-            tax_ids = self.env["account.tax"]
-            if IndExe is None and not exenta:
-                amount = 19
-                sii_code = 14
+        amount = 0
+        sii_code = 0
+        tax_ids = self.env["account.tax"]
+        if IndExe is None and not exenta:
+            amount = 19
+            sii_code = 14
+        tax_ids += self._buscar_impuesto(
+            type="purchase" if self.type == "compras" else "sale",
+            amount=amount, sii_code=sii_code, ind_exe=ind_exe,
+            company_id=company_id,
+            refund=refund
+        )
+        if line.find("CodImpAdic") is not None:
+            amount = 19
             tax_ids += self._buscar_impuesto(
                 type="purchase" if self.type == "compras" else "sale",
-                amount=amount, sii_code=sii_code, ind_exe=ind_exe,
+                amount=amount, sii_code=line.find("CodImpAdic").text,
                 company_id=company_id,
                 refund=refund
             )
-            if line.find("CodImpAdic") is not None:
-                amount = 19
-                tax_ids += self._buscar_impuesto(
-                    type="purchase" if self.type == "compras" else "sale",
-                    amount=amount, sii_code=line.find("CodImpAdic").text,
-                    company_id=company_id,
-                    refund=refund
-                )
-            if IndExe is None:
-                tax_include = False
+        if IndExe is None:
+            tax_include = False
+            for t in tax_ids:
+                if not tax_include:
+                    tax_include = t.price_include
+            if price_included and not tax_include:
+                base = price
+                price = 0
+                base_subtotal = price_subtotal
+                price_subtotal = 0
                 for t in tax_ids:
-                    if not tax_include:
-                        tax_include = t.price_include
-                if price_included and not tax_include:
-                    base = price
-                    price = 0
-                    base_subtotal = price_subtotal
-                    price_subtotal = 0
-                    for t in tax_ids:
-                        if t.amount > 0:
-                            price += base / (1 + (t.amount / 100.0))
-                            price_subtotal += base_subtotal / (1 + (t.amount / 100.0))
-                elif not price_included and tax_include:
-                    price = tax_ids.compute_all(price, self.env.user.company_id.currency_id, 1)["total_included"]
-                    price_subtotal = tax_ids.compute_all(price_subtotal, self.env.user.company_id.currency_id, 1)[
-                        "total_included"
-                    ]
-            #if not document:
-            #    data["account_id"] = account.id
-            data.update(
-                {
-                    "tax_ids": [(6, 0, tax_ids.ids)],
-                    "product_uom_id": product_id.uom_id.id,
-                    "price_unit": price,
-                    "price_subtotal": price_subtotal,
-                }
-            )
+                    if t.amount > 0:
+                        price += base / (1 + (t.amount / 100.0))
+                        price_subtotal += base_subtotal / (1 + (t.amount / 100.0))
+            elif not price_included and tax_include:
+                price = tax_ids.compute_all(price, self.env.user.company_id.currency_id, 1)["total_included"]
+                price_subtotal = tax_ids.compute_all(price_subtotal, self.env.user.company_id.currency_id, 1)[
+                    "total_included"
+                ]
+        #if not document:
+        #    data["account_id"] = account.id
+        data.update(
+            {
+                "name": DscItem.text if DscItem is not None else line.find("NmbItem").text,
+                "tax_ids": [(6, 0, tax_ids.ids)],
+                "product_uom_id": uom_id,
+                "price_unit": price,
+                "price_subtotal": price_subtotal,
+            }
+        )
         return [0, 0, data]
 
     def _create_tpo_doc(self, TpoDocRef, RazonRef=None):
@@ -622,7 +616,7 @@ class UploadXMLWizard(models.TransientModel):
         if journal_id:
             invoice["journal_id"] = journal_id.id
         DscRcgGlobal = documento.findall("DscRcgGlobal")
-        if DscRcgGlobal is not None:
+        if DscRcgGlobal:
             drs = [(5,)]
             for dr in DscRcgGlobal:
                 drs.append((0, 0, self.process_dr(dr, journal_id)))
@@ -706,9 +700,13 @@ class UploadXMLWizard(models.TransientModel):
             refund = self.env["sii.document_class"].browse(
                 data['document_class_id']).es_nc()
             for i in ImptoReten:
+                tax_amount = 0
+                if i.find("TasaImp") is not None:
+                    tax_amount = float(i.find("TasaImp").text)
                 imp = self._buscar_impuesto(
                     type="purchase" if self.type == "compras" else "sale",
                     name="OtrosImps_" + i.find("TipoImp").text,
+                    amount=tax_amount,
                     sii_code=i.find("TipoImp").text,
                     company_id=company_id,
                     refund=refund)
@@ -724,7 +722,7 @@ class UploadXMLWizard(models.TransientModel):
                         0,
                         0,
                         {
-                            "tax_ids": ((6, 0, imp.ids)),
+                            "tax_ids": [(6, 0, imp.ids)],
                             "product_id": product_id,
                             "name": "MontoImpuesto %s" % i.find("TipoImp").text,
                             "price_unit": price,
@@ -924,6 +922,7 @@ class UploadXMLWizard(models.TransientModel):
             except Exception as e:
                 msg = "Error en crear 1 factura con error:  %s" % str(e)
                 _logger.warning(msg, exc_info=True)
+                _logger.warning(etree.tostring(dte))
                 if self.document_id:
                     self.document_id.message_post(body=msg)
         if created and self.option not in [False, "upload"] and self.type == "compras"  and not self.env.context.get('create_only', False):

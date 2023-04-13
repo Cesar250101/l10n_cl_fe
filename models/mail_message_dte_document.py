@@ -301,6 +301,7 @@ class ProcessMailsDocumentLines(models.Model):
     _description = "Pre Document Line"
     _order = "sequence, id"
 
+    name = fields.Char(string="Nombre en xml")
     document_id = fields.Many2one("mail.message.dte.document", string="Documento", ondelete="cascade",)
     sequence = fields.Integer(string="Número de línea", default=1)
     product_id = fields.Many2one("product.product", string="Producto",)
