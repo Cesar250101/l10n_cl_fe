@@ -30,7 +30,7 @@ class SO(models.Model):
     referencia_ids = fields.One2many("sale.order.referencias", "so_id", string="Referencias de documento")
     journal_id = fields.Many2one(
         'account.journal',
-        default=lambda self: self.env['account.move'].with_context(default_move_type='out_invoice')._search_default_journal(),
+        default=lambda self: self.env['account.move'].with_context(default_move_type='out_invoice', default_use_documents=True)._search_default_journal(),
         domain="[('type', '=', 'sale')]"
     )
     document_class_ids = fields.Many2many(

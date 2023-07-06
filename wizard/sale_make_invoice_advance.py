@@ -17,19 +17,17 @@ class SaleAdvancePaymentInvReference(models.TransientModel):
 class SaleAdvancePaymentInv(models.TransientModel):
     _inherit = "sale.advance.payment.inv"
 
+    def _default_journal(self):
+        so = self.env['sale.order'].browse(self._context.get('active_id'))
+        return so.journal_id.id
+
     def _default_journal_document_class_id(self):
-        if not self.env["ir.model"].search([("model", "=", "sii.document_class")]):
-            return False
-        journal = self.journal_id.id or self.env["account.move"]._search_default_journal().id
-        jdc = self.env["account.journal.sii_document_class"].search(
-            [("journal_id", "=", journal), ("sii_document_class_id.document_type", "in", ['invoice']),], limit=1
-        )
-        return jdc
+        so = self.env['sale.order'].browse(self._context.get('active_id'))
+        return so.journal_document_class_id.id
 
     def _default_use_documents(self):
-        if self._default_journal_document_class_id():
-            return True
-        return False
+        so = self.env['sale.order'].browse(self._context.get('active_id'))
+        return so.use_documents
 
     @api.onchange('journal_id')
     @api.depends('journal_id')
@@ -40,7 +38,7 @@ class SaleAdvancePaymentInv(models.TransientModel):
 
     journal_id = fields.Many2one(
         'account.journal',
-        default=lambda self: self.env['account.move'].with_context(default_move_type='out_invoice')._search_default_journal(),
+        default=lambda self: self._default_journal(),
         domain="[('type', '=', 'sale')]"
     )
     document_class_ids = fields.Many2many(
