@@ -196,8 +196,11 @@ class SIIXMLEnvio(models.Model):
                 if not receipt.get('estadistica'):
                     state = 'Aceptado'
                 detalle_rep_rech = []
-                if receipt.get('detalle_rep_rech', '{}') != [] and '"detalle_rep_rech":null' not in receipt.get('detalle_rep_rech', '{}'):
-                    detalle_rep_rech = json.loads(receipt.get('detalle_rep_rech', '{}'))
+                if receipt.get('detalle_rep_rech', '{}') and '"detalle_rep_rech":null' not in receipt.get('detalle_rep_rech', '{}'):
+                    if type(receipt['detalle_rep_rech']) is list:
+                        detalle_rep_rech = receipt['detalle_rep_rech']
+                    else:
+                        detalle_rep_rech = json.loads(receipt.get('detalle_rep_rech', '{}'))
             elif receipt.find("RESP_HDR") is not None:
                 state = "Aceptado"
         self.set_childs(state, detalle_rep_rech)
