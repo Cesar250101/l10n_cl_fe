@@ -869,6 +869,7 @@ class UploadXMLWizard(models.TransientModel):
         dtes = self._get_dtes()
         for dte in dtes:
             try:
+                to_post = self.type == "ventas" or self.option == "accept"
                 company_id = self.document_id.company_id
                 documento = dte.find("Documento")
                 path_rut = "Encabezado/Receptor/RUTRecep"
@@ -886,7 +887,7 @@ class UploadXMLWizard(models.TransientModel):
                     raise UserError(
                         "El archivo XML no contiene documentos para alguna empresa registrada en Odoo, o ya ha sido procesado anteriormente "
                     )
-                if self.type == "ventas" or self.option == "accept":
+                if to_post:
                     inv._onchange_partner_id()
                     inv._onchange_invoice_line_ids()
                     inv._post()
@@ -895,7 +896,8 @@ class UploadXMLWizard(models.TransientModel):
                 self.env.cr.commit()
                 if inv.amount_total == monto_xml:
                     continue
-                inv.button_draft()
+                if to_post:
+                    inv.button_draft()
                 total_line = inv.line_ids.filtered(lambda a: a.name=='')
                 diff_amount_currency = diff_balance = 0
                 for line in inv.line_ids.filtered('tax_line_id'):
@@ -915,7 +917,8 @@ class UploadXMLWizard(models.TransientModel):
                             'account_id': line.account_id.id,
                         }
                         rounding_line = self.env['account.move.line'].with_context(check_move_validity=False).create(rounding_line_vals)
-                inv.with_context(restore_mode=True)._post()
+                if to_post:
+                    inv.with_context(restore_mode=True)._post()
                 if inv.amount_total == monto_xml:
                     continue
                 raise UserError("no se pudo cuadrar la factura")
