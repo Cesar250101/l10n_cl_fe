@@ -30,7 +30,7 @@
                     attrs="{'invisible': [('dte_service_provider', 'not in', ['SII', 'SIICERT'])],
                                'required':  [('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
                 />
-                <field name="sucursal_ids"/>
+                <field name="sucursal_ids"  widget="many2many_tags" optional="show"/>
             </field>
             <field name="vat" position="replace">
                 <field name="vat" invisible="1" />
