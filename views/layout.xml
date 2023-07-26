@@ -45,7 +45,7 @@
                         <h4 style="text-align:lef;text-transform:uppercase;font-weight:900;font-size:18px;color:black;">
                             <span t-field="company.name" />
                         </h4>
-                        <p style="text-align:center;font-size:14px;color:black; text-transform:uppercase;">
+                        <p style="text-align:center;font-size:10px;color:black; text-transform:uppercase;">
                             <span
                                 t-field="company.activity_description.name"
                                 style="color:black; text-align:center;"
