@@ -1587,7 +1587,7 @@ class AccountMove(models.Model):
                     if totales['TasaIVA'] == 0:
                         totales['TasaIVA'] = round(t.tax_line_id.amount, 2)
                     totales['MntIVA'] += balance
-                    if t.tax_repartition_line_id.credec:
+                    if t.tax_line_id.credec:
                         totales['CredEC'] += balance
                     elif es_retencion:
                         totales['MntRet'] += balance
