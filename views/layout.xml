@@ -407,40 +407,18 @@
                                         />
                                     </td>
                                 </tr>
-                                <t t-set="monto_exento" t-value="o.exento()" />
-                                <tr
-                                    t-if="monto_exento > 0"
-                                    style="max-height:11px; font-size:12px !important;"
-                                >
-                                    <td>
-                                        <span>Exento</span>
-                                    </td>
-                                    <td class="text-right">
-                                        <span
-                                            t-esc="monto_exento"
-                                            t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"
-                                        />
-                                    </td>
-                                </tr>
-                                <t t-foreach="o.line_ids.filtered(lambda line: line.display_type=='tax').sorted(key=lambda l: (l.sequence))" t-as="t">
-                                  <tr class="border-black" t-if="not o.es_boleta() and t.tax_repartition_line_id.sii_type in ['R', 'A']">
-                                      <td>
-                                          <t t-esc="t.tax_line_id.description"/>
-                                      </td>
-                                      <td class="text-right">
-                                          <span t-esc="t.debit or t.credit" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                                      </td>
-                                  </tr>
-                                  <tr class="border-black" t-if="not o.es_boleta() or (o.es_boleta() and ( t.tax_id.amount == 0 or t.tax_id.sii_code in [14, 15, 17]))">
-                                      <td>
-                                          <t t-esc="t.tax_line_id.description if t.tax_repartition_line_id.sii_type not in ['R', 'A'] else t.tax_line_id.name"/>
-                                      </td>
-                                      <td class="text-right">
-                                          <span t-esc="t.debit or t.credit" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                                      </td>
-                                  </tr>
-
-                              </t>
+                                <t t-set="tax_totals" t-value="o.tax_totals"/>
+                                <t t-foreach="tax_totals['subtotals']" t-as="subtotal">
+                                  <t t-set="subtotal_to_show" t-value="subtotal['name']"/>
+                                  <t t-foreach="tax_totals['groups_by_subtotal'][subtotal_to_show]" t-as="amount_by_group">
+                                      <tr>
+                                          <td><span class="text-nowrap" t-esc="amount_by_group['tax_group_name']"/></td>
+                                          <td class="text-end o_price_total">
+                                              <span class="text-nowrap" t-esc="amount_by_group['formatted_tax_group_amount']" />
+                                          </td>
+                                      </tr>
+                                  </t>
+                                </t>
                                 <t t-set="has_rounding" t-value="'formatted_amount_total_rounded' in tax_totals"/>
                                 <tr class="border-black" style="max-height:12px; font-size:12px !important;">
                                     <t t-if="has_rounding"><td>Total</td></t>
