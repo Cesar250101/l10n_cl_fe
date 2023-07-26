@@ -295,34 +295,6 @@ class AccountMove(models.Model):
         compute='_get_sequence_prefix'
     )
 
-    def _inverse_tax_totals(self):
-        if self.env.context.get('skip_invoice_sync'):
-            return
-        with self._sync_dynamic_line(
-            existing_key_fname='term_key',
-            needed_vals_fname='needed_terms',
-            needed_dirty_fname='needed_terms_dirty',
-            line_type='payment_term',
-            container={'records': self},
-        ):
-            for move in self:
-                if not move.is_invoice(include_receipts=True):
-                    continue
-                invoice_totals = move.tax_totals
-                for amount_by_group_list in invoice_totals['groups_by_subtotal'].values():
-                    for amount_by_group in amount_by_group_list:
-                        tax_lines = move.line_ids.filtered(lambda line: line.tax_group_id.id == amount_by_group['tax_group_id'])
-
-                        if tax_lines:
-                            first_tax_line = tax_lines[0]
-                            tax_group_old_amount = sum(tax_lines.mapped('amount_currency'))
-                            sign = -1 if move.is_inbound() else 1
-                            delta_amount = tax_group_old_amount * sign - amount_by_group['tax_group_amount']
-
-                            if not move.currency_id.is_zero(delta_amount):
-                                first_tax_line.amount_currency -= delta_amount * sign
-            self._compute_amount()
-
     @api.depends(
         'line_ids.matched_debit_ids.debit_move_id.move_id.payment_id.is_matched',
         'line_ids.matched_debit_ids.debit_move_id.move_id.line_ids.amount_residual',
