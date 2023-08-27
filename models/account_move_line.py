@@ -41,13 +41,14 @@ class AccountInvoiceLine(models.Model):
             if line.display_type != 'product':
                 line.price_total = line.price_subtotal = False
             # Compute 'price_subtotal'.
-            line_discount_price_unit = line.price_unit * (1 - (line.discount / 100.0))
+            line_discount_price_unit = line.price_unit
             sign = 1
             if line.display_type in ['D', 'R']:
                 line_discount_price_unit = line.balance
                 if line.display_type == 'D':
                     line_discount_price_unit *= -1
             subtotal = line.quantity * line_discount_price_unit
+            subtotal -= line.currency_id.round(subtotal *  (line.discount / 100.0))
 
             # Compute 'price_total'.
             if line.tax_ids:
@@ -58,6 +59,7 @@ class AccountInvoiceLine(models.Model):
                     product=line.product_id,
                     partner=line.partner_id,
                     is_refund=line.is_refund,
+                    discount=line.discount,
                     uom_id=line.product_uom_id
                 )
                 line.price_subtotal = taxes_res['total_excluded']
@@ -70,8 +72,8 @@ class AccountInvoiceLine(models.Model):
         for line in self:
             sign = line.move_id.direction_sign
             if line.display_type == 'product' and line.move_id.is_invoice(True):
-                amount_currency = sign * line.price_unit * (1 - line.discount / 100)
-                amount = sign * line.price_unit / line.currency_rate * (1 - line.discount / 100)
+                amount_currency = sign * line.price_unit
+                amount = sign * line.price_unit / line.currency_rate
                 handle_price_include = True
                 quantity = line.quantity
             else:
@@ -86,6 +88,7 @@ class AccountInvoiceLine(models.Model):
                 product=line.product_id,
                 partner=line.move_id.partner_id or line.partner_id,
                 is_refund=line.is_refund,
+                discount=line.discount,
                 handle_price_include=handle_price_include,
                 include_caba_tags=line.move_id.always_tax_exigible,
                 fixed_multiplicator=sign,

@@ -314,7 +314,6 @@ class SIITax(models.Model):
                 price_unit *= (1 - (discount / 100.0))
             base = currency.round(price_unit * quantity)
 
-
         # For the computation of move lines, we could have a negative base value.
         # In this case, compute all with positive values and negate them at the end.
         sign = 1
@@ -370,9 +369,7 @@ class SIITax(models.Model):
                         total_included_checkpoints[i] = base
                         store_included_tax_total = False
                 i -= 1
-
         total_excluded = currency.round(recompute_base(base, incl_fixed_amount, incl_percent_amount, incl_division_amount))
-
         # 4) Iterate the taxes in the sequence order to compute missing tax amounts.
         # Start the computation of accumulated amounts at the total_excluded value.
         base = total_included = total_void = total_excluded
@@ -503,6 +500,26 @@ class SIITax(models.Model):
         }
 
     @api.model
+    def _convert_to_tax_base_line_dict(
+            self, base_line,
+            partner=None, currency=None, product=None, taxes=None, price_unit=None, quantity=None,
+            discount=None, account=None, analytic_distribution=None, price_subtotal=None,
+            is_refund=False, rate=None,
+            handle_price_include=None,
+            extra_context=None,
+            uom_id=None,
+    ):
+        vals = super(SIITax, self). _convert_to_tax_base_line_dict(base_line,
+                partner=partner, currency=currency, product=product, taxes=taxes, price_unit=price_unit, quantity=quantity,
+                discount=discount, account=account, analytic_distribution=analytic_distribution, price_subtotal=price_subtotal,
+                is_refund=is_refund, rate=rate,
+                handle_price_include=handle_price_include,
+                extra_context=extra_context,
+        )
+        vals['uom_id'] = uom_id or self.env['uom.uom']
+        return vals
+
+    @api.model
     def _convert_to_tax_line_dict(
             self, tax_line,
             partner=None, currency=None, taxes=None, tax_tags=None, tax_repartition_line=None,
@@ -520,7 +537,7 @@ class SIITax(models.Model):
 
     @api.model
     def _compute_taxes_for_single_line(self, base_line, handle_price_include=True, include_caba_tags=False, early_pay_discount_computation=None, early_pay_discount_percentage=None):
-        orig_price_unit_after_discount = base_line['price_unit'] * (1 - (base_line['discount'] / 100.0))
+        orig_price_unit_after_discount = base_line['price_unit']
         price_unit_after_discount = orig_price_unit_after_discount
         taxes = base_line['taxes']._origin
         currency = base_line['currency'] or self.env.company.currency_id
@@ -546,6 +563,8 @@ class SIITax(models.Model):
                 is_refund=base_line['is_refund'],
                 handle_price_include=manage_price_include,
                 include_caba_tags=include_caba_tags,
+                discount=base_line['discount'],
+                uom_id=base_line['uom_id'],
             )
 
             to_update_vals = {
@@ -564,6 +583,8 @@ class SIITax(models.Model):
                     is_refund=base_line['is_refund'],
                     handle_price_include=manage_price_include,
                     include_caba_tags=include_caba_tags,
+                    discount=base_line['discount'],
+                    uom_id=base_line['uom_id'],
                 )
                 for tax_res, new_taxes_res in zip(taxes_res['taxes'], new_taxes_res['taxes']):
                     delta_tax = new_taxes_res['amount'] - tax_res['amount']

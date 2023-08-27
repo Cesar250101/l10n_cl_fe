@@ -460,6 +460,7 @@ class AccountMove(models.Model):
                             price_subtotal=values['price_subtotal'],
                             is_refund=move.move_type in ('out_refund', 'in_refund'),
                             handle_price_include=False,
+                            #uom_id
                         ))
                     for r in move.global_descuentos_recargos:
                         sign = 1 if r.gdr_type == 'D' else -1
@@ -474,6 +475,7 @@ class AccountMove(models.Model):
                             price_subtotal=sign*r.amount_untaxed,
                             is_refund=move.move_type in ('out_refund', 'in_refund'),
                             handle_price_include=True,
+                            #uom_id
                         ))
                 tax_totals = self.env['account.tax']._prepare_tax_totals(**kwargs)
                 move.tax_totals = tax_totals
