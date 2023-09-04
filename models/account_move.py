@@ -758,161 +758,26 @@ class AccountMove(models.Model):
                         lambda l: l.display_type == 'tax'
                     ).with_context(dynamic_unlink=True).unlink()
 
-    def _reverse_move_vals(self, default_values, cancel=True):
-        ''' Reverse values passed as parameter being the copied values of the original journal entry.
-        For example, debit / credit must be switched. The tax lines must be edited in case of refunds.
-
-        :param default_values:  A copy_date of the original journal entry.
-        :param cancel:          A flag indicating the reverse is made to cancel the original journal entry.
-        :return:                The updated default_values.
-        '''
-        self.ensure_one()
-
-        def compute_tax_repartition_lines_mapping(move_vals):
-            ''' Computes and returns a mapping between the current repartition lines to the new expected one.
-            :param move_vals:   The newly created invoice as a python dictionary to be passed to the 'create' method.
-            :return:            A map invoice_repartition_line => refund_repartition_line.
-            '''
-            # invoice_repartition_line => refund_repartition_line
-            mapping = {}
-
-            for line_command in move_vals.get('line_ids', []):
-                line_vals = line_command[2]  # (0, 0, {...})
-
-                if line_vals.get('tax_line_id'):
-                    # Tax line.
-                    tax_ids = [line_vals['tax_line_id']]
-                elif line_vals.get('tax_ids') and line_vals['tax_ids'][0][2]:
-                    # Base line.
-                    tax_ids = line_vals['tax_ids'][0][2]
-                else:
-                    continue
-
-                for tax in self.env['account.tax'].browse(tax_ids).flatten_taxes_hierarchy():
-                    for inv_rep_line, ref_rep_line in zip(tax.invoice_repartition_line_ids, tax.refund_repartition_line_ids):
-                        mapping[inv_rep_line] = ref_rep_line
-            return mapping
-
-        def invert_tags_if_needed(repartition_line, tags):
-            tax_type = repartition_line.tax_id.type_tax_use
-            tags_need_inversion = self._tax_tags_need_inversion(
-                self,
-                (
-                    (tax_type == 'purchase' and line_vals['credit'] > 0) or
-                    (tax_type == 'sale' and line_vals['debit'] > 0)
-                ),
-                tax_type)
-            if tags_need_inversion:
-                return self.env['account.move.line']._revert_signed_tags(tags)
-            return tags
-
-        move_vals = self.with_context(include_business_fields=True).copy_data(default=default_values)[0]
-
-        if default_values.get('referencias'):
-            if default_values["referencias"][0][2].get('sii_referencia_CodRef') == '2':
-                del move_vals['line_ids']
+    @api.returns('self', lambda value: value.id)
+    def copy(self, default=None):
+        copied_am = super().copy(default)
+        if default.get('referencias'):
+            if default["referencias"][0][2].get('sii_referencia_CodRef') == '2':
+                copied_am.invoice_line_ids.unlink()
                 prod = self.env['product.product'].search(
                         [
                                 ('product_tmpl_id', '=', self.env.ref('l10n_cl_fe.no_product').id),
                         ]
                     )
-                move_vals['invoice_line_ids'] = [
-                    [
-                        0,
-                        0,
-                        {
-                            'product_id': prod.id,
-                            'name': prod.name,
-                            'quantity': 1,
-                            'price_unit': 0
-                        }
-                    ]
-                ]
-        is_refund = False
-        if move_vals['move_type'] in ('out_refund', 'in_refund'):
-            is_refund = True
-        elif move_vals['move_type'] == 'entry':
-            base_lines = self.line_ids.filtered(lambda line: line.tax_ids)
-            tax_type = set(base_lines.tax_ids.mapped('type_tax_use'))
-            if tax_type == {'sale'} and sum(base_lines.mapped('debit')) == 0:
-                is_refund = True
-            elif tax_type == {'purchase'} and sum(base_lines.mapped('credit')) == 0:
-                is_refund = True
-
-        tax_repartition_lines_mapping = compute_tax_repartition_lines_mapping(move_vals) if is_refund else {}
-        move = self.env['account.move'].browse(default_values['reversed_entry_id'])
-        for line_command in move_vals.get('line_ids', []):
-            line_vals = line_command[2]  # (0, 0, {...})
-
-            # ==== Inverse debit / credit / amount_currency ====
-            if move_vals['move_type'] in ('out_refund', 'in_refund') or move.move_type in ('out_refund', 'in_refund'):
-                amount_currency = -line_vals.get('amount_currency', 0.0)
-                balance = line_vals['credit'] - line_vals['debit']
-            elif move_vals['move_type'] in ('out_invoice', 'in_invoice') or move.move_type in ('out_invoice', 'in_invoice'):
-                amount_currency = line_vals.get('amount_currency', 0.0)
-                balance = line_vals['debit'] - line_vals['credit']
-            else:
-                amount_currency = line_vals.get('amount_currency', 0.0)
-                balance = line_vals['credit'] - line_vals['debit']
-
-            line_vals.update({
-                'amount_currency': amount_currency,
-                'debit': balance > 0.0 and balance or 0.0,
-                'credit': balance < 0.0 and -balance or 0.0,
-            })
-
-            if not is_refund or self.tax_cash_basis_move_id:
-                # We don't map tax repartition for non-refund operations, nor for cash basis entries.
-                # Indeed, cancelling a cash basis entry usually happens when unreconciling and invoice,
-                # in which case we always want the reverse entry to totally cancel the original one, keeping the same accounts,
-                # tags and repartition lines
-                continue
-
-            # ==== Map tax repartition lines ====
-            if line_vals.get('tax_repartition_line_id'):
-                # Tax line.
-                invoice_repartition_line = self.env['account.tax.repartition.line'].browse(line_vals['tax_repartition_line_id'])
-                if invoice_repartition_line not in tax_repartition_lines_mapping:
-                    raise UserError(_("It seems that the taxes have been modified since the creation of the journal entry. You should create the credit note manually instead."))
-                refund_repartition_line = tax_repartition_lines_mapping[invoice_repartition_line]
-
-                # Find the right account.
-                account_id = self.env['account.move.line']._get_default_tax_account(refund_repartition_line).id
-                if not account_id:
-                    if not invoice_repartition_line.account_id:
-                        # Keep the current account as the current one comes from the base line.
-                        account_id = line_vals['account_id']
-                    else:
-                        tax = invoice_repartition_line.invoice_tax_id
-                        base_line = self.line_ids.filtered(lambda line: tax in line.tax_ids.flatten_taxes_hierarchy())[0]
-                        account_id = base_line.account_id.id
-
-                tags = refund_repartition_line.tag_ids
-                if line_vals.get('tax_ids'):
-                    subsequent_taxes = self.env['account.tax'].browse(line_vals['tax_ids'][0][2])
-                    tags += subsequent_taxes.refund_repartition_line_ids.filtered(lambda x: x.repartition_type == 'base').tag_ids
-
-                tags = invert_tags_if_needed(refund_repartition_line, tags)
-                line_vals.update({
-                    'tax_repartition_line_id': refund_repartition_line.id,
-                    'account_id': account_id,
-                    'tax_tag_ids': [(6, 0, tags.ids)],
-                })
-            elif line_vals.get('tax_ids') and line_vals['tax_ids'][0][2]:
-                # Base line.
-                taxes = self.env['account.tax'].browse(line_vals['tax_ids'][0][2]).flatten_taxes_hierarchy()
-                invoice_repartition_lines = taxes\
-                    .mapped('invoice_repartition_line_ids')\
-                    .filtered(lambda line: line.repartition_type == 'base')
-                refund_repartition_lines = invoice_repartition_lines\
-                    .mapped(lambda line: tax_repartition_lines_mapping[line])
-
-                tag_ids = []
-                for refund_repartition_line in refund_repartition_lines:
-                    tag_ids += invert_tags_if_needed(refund_repartition_line, refund_repartition_line.tag_ids).ids
-
-                line_vals['tax_tag_ids'] = [(6, 0, tag_ids)]
-        return move_vals
+                copied_am.write({'invoice_line_ids': [
+                    Command.create({
+                        'product_id': prod.id,
+                        'name': prod.name,
+                        'quantity': 1,
+                        'price_unit': 0
+                    })
+                ]})
+        return copied_am
 
     def _reverse_moves(self, default_values_list=None, cancel=False):
         ''' Reverse a recordset of account.move.
@@ -932,7 +797,7 @@ class AccountMove(models.Model):
             if lines:
                 lines.remove_move_reconcile()
 
-        reverse_type_map = {
+        TYPE_REVERSE_MAP = {
             'entry': 'entry',
             'out_invoice': 'out_refund',
             'out_refund': 'entry',
@@ -945,7 +810,7 @@ class AccountMove(models.Model):
         move_vals_list = []
         for move, default_values in zip(self, default_values_list):
             type = move.move_type
-            refund_type = reverse_type_map[type]
+            refund_type = TYPE_REVERSE_MAP[type]
             if move.document_class_id:
                 dc = self.env['sii.document_class'].sudo().browse(default_values['document_class_id'])
                 if type == 'out_invoice' and dc.document_type == "credit_note":
@@ -960,31 +825,38 @@ class AccountMove(models.Model):
                 'move_type': refund_type,
                 'reversed_entry_id': move.id,
             })
-            move_vals_list.append(move.with_context(move_reverse_cancel=cancel)._reverse_move_vals(default_values, cancel=cancel))
 
-        reverse_moves = self.env['account.move'].create(move_vals_list)
-        for move, reverse_move in zip(self, reverse_moves.with_context(check_move_validity=False)):
-            # Update amount_currency if the date has changed.
-            if move.date != reverse_move.date:
-                for line in reverse_move.line_ids:
-                    if line.currency_id:
-                        line._onchange_currency()
-            reverse_move._recompute_dynamic_lines(recompute_all_taxes=False)
+        reverse_moves = self.env['account.move']
+        for move, default_values in zip(self, default_values_list):
+            default_values.update({
+                'move_type': TYPE_REVERSE_MAP[move.move_type],
+                'reversed_entry_id': move.id,
+            })
+            reverse_moves += move.with_context(
+                move_reverse_cancel=cancel,
+                include_business_fields=True,
+                skip_invoice_sync=bool(move.tax_cash_basis_origin_move_id),
+            ).copy(default_values)
 
-        container = {'records': self}
-        reverse_moves._check_balanced(container)
+        reverse_moves.with_context(skip_invoice_sync=cancel).write({'line_ids': [
+            Command.update(line.id, {
+                'balance': -line.balance,
+                'amount_currency': -line.amount_currency,
+            })
+            for line in reverse_moves.line_ids
+            if line.move_id.move_type == 'entry' or line.display_type == 'cogs'
+        ]})
 
         # Reconcile moves together to cancel the previous one.
         if cancel:
             reverse_moves.with_context(move_reverse_cancel=cancel)._post(soft=False)
             for move, reverse_move in zip(self, reverse_moves):
-                accounts = move.mapped('line_ids.account_id') \
-                    .filtered(lambda account: account.reconcile or account.internal_type == 'liquidity')
-                for account in accounts:
-                    (move.line_ids + reverse_move.line_ids)\
-                        .filtered(lambda line: line.account_id == account and not line.reconciled)\
-                        .with_context(move_reverse_cancel=cancel)\
-                        .reconcile()
+                group = defaultdict(list)
+                for line in (move.line_ids + reverse_move.line_ids).filtered(lambda l: not l.reconciled):
+                    group[(line.account_id, line.currency_id)].append(line.id)
+                for (account, dummy), line_ids in group.items():
+                    if account.reconcile or account.account_type in ('asset_cash', 'liability_credit_card'):
+                        self.env['account.move.line'].browse(line_ids).with_context(move_reverse_cancel=cancel).reconcile()
 
         return reverse_moves
 
@@ -992,28 +864,6 @@ class AccountMove(models.Model):
     def _onchange_payment_term(self):
         if self.invoice_payment_term_id and self.invoice_payment_term_id.dte_sii_code:
             self.forma_pago = self.invoice_payment_term_id.dte_sii_code
-
-    @api.returns("self")
-    def refund(self, invoice_date=None, description=None, journal_id=None, tipo_nota=61, mode="1"):
-        new_invoices = self.browse()
-        for invoice in self:
-            # create the new invoice
-            values = self._prepare_refund(
-                invoice,
-                invoice_date=invoice_date,
-                description=description,
-                journal_id=journal_id,
-                tipo_nota=tipo_nota,
-                mode=mode,
-            )
-            refund_invoice = self.create(values)
-            invoice_type = self.get_invoice_types()
-            message = _(
-                "This %s has been created from: <a href=# data-oe-model=account.move data-oe-id=%d>%s</a><br>Reason: %s"
-            ) % (invoice_type[invoice.move_type], invoice.id, invoice.name, description)
-            refund_invoice.message_post(body=message)
-            new_invoices += refund_invoice
-        return new_invoices
 
     @api.model
     def name_search(self, name, args=None, operator="ilike", limit=100):
