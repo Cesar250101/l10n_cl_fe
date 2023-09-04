@@ -806,8 +806,7 @@ class AccountMove(models.Model):
             'out_receipt': 'entry',
             'in_receipt': 'entry',
         }
-
-        move_vals_list = []
+        reverse_moves = self.env['account.move']
         for move, default_values in zip(self, default_values_list):
             move_type = move.move_type
             refund_type = TYPE_REVERSE_MAP[move_type]
@@ -823,13 +822,6 @@ class AccountMove(models.Model):
                     refund_type = 'in_invoice'
             default_values.update({
                 'move_type': refund_type,
-                'reversed_entry_id': move.id,
-            })
-
-        reverse_moves = self.env['account.move']
-        for move, default_values in zip(self, default_values_list):
-            default_values.update({
-                'move_type': TYPE_REVERSE_MAP[move.move_type],
                 'reversed_entry_id': move.id,
             })
             reverse_moves += move.with_context(
