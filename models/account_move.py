@@ -809,15 +809,15 @@ class AccountMove(models.Model):
 
         move_vals_list = []
         for move, default_values in zip(self, default_values_list):
-            type = move.move_type
-            refund_type = TYPE_REVERSE_MAP[type]
+            move_type = move.move_type
+            refund_type = TYPE_REVERSE_MAP[move_type]
             if move.document_class_id:
                 dc = self.env['sii.document_class'].sudo().browse(default_values['document_class_id'])
-                if type == 'out_invoice' and dc.document_type == "credit_note":
+                if move_type == 'out_invoice' and dc.document_type == "credit_note":
                     refund_type = 'out_refund'
-                elif type in ['out_invoice', 'out_refund']:
+                elif move_type in ['out_invoice', 'out_refund']:
                     refund_type = 'out_invoice'
-                elif type == 'in_invoice' and dc.document_type == "credit_note":
+                elif move_type == 'in_invoice' and dc.document_type == "credit_note":
                     refund_type = 'in_refund'
                 else:
                     refund_type = 'in_invoice'
@@ -837,15 +837,15 @@ class AccountMove(models.Model):
                 include_business_fields=True,
                 skip_invoice_sync=bool(move.tax_cash_basis_origin_move_id),
             ).copy(default_values)
-
-        reverse_moves.with_context(skip_invoice_sync=cancel).write({'line_ids': [
-            Command.update(line.id, {
-                'balance': -line.balance,
-                'amount_currency': -line.amount_currency,
-            })
-            for line in reverse_moves.line_ids
-            if line.move_id.move_type == 'entry' or line.display_type == 'cogs'
-        ]})
+        if refund_type not in ["out_invoice", "in_invoice"]:
+            reverse_moves.with_context(skip_invoice_sync=cancel).write({'line_ids': [
+                Command.update(line.id, {
+                    'balance': -line.balance,
+                    'amount_currency': -line.amount_currency,
+                })
+                for line in reverse_moves.line_ids
+                if line.move_id.move_type == 'entry' or line.display_type == 'cogs'
+            ]})
 
         # Reconcile moves together to cancel the previous one.
         if cancel:
