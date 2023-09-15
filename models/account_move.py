@@ -565,12 +565,23 @@ class AccountMove(models.Model):
                         'name': invoice.payment_reference or '',
                     }
 
+    def _get_last_sequence_domain(self, relaxed=False):
+        where_string, param = super(AccountMove, self)._get_last_sequence_domain(relaxed=relaxed)
+        where_string += " AND use_documents = %(use_documents)s"
+        param['use_documents'] = self.use_documents
+        return where_string, param
+
+    def _set_next_sequence(self):
+        self.ensure_one()
+        if self.use_documents:
+            self[self._sequence_field] = '%s%s' % (self.document_class_id.doc_code_prefix, self.sii_document_number)
+        else:
+            super(AccountMove, self)._set_next_sequence()
+
     @api.depends('posted_before', 'state', 'journal_id', 'date', 'document_class_id', 'sii_document_number')
     def _compute_name(self):
-        dcs = self.filtered(lambda m: m.use_documents and m.document_class_id \
-                            and m.state in ['posted', 'cancel'])
-        for r in dcs:
-            r.name = '%s%s' % (r.document_class_id.doc_code_prefix, r.sii_document_number)
+        dcs = self.filtered("use_documents")
+        super(AccountMove, dcs)._compute_name()
         super(AccountMove, (self - dcs))._compute_name()
 
     def _get_invoice_reference_cl_invoice(self):
