@@ -59,22 +59,6 @@ class Referencias(models.Model):
 class AccountMove(models.Model):
     _inherit = "account.move"
 
-    def check_invoice_type(self, move_type):
-        return move_type in self.get_invoice_types()
-
-    def _default_journal_document_class_id(self):
-        if not self.env["ir.model"].search([("model", "=", "sii.document_class")]) or self.document_class_id:
-            return False
-        journal = self.env["account.move"]._search_default_journal().id
-        default_type = self._context.get("default_move_type", "")
-        if not self.check_invoice_type(default_type) or default_type in ["in_invoice", "in_refund"]:
-            return self.env["account.journal.sii_document_class"]
-        dc_type = ["invoice"] if default_type in ["in_invoice", "out_invoice"] else ["credit_note", "debit_note"]
-        jdc = self.env["account.journal.sii_document_class"].search(
-            [("journal_id", "=", journal), ("sii_document_class_id.document_type", "in", dc_type),], limit=1
-        )
-        return jdc
-
     def get_barcode_img(self, columns=13, ratio=3, xml=False):
         barcodefile = BytesIO()
         if not xml:
@@ -91,18 +75,19 @@ class AccountMove(models.Model):
                 sii_barcode_img = r.get_barcode_img()
             r.sii_barcode_img = sii_barcode_img
 
-    @api.onchange("journal_id", "use_documents", "move_type")
+    @api.onchange("journal_id", "move_type")
     def get_dc_ids(self):
         for r in self:
             r.document_class_ids = self.env['sii.document_class']
-            if not r.check_invoice_type(r.move_type):
+            if not self.is_invoice():
+                r.use_documents = False
                 continue
-
-            dc_type = ["invoice", "invoice_in"]
-            if r.use_documents and r.move_type == "in_invoice":
-                dc_type = ["invoice_in"]
-            elif r.move_type in ['in_refund', 'out_refund']:
-                dc_type = ["credit_note", "debit_note"]
+            dc_type = ["invoice"] if r.move_type in ["in_invoice", "out_invoice"] else ["credit_note", "debit_note"]
+            if not r.document_class_id:
+                r.journal_document_class_id = self.env["account.journal.sii_document_class"].search(
+                    [("journal_id", "=", r.journal_id.id), ("sii_document_class_id.document_type", "in", dc_type),], limit=1
+                )
+                r.use_documents = bool(r.journal_document_class_id)
             if not r.use_documents and r.move_type in ["in_invoice", "in_refund"]:
                 for dc in r.journal_id.document_class_ids:
                     if dc.document_type in dc_type:
@@ -115,30 +100,19 @@ class AccountMove(models.Model):
                 for dc in jdc_ids:
                     r.document_class_ids += dc.sii_document_class_id
 
-    def _default_use_documents(self):
-        if self._default_journal_document_class_id():
-            return True
-        return False
-
-    def _default_document_class_id(self):
-        if not self.env["ir.model"].search([("model", "=", "sii.document_class")]):
-            return False
-        jdc = self._default_journal_document_class_id()
-        return jdc.sii_document_class_id.id
-
     document_class_ids = fields.Many2many(
         "sii.document_class", compute="get_dc_ids", string="Available Document Classes",
+        check_company=True,
     )
     journal_document_class_id = fields.Many2one(
         "account.journal.sii_document_class",
         string="Documents Type",
-        default=lambda self: self._default_journal_document_class_id(),
         readonly=True,
         states={"draft": [("readonly", False)]},
+        check_company=True,
     )
     document_class_id = fields.Many2one(
         "sii.document_class", string="Document Type", readonly=True, states={"draft": [("readonly", False)]},
-        default=lambda self: self._default_document_class_id(),
     )
     sii_code = fields.Integer(
         related="document_class_id.sii_code", string="Document Code", copy=False, readonly=True, store=True,
@@ -194,7 +168,7 @@ class AccountMove(models.Model):
         readonly=True,
         states={"draft": [("readonly", False)]},
     )  # @TODO select 1 automático si es emisor 2Categoría
-    use_documents = fields.Boolean(string="Use Documents?", default=lambda self: self._default_use_documents(),
+    use_documents = fields.Boolean(string="Use Documents?",
                                    readonly=True,
                                    states={"draft": [("readonly", False)]},)
     referencias = fields.One2many(

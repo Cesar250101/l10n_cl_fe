@@ -10,6 +10,7 @@ class AccountJournalSiiDocumentClass(models.Model):
     _name = "account.journal.sii_document_class"
     _description = "Journal SII Documents"
     _order = "sequence"
+    _check_company_auto = True
 
     @api.depends("sii_document_class_id", "sequence_id")
     def get_secuence_name(self):
@@ -27,10 +28,11 @@ class AccountJournalSiiDocumentClass(models.Model):
         help="""This field contains the information related to the numbering \
             of the documents entries of this document type.""",
         domain=[('is_dte', '=', True)],
+        check_company=True,
     )
     journal_id = fields.Many2one("account.journal", string="Journal", required=True,)
     sequence = fields.Integer(string="Sequence")
-    company_id = fields.Many2one("res.company",)
+    company_id = fields.Many2one("res.company", default=lambda self: self.env.user.company_id,)
     qty_available = fields.Integer(string="Quantity Available", related="sequence_id.qty_available")
 
     @api.onchange("sii_document_class_id")
