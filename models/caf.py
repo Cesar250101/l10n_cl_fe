@@ -184,7 +184,7 @@ has been exhausted.""",
             })
 
     @api.onchange('caf_file')
-    def load_caf(self, flags=False):
+    def load_caf(self):
         if not self.caf_file and not self.caf_string:
             return
         if not self.caf_string and self.caf_file:
@@ -213,8 +213,6 @@ to work properly!"""
                 )
                 % (self.document_class_id.sii_code, self.sequence_id.sii_document_class_id.sii_code)
             )
-        if flags:
-            return True
         self.state = "in_use"
 
     def _get_cantidad_folios(self):
@@ -245,7 +243,7 @@ WHERE NOT EXISTS (
 );'''.format(
     self.start_nm,
     self.final_nm,
-    self.sequence_id.sii_document_class_id.id
+    self.document_class_id.id
 )
         folios_vencidos = []
         for x in self._cr.fetchall():
