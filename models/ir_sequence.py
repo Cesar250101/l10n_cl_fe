@@ -46,7 +46,6 @@ class IRSequence(models.Model):
     is_dte = fields.Boolean(string="IS DTE?", default=False)
     dte_caf_ids = fields.One2many("dte.caf", "sequence_id", string="DTE CAF",)
     qty_available = fields.Integer(string="Quantity Available", compute="_qty_available")
-    forced_by_caf = fields.Boolean(string="Forced By CAF",)
     nivel_minimo = fields.Integer(string="Nivel Mínimo de Folios", default=5,)  # @TODO hacerlo configurable
     autoreponer_caf = fields.Boolean(string="Reposición Automática de CAF", default=False)
     autoreponer_cantidad = fields.Integer(string="Cantidad de Folios a Reponer", default=2)
