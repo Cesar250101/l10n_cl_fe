@@ -321,7 +321,7 @@ class APICAF(models.TransientModel):
                     caf = self.env['dte.caf'].search([
                         ('start_nm', '=', f['folio_inicial']),
                         ('final_nm', '=', f['folio_final']),
-                        ('sii_document_class', '=', self.cod_docto.sii_code),
+                        ('document_class_id', '=', self.cod_docto.id),
                         ('rut_n', '=', self.company_id.partner_id.rut())
                     ], limit=1)
                     linea_vals['caf_id'] = caf.id
@@ -487,8 +487,7 @@ class APICAF(models.TransientModel):
                 "filename": nombre,
             }
         )
-        caf._compute_data()
-        self.sequence_id._qty_available()
+        caf.load_caf()
 
 
     def delist(self):

@@ -13,6 +13,45 @@ _logger = logging.getLogger(__name__)
 class IRSequence(models.Model):
     _inherit = "ir.sequence"
 
+    def get_qty_available(self, folio=None):
+        folio = int(folio or self.get_folio())
+        try:
+            cafs = self.get_caf_files(folio)
+        except Exception as ex:
+            _logger.warning("Problema al obtener cafs",
+            exc_info=True)
+            cafs = self.env["dte.caf"]
+        available = 0
+        for c in cafs:
+            available += c.qty_available
+        if available <= self.nivel_minimo:
+            alert_msg = "Nivel bajo de CAF para {}, quedan {} folios. Recuerde verificar su token apicaf.cl".format(
+                self.sii_document_class_id.name, available,
+            )
+            #self.env["bus.bus"]._sendone(
+            #    self.env.user.partner_id,
+            #    'ir.sequence/display_notification',
+            #    {"title": "Alerta sobre Folios", "message": alert_msg, "url": "res_config", "type": "dte_notif"}
+            #)
+        return available
+
+    @api.onchange("dte_caf_ids", "number_next_actual")
+    def _qty_available(self):
+        for i in self.sudo():
+            i.qty_available = 0
+            if i.is_dte and i.sii_document_class_id:
+                i.qty_available = i.get_qty_available()
+
+    sii_document_class_id = fields.Many2one("sii.document_class", string="Tipo de Documento",)
+    is_dte = fields.Boolean(string="IS DTE?", default=False)
+    dte_caf_ids = fields.One2many("dte.caf", "sequence_id", string="DTE CAF",)
+    qty_available = fields.Integer(string="Quantity Available", compute="_qty_available")
+    forced_by_caf = fields.Boolean(string="Forced By CAF",)
+    nivel_minimo = fields.Integer(string="Nivel Mínimo de Folios", default=5,)  # @TODO hacerlo configurable
+    autoreponer_caf = fields.Boolean(string="Reposición Automática de CAF", default=False)
+    autoreponer_cantidad = fields.Integer(string="Cantidad de Folios a Reponer", default=2)
+    folios_sin_usar = fields.Integer(string="Folios sin usar", compute="set_folios_sin_usar", store=True)
+
     @api.model
     def check_cafs(self):
         self._cr.execute("SELECT id FROM dte_caf WHERE expiration_date <= NOW() and cantidad_folios_sin_usar > 0")
@@ -25,43 +64,21 @@ class IRSequence(models.Model):
                 r.auto_anular()
             except:
                 _logger.warning("no se pudo auto anular")
-        self._cr.execute("SELECT id FROM ir_sequence WHERE autoreponer_caf and qty_available < nivel_minimo")
+        self._cr.execute("SELECT id FROM ir_sequence WHERE autoreponer_caf")
         for r in self.env["ir.sequence"].sudo().browse([x[0] for x in self._cr.fetchall()]):
-            try:
-                r.solicitar_caf()
-            except Exception as e:
-                _logger.warning(
-                    "Error al solictar folios a secuencia {}: {}".format(r.sii_document_class_id.name, str(e)),
-                    exc_info=True
-                )
+            if r and r.qty_available < r.nivel_minimo:
+                try:
+                    r.solicitar_caf()
+                except Exception as e:
+                    _logger.warning(
+                        "Error al solictar folios a secuencia {}: {}".format(
+                            r.sii_document_class_id.name, str(e)),
+                        exc_info=True
+                    )
 
-    def get_qty_available(self, folio=None):
-        folio = folio or self.get_folio()
-        try:
-            cafs = self.get_caf_files(folio)
-        except Exception as ex:
-            _logger.warning(tools.ustr(ex),
-            exc_info=True)
-            cafs = False
-        available = 0
-        folio = int(folio)
-        if cafs:
-            for c in cafs:
-                final = c.final_nm + 1
-                if folio >= c.start_nm and folio < final:
-                    available += final - folio
-                elif folio < final:
-                    available += final - c.start_nm
-        if available <= self.nivel_minimo:
-            alert_msg = "Nivel bajo de CAF para {}, quedan {} folios. Recuerde verificar su token apicaf.cl".format(
-                self.sii_document_class_id.name, available,
-            )
-            self.env["bus.bus"]._sendone(
-                self.env.user.partner_id,
-                'ir.sequence/display_notification',
-                {"title": "Alerta sobre Folios", "message": alert_msg, "url": "res_config", "type": "dte_notif"}
-            )
-        return available
+    @api.onchange('sii_document_class_id')
+    def _auto_set_is_dte(self):
+        self.is_dte = self.sii_document_class_id.dte
 
     def solicitar_caf(self):
         if self.qty_available == self.nivel_minimo:
@@ -97,25 +114,6 @@ class IRSequence(models.Model):
         wiz_caf.cant_doctos = cantidad
         wiz_caf.obtener_caf()
 
-    def _set_qty_available(self):
-        self.qty_available = self.get_qty_available()
-
-    @api.onchange("dte_caf_ids", "number_next_actual")
-    def _qty_available(self):
-        for i in self.sudo():
-            if i.is_dte and i.sii_document_class_id:
-                i._set_qty_available()
-
-    sii_document_class_id = fields.Many2one("sii.document_class", string="Tipo de Documento",)
-    is_dte = fields.Boolean(string="IS DTE?", related="sii_document_class_id.dte",)
-    dte_caf_ids = fields.One2many("dte.caf", "sequence_id", string="DTE Caf",)
-    qty_available = fields.Integer(string="Quantity Available",)
-    forced_by_caf = fields.Boolean(string="Forced By CAF",)
-    nivel_minimo = fields.Integer(string="Nivel Mínimo de Folios", default=5,)  # @TODO hacerlo configurable
-    autoreponer_caf = fields.Boolean(string="Reposición Automática de CAF", default=False)
-    autoreponer_cantidad = fields.Integer(string="Cantidad de Folios a Reponer", default=2)
-    folios_sin_usar = fields.Integer(string="Folios sin usar", compute="set_folios_sin_usar", store=True)
-
     @api.depends('dte_caf_ids.cantidad_folios_sin_usar')
     def set_folios_sin_usar(self):
         for r in self:
@@ -130,36 +128,42 @@ class IRSequence(models.Model):
             folios += caf.obtener_folios_sin_usar()
         return folios
 
-    @api.onchange('qty_available')
+    #@api.onchange('qty_available')
     def inspeccionar_folios_sin_usar(self):
         for caf in self.dte_caf_ids:
             caf.inspeccionar_folios_sin_usar()
 
     def get_folio(self):
-        if self.implementation == 'standard':
-            return self.number_next_actual
-        return self.number_next
+        cafs = self.dte_caf_ids.filtered(
+            lambda caf: caf.qty_available > 0).sorted(
+                key=lambda caf: caf.folio_actual
+            )
+        if not cafs:
+            return 0
+        return cafs[0].folio_actual
 
     def time_stamp(self, formato="%Y-%m-%dT%H:%M:%S"):
         tz = pytz.timezone("America/Santiago")
         return datetime.now(tz).strftime(formato)
 
     def get_caf_file(self, folio=False, decoded=True):
-        folio = folio or self.get_folio()
+        folio = int(folio or self.get_folio())
         caffiles = self.get_caf_files(folio)
-        msg = """No Hay caf para el documento: {}, está fuera de rango . Solicite un nuevo CAF en el sitio \
-www.sii.cl""".format(
+        msg = """No Hay caf para el documento: {}, está fuera de rango . \
+Solicite un nuevo CAF en el sitio www.sii.cl""".format(
             folio
         )
         if not caffiles:
             raise UserError(
                 _(
-                    """No hay caf disponible para el documento %s folio %s. Por favor solicite y suba un CAF o solicite uno en el SII o Utilice la opción obtener folios en la secuencia (usando apicaf.cl)."""
+                    """No hay caf disponible para el documento %s folio %s. \
+Por favor solicite y suba un CAF o solicite uno en el SII o Utilice la opción \
+obtener folios en la secuencia (usando apicaf.cl)."""
                     % (self.name, folio)
                 )
             )
         for caffile in caffiles:
-            if int(folio) >= caffile.start_nm and int(folio) <= caffile.final_nm:
+            if folio >= caffile.start_nm and folio <= caffile.final_nm:
                 if caffile.expiration_date:
                     if fields.Date.context_today(self) > caffile.expiration_date:
                         msg = "CAF Vencido. %s" % msg
@@ -173,61 +177,43 @@ www.sii.cl""".format(
         """
             Devuelvo caf actual y futuros
         """
-        folio = folio or self.get_folio()
+        folio = int(folio or self.get_folio())
         if not self.dte_caf_ids:
             _logger.warning(
-                """No hay CAFs disponibles para la secuencia de %s. Por favor suba un CAF o solicite uno en el SII."""
+                """No hay CAFs disponibles para la secuencia de %s. Por favor \
+suba un CAF o solicite uno en el SII."""
                 % (self.name)
             )
-            return False
-        cafs = self.dte_caf_ids
-        cafs = sorted(cafs, key=lambda e: e.start_nm)
-        result = []
-        for caffile in cafs:
-            if caffile.start_nm == 0:
-                try:
-                    caffile.load_caf()
-                except Exception as e:
-                    _logger.warning("error en cargar caff %s" % str(e))
-            if int(folio) <= caffile.final_nm:
-                result.append(caffile)
-        if result:
-            return result
-        return False
+            return self.dte_caf_ids
+        cafs = self.dte_caf_ids.filtered(
+                lambda caf: folio <= caf.final_nm
+            ).sorted(key=lambda caf: caf.start_nm)
+        return cafs
 
-    def update_next_by_caf(self, folio=None, increment=True):
+    def update_next_by_caf(self):
         if not self.sii_document_class_id:
             return
-        folio = folio or self.get_folio()
-        menor = False
-        cafs = self.get_caf_files(folio)
-        if not cafs:
+        folio = self.get_folio()
+        caf = self.dte_caf_ids.filtered(
+                lambda caf: caf.start_nm <= folio <= caf.final_nm
+            )
+        if not caf:
             _logger.warning("No quedan CAFs para %s disponibles" % self.name)
-            return False
-        for c in cafs:
-            if not menor or c.start_nm < menor.start_nm:
-                menor = c
-        if menor and int(folio) < menor.start_nm:
-            folio = menor.start_nm
-            if increment:
-                folio += 1
+            return 0
+        if self.implementation == "no_gap":
+            self._cr.execute(
+                "SELECT number_next FROM {} WHERE id={} FOR UPDATE NOWAIT".format(self._table, self.id)
+            )
+            self._cr.execute(
+                "UPDATE {} SET number_next={} WHERE id={} ".format(self._table, (folio), self.id)
+            )
+            self.invalidate_cache(["number_next"], [self.id])
+        else:
             self.sudo().write({"number_next": folio})
-            if self.forced_by_caf and self.implementation == "no_gap":
-                self._cr.execute(
-                    "SELECT number_next FROM {} WHERE id={} FOR UPDATE NOWAIT".format(self._table, self.id)
-                )
-                self._cr.execute(
-                    "UPDATE {} SET number_next={} WHERE id={} ".format(self._table, (folio), self.id)
-                )
-                self.invalidate_model(["number_next"])
-                return True
-        return False
+        return folio
 
     def _next_do(self):
-        folio = super(IRSequence, self)._next_do()
-        if self.sii_document_class_id and self.forced_by_caf and self.dte_caf_ids:
-            if self.update_next_by_caf(folio):
-                actual = self.get_folio()
-                folio = self.get_next_char(actual - 1)
-        self._qty_available()
-        return folio
+        if self.is_dte:
+            folio = self.update_next_by_caf()
+            return self.get_next_char(folio)
+        return super(IRSequence, self)._next_do()
