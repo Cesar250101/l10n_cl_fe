@@ -5,11 +5,29 @@
         <field name="model">mail.message.dte</field>
         <field name="arch" type="xml">
             <tree string="Dtes">
-                <field name="create_date" />
-                <field name="name" />
-                <field name="document_ids" />
-                <field name="company_id" />
+              <field string="Creado en" name="create_date" optional="show"/>
+              <field string="Creado por" name="create_uid" optional="hide"/>
+              <field name="name" optional="show"/>
+              <field name="document_ids" optional="show"/>
+              <field name="company_id" optional="hide"/>
+              <field string="Últ Actualización" name="write_date" optional="hide"/>
+              <field string="Actualizado por" name="write_uid" optional="hide"/>
             </tree>
+        </field>
+    </record>
+    <record id="dte_view_tree_select" model="ir.ui.view">
+        <field name="name">dte.tree.select</field>
+        <field name="model">mail.message.dte</field>
+        <field name="arch" type="xml">
+          <search string="Search">
+            <group expand="0" string="Group By">
+                <filter string="Fecha Creación" name="create_date" context="{'group_by':'create_date'}"/>
+                <filter string="Creado por" name="created_by" context="{'group_by':'create_uid'}"/>
+                <filter string="Nombre Envío" name="name" context="{'group_by':'name'}"/>
+                <filter string="Adjunto Principal" name="main_attachment" context="{'group_by':'message_main_attachment_id'}"/>
+                <filter string="Mail" name="mail" context="{'group_by':'mail_id'}"/>
+            </group>
+          </search>
         </field>
     </record>
     <record id="dte_document_view_tree" model="ir.ui.view">
@@ -17,16 +35,20 @@
         <field name="model">mail.message.dte.document</field>
         <field name="arch" type="xml">
             <tree string="Documentos" decoration-info="state == 'draft'" decoration-muted="state == 'rejected'">
-                <field name="date" />
-                <field name="document_class_id" />
-                <field name="number" />
-                <field name="new_partner" />
-                <field name="partner_id" />
-                <field name="amount" />
-                <field name="currency_id" />
-                <field name="invoice_line_ids" />
-                <field name="company_id" />
-                <field name="state" />
+                <field name="date" optional="show"/>
+                <field name="document_class_id" optional="show"/>
+                <field name="number" optional="show"/>
+                <field name="new_partner" optional="show"/>
+                <field name="partner_id" optional="show"/>
+                <field name="amount" optional="show"/>
+                <field name="currency_id" optional="show"/>
+                <field name="invoice_line_ids" optional="show"/>
+                <field name="company_id" optional="show"/>
+                <field name="state" optional="show"/>
+                <field name="create_date" optional="hide"/>
+                <field name="create_uid" optional="hide"/>
+                <field name="write_date" optional="hide"/>
+                <field name="write_uid" optional="hide"/>
                 <button
                     name="accept_document"
                     string="Aceptar"
@@ -229,15 +251,23 @@
             </field>
         </field>
     </record>
+
     <record model="ir.ui.view" id="dte_document_search_view">
         <field name="name">dte.document.search</field>
         <field name="model">mail.message.dte.document</field>
         <field name="arch" type="xml">
-            <search>
-                <field name="number" />
+            <search string="Search">
+              <field name="number"/>
+              <group expand="0" string="Group By">
+                  <filter string="Tipo Documento" name="document_class_id" context="{'group_by':'document_class_id'}"/>
+                  <filter string="RUT Proveedor" name="new_partner" context="{'group_by':'new_partner'}"/>
+                  <filter string="Proveedor" name="partner_id" context="{'group_by':'partner_id'}"/>
+                  <filter string="Fecha" name="date" context="{'group_by':'date'}"/>
+              </group>
             </search>
         </field>
     </record>
+
     <record id="action_dte_process" model="ir.actions.act_window">
         <field name="name">Aceptar o Rechazar Documentos</field>
         <field name="domain">[]</field>
