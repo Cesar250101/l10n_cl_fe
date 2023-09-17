@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from odoo import api, fields, models
+from odoo.fields import Command
 
 
 class SO(models.Model):
@@ -48,6 +49,7 @@ class SO(models.Model):
     )
 
     def _prepare_invoice(self):
+        self.ensure_one()
         vals = super(SO, self)._prepare_invoice()
         if self.acteco_id:
             vals["acteco_id"] = self.acteco_id.id
@@ -58,21 +60,30 @@ class SO(models.Model):
                 'journal_document_class_id': self.journal_document_class_id.id,
                 'document_class_id': self.journal_document_class_id.sii_document_class_id.id,
             })
-            if self._context.get('default_referencias', []):
-                for r in self._context.get('default_referencias', []):
-                    if not self.env['sale.order.referencias'].search([
-                        ('folio', '=', r[2]['origen']),
-                        ('fecha_documento', '=', r[2]['fecha_documento']),
-                        ('sii_referencia_TpoDocRef', '=', r[2]['sii_referencia_TpoDocRef']),
-                        ('motivo', '=', r[2]['motivo']),
-                    ]):
-                        self.env['sale.order.referencias'].create({
-                            'folio': r[2]['origen'],
-                            'fecha_documento': r[2]['fecha_documento'],
-                            'sii_referencia_TpoDocRef': r[2]['sii_referencia_TpoDocRef'],
-                            'motivo': r[2]['motivo'],
-                            'so_id': self.id,
-                        })
+        if self._context.get('default_referencias', []):
+            for r in self._context.get('default_referencias', []):
+                if not self.env['sale.order.referencias'].search([
+                    ('folio', '=', r[2]['origen']),
+                    ('fecha_documento', '=', r[2]['fecha_documento']),
+                    ('sii_referencia_TpoDocRef', '=', r[2]['sii_referencia_TpoDocRef']),
+                    ('motivo', '=', r[2]['motivo']),
+                    ('so_id', '=', self.id),
+                ]):
+                    self.env['sale.order.referencias'].create({
+                        'folio': r[2]['origen'],
+                        'fecha_documento': r[2]['fecha_documento'],
+                        'sii_referencia_TpoDocRef': r[2]['sii_referencia_TpoDocRef'],
+                        'motivo': r[2]['motivo'],
+                        'so_id': self.id,
+                    })
+        vals['referencias'] = []
+        for r in self.referencia_ids:
+            vals['referencias'].append(Command.create({
+                'folio': r.origen,
+                'fecha_documento': r.fecha_documento,
+                'sii_referencia_TpoDocRef': r.sii_referencia_TpoDocRef,
+                'motivo': r.motivo,
+            }))
         return vals
 
     @api.depends("order_line.price_total")
