@@ -10,6 +10,7 @@ except ImportError:
 class ResConfigSettings(models.TransientModel):
     _inherit = "res.config.settings"
 
+    send_dte_method = fields.Selection([('manual', 'Manual'), ('imediato', 'Inmediato'), ('diferido', 'Diferido')], string="Tiempo de Espera para Enviar DTE automático al SII (en horas)", default='diferido',)
     auto_send_dte = fields.Integer(string="Tiempo de Espera para Enviar DTE automático al SII (en horas)", default=1,)
     auto_send_email = fields.Boolean(string="Enviar Email automático al Auto Enviar DTE al SII", default=True,)
     auto_send_persistencia = fields.Integer(string="Enviar Email automático al Cliente cada  n horas", default=24,)
@@ -32,10 +33,12 @@ class ResConfigSettings(models.TransientModel):
     def get_values(self):
         res = super(ResConfigSettings, self).get_values()
         ICPSudo = self.env["ir.config_parameter"].sudo()
+        account_send_dte_method = ICPSudo.get_param("account.send_dte_method", default='diferido')
         account_auto_send_dte = int(ICPSudo.get_param("account.auto_send_dte", default=1))
         account_auto_send_email = ICPSudo.get_param("account.auto_send_email", default=True)
         account_auto_send_persistencia = int(ICPSudo.get_param("account.auto_send_persistencia", default=24))
         res.update(
+            send_dte_method=account_send_dte_method,
             auto_send_email=account_auto_send_email,
             auto_send_dte=account_auto_send_dte,
             auto_send_persistencia=account_auto_send_persistencia,
@@ -48,6 +51,7 @@ class ResConfigSettings(models.TransientModel):
         ICPSudo = self.env["ir.config_parameter"].sudo()
         if self.dte_email_id and not self.external_email_server_default:
             raise UserError("Debe Cofigurar Servidor de Correo Externo en la pestaña Opciones Generales")
+        ICPSudo.set_param("account.send_dte_method", self.send_dte_method)
         ICPSudo.set_param("account.auto_send_dte", self.auto_send_dte)
         ICPSudo.set_param("account.auto_send_email", self.auto_send_email)
         ICPSudo.set_param("account.auto_send_peresistencia", self.auto_send_persistencia)

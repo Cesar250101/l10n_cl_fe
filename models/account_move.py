@@ -589,22 +589,29 @@ class AccountMove(models.Model):
             else:
                 inv._validaciones_uso_dte()
                 inv._timbrar()
-                tiempo_pasivo = datetime.now() + timedelta(
-                    hours=int(self.env["ir.config_parameter"].sudo().get_param("account.auto_send_dte", default=1))
-                )
+                ISCP = self.env["ir.config_parameter"].sudo()
+                metodo = ISCP.get_param("account.send_dte_method", default='diferido')
+                if metodo == 'manual':
+                    continue
+                tiempo_pasivo = datetime.now()
+                if metodo == 'diferido':
+                    tipo_trabajo = 'pasivo'
+                    tiempo_pasivo += timedelta(
+                        hours=int(ISCP.get_param("account.auto_send_dte", default=1))
+                    )
+                elif metodo == 'inmediato':
+                    tipo_trabajo = 'envio'
                 self.env["sii.cola_envio"].create(
                     {
                         "company_id": inv.company_id.id,
                         "doc_ids": [inv.id],
                         "model": "account.move",
                         "user_id": self.env.uid,
-                        "tipo_trabajo": "pasivo",
+                        "tipo_trabajo": tipo_trabajo,
                         "date_time": tiempo_pasivo,
                         "send_email": False
                         if inv.company_id.dte_service_provider == "SIICERT"
-                        or not self.env["ir.config_parameter"]
-                        .sudo()
-                        .get_param("account.auto_send_email", default=True)
+                        or not ISCP.get_param("account.auto_send_email", default=True)
                         else True,
                     }
                 )

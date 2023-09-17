@@ -10,7 +10,6 @@ class AccountJournalSiiDocumentClass(models.Model):
     _name = "account.journal.sii_document_class"
     _description = "Journal SII Documents"
     _order = "sequence"
-    _check_company_auto = True
 
     @api.depends("sii_document_class_id", "sequence_id")
     def get_secuence_name(self):
