@@ -10,11 +10,31 @@ from odoo.tools.translate import _
 _logger = logging.getLogger(__name__)
 
 
+def update_next_by_caf(self, folio=False):
+    if not self.sii_document_class_id:
+        return 0
+    folio = folio or self.number_next_actual
+    caf = self.dte_caf_ids.filtered(
+            lambda caf: caf.start_nm <= folio <= caf.final_nm
+        )
+    if not caf:
+        _logger.warning("No quedan CAFs para %s disponibles" % self.name)
+        return 0
+    if self.implementation == "no_gap":
+        self.flush_recordset(['number_next'])
+        number_next = self.number_next
+        self._cr.execute("SELECT number_next FROM %s WHERE id=%%s FOR UPDATE NOWAIT" % self._table, [self.id])
+        self._cr.execute("UPDATE %s SET number_next=%%s WHERE id=%%s " % self._table, (folio, self.id))
+        self.invalidate_recordset(['number_next'])
+    else:
+        self.sudo().write({"number_next": folio})
+    return folio
+
 class IRSequence(models.Model):
     _inherit = "ir.sequence"
 
     def get_qty_available(self, folio=None):
-        folio = int(folio or self.get_folio())
+        folio = int(folio or self.number_next_actual)
         try:
             cafs = self.get_caf_files(folio)
         except Exception as ex:
@@ -22,17 +42,18 @@ class IRSequence(models.Model):
             exc_info=True)
             cafs = self.env["dte.caf"]
         available = 0
-        for c in cafs:
-            available += c.qty_available
-        if available <= self.nivel_minimo:
-            alert_msg = "Nivel bajo de CAF para {}, quedan {} folios. Recuerde verificar su token apicaf.cl".format(
-                self.sii_document_class_id.name, available,
-            )
-            #self.env["bus.bus"]._sendone(
-            #    self.env.user.partner_id,
-            #    'ir.sequence/display_notification',
-            #    {"title": "Alerta sobre Folios", "message": alert_msg, "url": "res_config", "type": "dte_notif"}
-            #)
+        if folio > 0:
+            for c in cafs:
+                available += c.qty_available
+            if available <= self.nivel_minimo:
+                alert_msg = "Nivel bajo de folios del CAF para {}, quedan {} folios. Recuerde verificar su token apicaf.cl".format(
+                    self.sii_document_class_id.name, available,
+                )
+                #self.env["bus.bus"]._sendone(
+                #    self.env.user.partner_id,
+                #    'ir.sequence/display_notification',
+                #    {"title": "Alerta sobre Folios", "message": alert_msg, "url": "res_config", "type": "dte_notif"}
+                #)
         return available
 
     @api.onchange("dte_caf_ids", "number_next_actual")
@@ -138,6 +159,8 @@ class IRSequence(models.Model):
                 key=lambda caf: caf.folio_actual
             )
         if not cafs:
+            if self.dte_caf_ids:
+                return self.dte_caf_ids[0].folio_actual
             return 0
         return cafs[0].folio_actual
 
@@ -146,7 +169,7 @@ class IRSequence(models.Model):
         return datetime.now(tz).strftime(formato)
 
     def get_caf_file(self, folio=False, decoded=True):
-        folio = int(folio or self.get_folio())
+        folio = int(folio or self.number_next_actual)
         caffiles = self.get_caf_files(folio)
         msg = """No Hay caf para el documento: {}, está fuera de rango . \
 Solicite un nuevo CAF en el sitio www.sii.cl""".format(
@@ -156,7 +179,7 @@ Solicite un nuevo CAF en el sitio www.sii.cl""".format(
             raise UserError(
                 _(
                     """No hay caf disponible para el documento %s folio %s. \
-Por favor solicite y suba un CAF o solicite uno en el SII o Utilice la opción \
+Por favor solicite y suba un CAF en el portal del SII o Utilice la opción \
 obtener folios en la secuencia (usando apicaf.cl)."""
                     % (self.name, folio)
                 )
@@ -176,7 +199,7 @@ obtener folios en la secuencia (usando apicaf.cl)."""
         """
             Devuelvo caf actual y futuros
         """
-        folio = int(folio or self.get_folio())
+        folio = int(folio or self.number_next_actual)
         if not self.dte_caf_ids:
             _logger.warning(
                 """No hay CAFs disponibles para la secuencia de %s. Por favor \
@@ -189,30 +212,23 @@ suba un CAF o solicite uno en el SII."""
             ).sorted(key=lambda caf: caf.start_nm)
         return cafs
 
-    def update_next_by_caf(self):
-        if not self.sii_document_class_id:
-            return
-        folio = self.get_folio()
-        caf = self.dte_caf_ids.filtered(
-                lambda caf: caf.start_nm <= folio <= caf.final_nm
-            )
-        if not caf:
-            _logger.warning("No quedan CAFs para %s disponibles" % self.name)
-            return 0
-        if self.implementation == "no_gap":
-            self._cr.execute(
-                "SELECT number_next FROM {} WHERE id={} FOR UPDATE NOWAIT".format(self._table, self.id)
-            )
-            self._cr.execute(
-                "UPDATE {} SET number_next={} WHERE id={} ".format(self._table, (folio), self.id)
-            )
-            self.invalidate_cache(["number_next"], [self.id])
-        else:
-            self.sudo().write({"number_next": folio})
-        return folio
-
     def _next_do(self):
         if self.is_dte:
-            folio = self.update_next_by_caf()
+            folio = update_next_by_caf(self)
+            if folio == 0:
+                raise UserError(
+                    """No hay más folios disponibles para el documento %s. \
+Por favor solicite y suba un CAF en el portal del SII o Utilice la opción \
+obtener folios en la secuencia (usando apicaf.cl)."""
+                    % (self.name)
+                )
             return self.get_next_char(folio)
         return super(IRSequence, self)._next_do()
+
+    def _get_number_next_actual(self):
+        '''Return number from ir_sequence row when no_gap implementation,
+        and number from postgres sequence when standard implementation.'''
+        seq_dtes = self.filtered('is_dte')
+        for seq in seq_dtes:
+            seq.number_next_actual = seq.get_folio()
+        super(IRSequence, (self-seq_dtes))._get_number_next_actual()

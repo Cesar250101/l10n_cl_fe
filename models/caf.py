@@ -159,7 +159,7 @@ has been exhausted.""",
         self.folios_sin_usar = self.folios_sin_usar.replace('%s, '% folio, '').replace(', %s'% folio, '').replace('%s'% folio, '')
 
     def _join_inspeccionar(self):
-        return 'LEFT JOIN account_move a on s = a.sii_document_number and a.document_class_id = %s' % self.sequence_id.sii_document_class_id.id
+        return 'LEFT JOIN account_move a on s = a.sii_document_number and a.document_class_id = %s' % self.document_class_id.id
 
     def _where_inspeccionar(self):
         return 'a.sii_document_number is null'

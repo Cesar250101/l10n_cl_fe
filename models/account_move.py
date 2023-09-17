@@ -548,6 +548,7 @@ class AccountMove(models.Model):
     def _set_next_sequence(self):
         self.ensure_one()
         if self.use_documents:
+            self.sii_document_number = self.journal_document_class_id.sequence_id.number_next_actual
             self[self._sequence_field] = '%s%s' % (self.document_class_id.doc_code_prefix, self.sii_document_number)
         else:
             super(AccountMove, self)._set_next_sequence()
@@ -558,20 +559,6 @@ class AccountMove(models.Model):
         super(AccountMove, dcs)._compute_name()
         super(AccountMove, (self - dcs))._compute_name()
 
-    def _get_invoice_reference_cl_invoice(self):
-        self.ensure_one()
-        return '%s%s' % (self.document_class_id.doc_code_prefix, self.sii_document_number)
-
-    def _get_invoice_computed_reference(self):
-        self.ensure_one()
-        if self.journal_id.invoice_reference_type == 'none':
-            return ''
-        invoice_reference_model = 'cl' if self.journal_id.invoice_reference_type == 'invoice' and self.document_class_id else self.journal_id.invoice_reference_model
-        ref_function = getattr(self, f'_get_invoice_reference_{invoice_reference_model}_{self.journal_id.invoice_reference_type}', None)
-        if ref_function is None:
-            raise UserError(_("The combination of reference model and reference type on the journal is not implemented"))
-        return ref_function()
-
     def _post(self, soft=True):
         to_post = super(AccountMove, self)._post(soft=soft)
         for inv in to_post:
@@ -580,9 +567,6 @@ class AccountMove(models.Model):
                     ptd.write({"state": "done"})
             if not inv.is_invoice() or not inv.journal_document_class_id or not inv.use_documents:
                 continue
-            if not inv.sii_document_number:
-                sii_document_number = inv.journal_document_class_id.sequence_id.next_by_id()
-                inv.sii_document_number = int(sii_document_number)
             inv.sii_result = "NoEnviado"
             if inv.journal_id.restore_mode or self._context.get("restore_mode", False):
                 inv.sii_result = "Proceso"
