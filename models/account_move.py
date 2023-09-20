@@ -541,10 +541,15 @@ class AccountMove(models.Model):
 
     def _get_last_sequence_domain(self, relaxed=False):
         where_string, param = super(AccountMove, self)._get_last_sequence_domain(relaxed=relaxed)
+        if self.use_documents:
+            where_string += " AND use_documents "
+        else:
+            where_string += " AND NOT use_documents "
         if self.document_class_id:
-            where_string += " AND use_documents = %(use_documents)s AND document_class_id = %(document_class_id)s "
-            param['use_documents'] = self.use_documents
+            where_string += " AND document_class_id = %(document_class_id)s "
             param['document_class_id'] = self.document_class_id.id
+        else:
+            where_string += " AND document_class_id is NULL "
         return where_string, param
 
     def _set_next_sequence(self):
