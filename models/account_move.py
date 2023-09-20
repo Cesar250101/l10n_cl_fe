@@ -541,8 +541,10 @@ class AccountMove(models.Model):
 
     def _get_last_sequence_domain(self, relaxed=False):
         where_string, param = super(AccountMove, self)._get_last_sequence_domain(relaxed=relaxed)
-        where_string += " AND use_documents = %(use_documents)s"
-        param['use_documents'] = self.use_documents
+        if self.document_class_id:
+            where_string += " AND use_documents = %(use_documents)s AND document_class_id = %(document_class_id)s "
+            param['use_documents'] = self.use_documents
+            param['document_class_id'] = self.document_class_id.id
         return where_string, param
 
     def _set_next_sequence(self):
@@ -1460,12 +1462,9 @@ Por favor solicite y suba un CAF en el portal del SII o Utilice la opción \
 obtener folios en la secuencia (usando apicaf.cl)."""
                 % (caf.document_class_id.name)
             )
-        timestamp = self.time_stamp()
         invoice_date = self.invoice_date
         fecha_timbre = fields.Date.context_today(self)
-        if fecha_timbre < invoice_date:
-            raise UserError("La fecha de timbraje no puede ser menor a la fecha de emisión del documento")
-        if fecha_timbre < date(int(caf["FA"][:4]), int(caf["FA"][5:7]), int(caf["FA"][8:10])):
+        if fecha_timbre < caf.issued_date:
             raise UserError("La fecha del timbraje no puede ser menor a la fecha de emisión del CAF")
 
     def is_price_included(self):
@@ -1738,7 +1737,7 @@ obtener folios en la secuencia (usando apicaf.cl)."""
         datos["Documento"] = [
             {
                 "TipoDTE": self.document_class_id.sii_code,
-                "caf_file": [self.journal_document_class_id.sequence_id.get_caf_file(folio, decoded=False).decode()],
+                "caf_file": [caf.caf_file],
                 "documentos": [self._dte(n_atencion)],
             },
         ]
