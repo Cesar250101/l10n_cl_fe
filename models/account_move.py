@@ -82,7 +82,11 @@ class AccountMove(models.Model):
             if not self.is_invoice():
                 r.use_documents = False
                 continue
-            dc_type = ["invoice"] if r.move_type in ["in_invoice", "out_invoice"] else ["credit_note", "debit_note"]
+            dc_type = ["invoice", "invoice_in"]
+            if r.use_documents and r.move_type == "in_invoice":
+                dc_type = ["invoice_in"]
+            elif r.move_type in ['in_refund', 'out_refund']:
+                dc_type = ["credit_note", "debit_note"]
             if not r.document_class_id:
                 r.journal_document_class_id = self.env["account.journal.sii_document_class"].search(
                     [("journal_id", "=", r.journal_id.id), ("sii_document_class_id.document_type", "in", dc_type),], limit=1

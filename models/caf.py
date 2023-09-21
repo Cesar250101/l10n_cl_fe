@@ -106,7 +106,8 @@ has been exhausted.""",
     company_id = fields.Many2one(
         "res.company", string="Company", required=False, default=lambda self: self.env.user.company_id,
     )
-    sequence_id = fields.Many2one("ir.sequence", string="Sequence",)
+    sequence_id = fields.Many2one("ir.sequence", string="Sequence",
+        domain=[('is_dte', '=', True)])
     use_level = fields.Float(string="Use Level", compute="_used_level",)
     folio_actual = fields.Integer(
         string="Folio Actual",

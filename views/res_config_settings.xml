@@ -76,16 +76,16 @@
                         </div>
                         <h2>Envío Automático</h2>
                         <div class="row mt16 o_settings_container">
-                          <div class="col-xs-12 col-md-6 o_setting_box" id="metodo_envio_dte">
-                              <div class="o_setting_left_pane" />
-                              <div class="o_setting_right_pane" name="envios_right_pane">
-                                  <label string="Método Envío DTE" for="send_dte_method" />
-                                  <field name="send_dte_method" />
-                                  <div class="text-muted">
-                                      Método Envío después al Validar
-                                  </div>
-                              </div>
-                          </div>
+                            <div class="col-xs-12 col-md-6 o_setting_box" id="metodo_envio_dte">
+                                <div class="o_setting_left_pane" />
+                                <div class="o_setting_right_pane" name="envios_right_pane">
+                                    <label string="Método Envío DTE" for="send_dte_method" />
+                                    <field name="send_dte_method" />
+                                    <div class="text-muted">
+                                        Método Envío después al Validar
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-xs-12 col-md-6 o_setting_box" id="tiempo_envio_dte">
                                 <div class="o_setting_left_pane">
                                     <field name="auto_send_dte" />
@@ -104,8 +104,8 @@
                                 <div class="o_setting_right_pane" name="envios_right_pane">
                                     <label string="Auto Enviar Email" for="auto_send_email" />
                                     <div class="text-muted">
-                       Auto Enviar Email al enviar DTE al Cliente
-                    </div>
+                                       Auto Enviar Email al enviar DTE al Cliente
+                                    </div>
                                 </div>
                             </div>
                             <div

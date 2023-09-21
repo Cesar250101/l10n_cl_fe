@@ -84,9 +84,9 @@
             <field name="name">CAF</field>
             <field name="model">dte.caf</field>
             <field name="arch" type="xml">
-                <tree string="CAF Files" create="false">
+                <tree string="CAF Files">
                     <field name="name" />
-                    <field name="document_class_id" />
+                    <field name="document_class_id" options="{'no_open': True, 'no_create': True}" readonly="1"/>
                     <field name="start_nm" />
                     <field name="final_nm" />
                     <field name="folio_actual" />

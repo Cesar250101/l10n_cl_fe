@@ -6,19 +6,13 @@ from odoo.fields import Command
 class SO(models.Model):
     _inherit = "sale.order"
 
-    def _default_journal_document_class_id(self):
-        if not self.env["ir.model"].search([("model", "=", "sii.document_class")]):
-            return False
-        journal = self.journal_id.id or self.env["account.move"].with_context(default_move_type='out_invoice')._search_default_journal().id
-        jdc = self.env["account.journal.sii_document_class"].search(
-            [("journal_id", "=", journal), ("sii_document_class_id.document_type", "in", ['invoice']),], limit=1
-        )
-        return jdc
-
-    def _default_use_documents(self):
-        if self._default_journal_document_class_id():
-            return True
-        return False
+    def _search_default_journal(self):
+        company_id = (self.company_id or self.env.company).id
+        domain = [('company_id', '=', company_id), ('type', '=', 'sale'), ('use_documents', '=', self.use_documents)]
+        currency_id = self.currency_id.id or self._context.get('default_currency_id')
+        if currency_id and currency_id != self.company_id.currency_id.id:
+            domain += [('currency_id', '=', currency_id)]
+        return self.env['account.journal'].search(domain, limit=1)
 
     @api.onchange('journal_id')
     @api.depends('journal_id')
@@ -31,7 +25,7 @@ class SO(models.Model):
     referencia_ids = fields.One2many("sale.order.referencias", "so_id", string="Referencias de documento")
     journal_id = fields.Many2one(
         'account.journal',
-        default=lambda self: self.env['account.move'].with_context(default_move_type='out_invoice', default_use_documents=True)._search_default_journal(),
+        default=_search_default_journal,
         domain="[('type', '=', 'sale')]"
     )
     document_class_ids = fields.Many2many(
@@ -40,13 +34,21 @@ class SO(models.Model):
     journal_document_class_id = fields.Many2one(
         "account.journal.sii_document_class",
         string="Documents Type",
-        default=lambda self: self._default_journal_document_class_id(),
         domain="[('sii_document_class_id', '=', document_class_ids)]",
     )
     use_documents = fields.Boolean(
         string="Use Documents?",
-       default=lambda self: self._default_use_documents(),
     )
+
+    @api.onchange("journal_id")
+    def _default_journal_document_class_id(self):
+        self.journal_document_class_id = self.env["account.journal.sii_document_class"].search(
+            [("journal_id", "=", self.journal_id.id), ("sii_document_class_id.document_type", "in", ['invoice']),], limit=1
+        )
+
+    @api.onchange("journal_id")
+    def _default_use_documents(self):
+        self.use_documents =  bool(self.journal_document_class_id)
 
     def _prepare_invoice(self):
         self.ensure_one()

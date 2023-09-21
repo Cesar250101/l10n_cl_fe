@@ -32,8 +32,17 @@ class SIIDocumentClass(models.Model):
     dte = fields.Boolean("DTE", required=True)
     use_prefix = fields.Boolean(string="Usar Prefix en las referencias DTE", default=False,)
 
+    def es_boleta_afecta(self):
+        return self.sii_code in [35, 39, 70, 71]
+
+    def es_boleta_exenta(self):
+        return self.sii_code in [38, 41]
+
     def es_boleta(self):
-        return self.sii_code in [35, 38, 39, 41, 70, 71]
+        return self.es_boleta_afecta() or self.es_boleta_exenta()
+
+    def es_boleta_exenta(self):
+        return self.sii_code in [38, 41]
 
     def es_nc_exportacion(self):
         return self.sii_code in [111, 112]
@@ -52,9 +61,6 @@ class SIIDocumentClass(models.Model):
 
     def es_liquidacion(self):
         return self.sii_code in [43]
-
-    def es_boleta_exenta(self):
-        return self.sii_code in [38, 41]
 
     def es_guia(self):
         return self.sii_code in [50, 52]

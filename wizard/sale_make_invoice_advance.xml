@@ -7,17 +7,34 @@
     <field name="inherit_id" ref="sale.view_sale_advance_payment_inv"/>
     <field name="arch" type="xml">
       <group position="inside">
-        <field name="journal_id" options="{'no_create': True}" />
-        <field name="use_documents" />
-        <field name="document_class_ids" invisible="1"/>
-        <field name="journal_document_class_id" options="{'no_create': True}" attrs="{'invisible': [('use_documents', '=', False)]}"/>
+        <field name="sale_order_ids"  options="{'no_create': True}" >
+          <tree create="false">
+            <field name="name" />
+            <field name="journal_id" />
+            <field name="use_documents" />
+            <field name="document_class_ids" invisible="1" />
+            <field name="journal_document_class_id" options="{'no_create': True}" />
+          </tree>
+        </field>
         <field name="referencia_ids" mode="tree">
             <tree editable="bottom">
+                <field name="so_id" domain="[('id', 'in', active_ids)]"/>
                 <field name="fecha_documento" />
                 <field name="folio" required="True" />
                 <field name="sii_referencia_TpoDocRef" required="True" />
                 <field name="motivo" />
             </tree>
+            <form>
+              <sheet>
+                <group>
+                  <field name="so_id" domain="[('id', 'in', active_ids)]"/>
+                  <field name="fecha_documento" />
+                  <field name="folio" required="True" />
+                  <field name="sii_referencia_TpoDocRef" required="True" />
+                  <field name="motivo" />
+                </group>
+              </sheet>
+            </form>
         </field>
       </group>
     </field>
