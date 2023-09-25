@@ -20,7 +20,8 @@ class CAF(models.Model):
     _name = "dte.caf"
     _description = "Archivo CAF"
 
-    @api.onchange('start_nm', 'final_nm')
+    @api.onchange('start_nm', 'final_nm', 'folio_actual')
+    @api.depends('start_nm', 'final_nm', 'folio_actual')
     def _get_qty_available(self):
         for r in self:
             r.qty_available = 0
@@ -43,38 +44,60 @@ class CAF(models.Model):
 
     def _get_folio_actual(self):
         folio = 0
-        for table in self._get_tables():
+        if not self.document_class_id:
+            return folio
+        tables = self._get_tables()
+        where_clauses = []
+        for table in tables:
             where_string, param = getattr(self, "_%s_where_string_and_param" % table)()
-            query = """
-                UPDATE {table} SET write_date = write_date WHERE id = (
-                    SELECT id FROM {table}
+            where_clauses.append("""
+                    SELECT {field} FROM {table}
                     {where_string}
                     AND {field} >= {start_nm} AND {field} <= {final_nm}
-                    ORDER BY {field} DESC
-                    LIMIT 1
-                )
-                RETURNING {field};
             """.format(
                 table=table,
                 where_string=where_string,
                 field='sii_document_number',
                 start_nm= self.start_nm,
                 final_nm= self.final_nm,
-            )
-            self.env.cr.execute(query, param)
-            result = int((self.env.cr.fetchone() or [0])[0])
-            if result >= folio:
-                folio = result
-        if self.start_nm < folio < self.final_nm:
-            return (folio + 1)
+            ))
+        if not where_clauses:
+            return 0
+        union = 'UNION ALL '.join(where_clauses)
+        query = '''SELECT MAX({field})
+FROM ({union}) AS combined'''.format(
+            field='sii_document_number',
+            union=union
+        )
+        self.env.cr.execute(query, param)
+        folio = int((self.env.cr.fetchone() or [None])[0] or 0)
+        if self.start_nm <= folio < self.final_nm:
+            folios_anulados = ast.literal_eval(self.folios_anulados or '[]')
+            def check_anulado(folio_check):
+                folio_check += 1
+                if folio_check in folios_anulados:
+                    return check_anulado(folio_check)
+                if folio_check > self.final_nm:
+                    return self.final_nm
+                return folio_check
+            folio = check_anulado(folio)
+            if folio > self.final_nm:
+                self.state = 'spent'
+                return self.final_nm
+            if self.document_class_id.es_factura_afecta() or self.document_class_id.es_nc() or self.document_class_id.es_nd():
+                folios_vencidos = ast.literal_eval(self.folios_vencidos or '[]')
+                tz = pytz.timezone("America/Santiago")
+                if folio in folios_vencidos or fields.Date.context_today(self.with_context(tz=tz)) >= self.expiration_date:
+                    self.state = 'spent'
+                    return self.final_nm
+            return folio
         if folio > 0:
             self.state = 'spent'
-            return folio
+            return self.final_nm
         return self.start_nm
 
     def compute_folio_actual(self):
-        for r in self:
-            r.folio_actual = r._get_folio_actual()
+        self.folio_actual = self._get_folio_actual()
 
     name = fields.Char(string="File Name", readonly=True, related="filename",)
     filename = fields.Char(string="File Name", required=True,)
@@ -111,13 +134,16 @@ has been exhausted.""",
     use_level = fields.Float(string="Use Level", compute="_used_level",)
     folio_actual = fields.Integer(
         string="Folio Actual",
-        compute='compute_folio_actual')
+        default=_get_folio_actual,
+        )
     cantidad_folios = fields.Integer(
         string="Cantidad de Folios",
         compute='_get_cantidad_folios')
     qty_available = fields.Integer(
         string="Cantidad Disponible",
-        compute="_get_qty_available",)
+        compute="_get_qty_available",
+        store=True,
+        )
     cantidad_usados = fields.Integer(
         string="Cantidad de Folios Usados",
         compute='_get_usados')
@@ -151,13 +177,16 @@ has been exhausted.""",
 
     def ingresar_folio_sin_usar(self, folio):
         folios = self.obtener_folios_sin_usar()
-        if not folio in folios:
+        if folio not in folios:
             folios.append(folio)
         self.folios_sin_usar = str(sorted(folios))
         self.cantidad_folios_sin_usar += 1
 
     def eliminar_folio_sin_usar(self, folio):
-        self.folios_sin_usar = self.folios_sin_usar.replace('%s, '% folio, '').replace(', %s'% folio, '').replace('%s'% folio, '')
+        folios = self.obtener_folios_sin_usar()
+        if folio in folios:
+            folios.remove(folio)
+        self.folios_sin_usar = str(sorted(folios))
 
     def _join_inspeccionar(self):
         return 'LEFT JOIN account_move a on s = a.sii_document_number and a.document_class_id = %s' % self.document_class_id.id
@@ -186,9 +215,9 @@ has been exhausted.""",
 
     @api.onchange('caf_file')
     def load_caf(self):
-        if not self.caf_file and not self.caf_string:
+        if not self.caf_file:
             return
-        if not self.caf_string and self.caf_file:
+        if not self.caf_string:
             self.caf_string = base64.b64decode(self.caf_file).decode("ISO-8859-1")
         result = self.decode_caf().find("CAF/DA")
         self.start_nm = result.find("RNG/D").text
@@ -215,6 +244,7 @@ to work properly!"""
                 % (self.document_class_id.sii_code, self.sequence_id.sii_document_class_id.sii_code)
             )
         self.state = "in_use"
+        self.compute_folio_actual()
 
     def _get_cantidad_folios(self):
         for r in self:
@@ -256,6 +286,24 @@ WHERE NOT EXISTS (
             'cantidad_folios_vencidos_sin_anular': len(folios_vencidos)
             })
 
+    def obtener_folios_anulados(self):
+        if not self.folios_anulados:
+            return []
+        return ast.literal_eval(self.folios_anulados)
+
+    def ingresar_folio_anulado(self, folio):
+        folios = self.obtener_folios_anulados()
+        if folio not in folios:
+            folios.append(folio)
+        self.folios_anulados = str(sorted(folios))
+        self.cantidad_folios_anulados += 1
+
+    def eliminar_folio_anulado(self, folio):
+        folios = self.obtener_folios_anulados()
+        if folio in folios:
+            folios.remove(folio)
+        self.folios_anulados = str(sorted(folios))
+
     def anular_folio(self, desde, hasta=False):
         if not hasta:
             hasta = desde
@@ -282,7 +330,7 @@ WHERE NOT EXISTS (
     def after_anular_folios(self, inicio, final):
         folios_vencidos = ast.literal_eval(self.folios_vencidos or '[]')
         folios_sin_usar = self.obtener_folios_sin_usar()
-        for r in range(inicio, final):
+        for r in range(inicio, final+1):
             if r in folios_vencidos:
                 folios_vencidos.remove(r)
             if r in folios_sin_usar:
@@ -292,3 +340,4 @@ WHERE NOT EXISTS (
             'cantidad_folios_vencidos': len(folios_vencidos),
             'cantidad_folios_vencidos_sin_anular': len(folios_vencidos)
             })
+            

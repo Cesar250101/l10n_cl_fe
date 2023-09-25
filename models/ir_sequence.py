@@ -13,13 +13,17 @@ _logger = logging.getLogger(__name__)
 def update_next_by_caf(self, folio=False):
     if not self.sii_document_class_id:
         return 0
-    folio = folio or self.number_next_actual
-    caf = self.dte_caf_ids.filtered(
-            lambda caf: caf.start_nm <= folio <= caf.final_nm
-        )
+    caf = self.env['dte.caf'].search([
+            ('sequence_id', '=', self.id),
+            ('folio_actual', '>=', self.number_next),
+            ('qty_available', '>', 0)
+        ],
+        order='folio_actual ASC',
+        limit=1)
     if not caf:
-        _logger.warning("No quedan CAFs para %s disponibles" % self.name)
+        _logger.warning("No quedan folios disponibles CAFs para %s disponibles" % caf.name)
         return 0
+    folio = caf.folio_actual
     if self.implementation == "no_gap":
         self.flush_recordset(['number_next'])
         number_next = self.number_next
@@ -154,15 +158,24 @@ class IRSequence(models.Model):
             caf.inspeccionar_folios_sin_usar()
 
     def get_folio(self):
-        cafs = self.dte_caf_ids.filtered(
-            lambda caf: caf.qty_available > 0).sorted(
-                key=lambda caf: caf.folio_actual
-            )
-        if not cafs:
-            if self.dte_caf_ids:
-                return self.dte_caf_ids[0].folio_actual
-            return 0
-        return cafs[0].folio_actual
+        caf = self.env['dte.caf'].search([
+            ('sequence_id', '=', self.id),
+            ('folio_actual', '>=', self.number_next),
+            ('qty_available', '>', 0)
+        ],
+        order='folio_actual ASC',
+        limit=1)
+        if not caf:
+            if not self.dte_caf_ids:
+                return 0
+            return self.dte_caf_ids[0].folio_actual
+        caf.compute_folio_actual()
+        folio_actual = caf.folio_actual
+        if caf.qty_available == 0:
+            return self.get_folio()
+        if folio_actual != int(self.number_next):
+            update_next_by_caf(self, folio_actual)
+        return folio_actual
 
     def time_stamp(self, formato="%Y-%m-%dT%H:%M:%S"):
         tz = pytz.timezone("America/Santiago")
@@ -214,7 +227,7 @@ suba un CAF o solicite uno en el SII."""
 
     def _next_do(self):
         if self.is_dte:
-            folio = update_next_by_caf(self)
+            folio = self.get_folio()
             if folio == 0:
                 raise UserError(
                     """No hay más folios disponibles para el documento %s. \

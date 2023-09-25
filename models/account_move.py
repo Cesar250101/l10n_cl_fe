@@ -38,6 +38,9 @@ except ImportError:
     _logger.warning("no se ha cargado PIL")
 
 
+tz_stgo = pytz.timezone("America/Santiago")
+
+
 class Referencias(models.Model):
     _name = "account.move.referencias"
     _description = "Línea de referencia de Documentos DTE"
@@ -117,12 +120,14 @@ class AccountMove(models.Model):
     )
     document_class_id = fields.Many2one(
         "sii.document_class", string="Document Type", readonly=True, states={"draft": [("readonly", False)]},
+        index=True,
     )
     sii_code = fields.Integer(
         related="document_class_id.sii_code", string="Document Code", copy=False, readonly=True, store=True,
     )
     sii_document_number = BigInt(
         string="Document Number", copy=False, readonly=True, states={"draft": [("readonly", False)]},
+        index=True,
     )
     sii_batch_number = fields.Integer(
         copy=False, string="Batch Number", readonly=True, help="Batch number for processing multiple invoices together",
@@ -546,14 +551,11 @@ class AccountMove(models.Model):
     def _get_last_sequence_domain(self, relaxed=False):
         where_string, param = super(AccountMove, self)._get_last_sequence_domain(relaxed=relaxed)
         if self.use_documents:
-            where_string += " AND use_documents "
-        else:
-            where_string += " AND NOT use_documents "
-        if self.document_class_id:
-            where_string += " AND document_class_id = %(document_class_id)s "
+            where_string += " AND use_documents AND document_class_id = %(document_class_id)s "
             param['document_class_id'] = self.document_class_id.id
         else:
-            where_string += " AND document_class_id is NULL "
+            where_string += " AND (use_documents is FALSE OR use_documents is NULL)"
+
         return where_string, param
 
     def _set_next_sequence(self):
@@ -563,12 +565,6 @@ class AccountMove(models.Model):
             self[self._sequence_field] = '%s%s' % (self.document_class_id.doc_code_prefix, self.sii_document_number)
         else:
             super(AccountMove, self)._set_next_sequence()
-
-    @api.depends('posted_before', 'state', 'journal_id', 'date', 'document_class_id', 'sii_document_number')
-    def _compute_name(self):
-        dcs = self.filtered("use_documents")
-        super(AccountMove, dcs)._compute_name()
-        super(AccountMove, (self - dcs))._compute_name()
 
     def _post(self, soft=True):
         to_post = super(AccountMove, self)._post(soft=soft)
@@ -994,7 +990,7 @@ class AccountMove(models.Model):
 
     def time_stamp(self, formato="%Y-%m-%dT%H:%M:%S"):
         tz = pytz.timezone("America/Santiago")
-        return datetime.now(tz).strftime(formato)
+        return datetime.now(tz_stgo).strftime(formato)
 
     def crear_intercambio(self):
         rut = self.partner_id.commercial_partner_id.rut()
@@ -1136,7 +1132,7 @@ class AccountMove(models.Model):
     def es_nd(self):
         if not self.referencias or self.move_type not in ["out_invoice", "in_invoice"]:
             return False
-        return self.document_class_id.sii_code in [55, 56, 111]
+        return self.document_class_id.es_nd()
 
     def es_boleta(self):
         return self.document_class_id.es_boleta()
@@ -1464,15 +1460,14 @@ class AccountMove(models.Model):
         return Encabezado
 
     def _validaciones_caf(self, caf):
-        if caf.state == 'spent':
+        fecha_timbre = fields.Date.context_today(self.with_context(tz=tz_stgo))
+        if (self.document_class_id.es_factura_afecta() or \
+            self.document_class_id.es_nc() or self.document_class_id.es_nd()) \
+             and fecha_timbre >= caf.expiration_date:
             raise UserError(
-                """No hay más folios disponibles para el documento %s. \
-Por favor solicite y suba un CAF en el portal del SII o Utilice la opción \
-obtener folios en la secuencia (usando apicaf.cl)."""
-                % (caf.document_class_id.name)
+                """CAF para %s a utilizar ya vencido, por favor anular este folio  %s  y anular en el SII, luego retimbrar con un nuevo folio no vencido."""
+                % (caf.document_class_id.name, self.sii_document_number)
             )
-        invoice_date = self.invoice_date
-        fecha_timbre = fields.Date.context_today(self)
         if fecha_timbre < caf.issued_date:
             raise UserError("La fecha del timbraje no puede ser menor a la fecha de emisión del CAF")
 

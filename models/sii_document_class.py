@@ -41,20 +41,23 @@ class SIIDocumentClass(models.Model):
     def es_boleta(self):
         return self.es_boleta_afecta() or self.es_boleta_exenta()
 
-    def es_boleta_exenta(self):
-        return self.sii_code in [38, 41]
-
     def es_nc_exportacion(self):
-        return self.sii_code in [111, 112]
+        return self.sii_code in [112]
 
-    def es_exportacion(self):
-        return self.sii_code in [110] or self.es_nc_exportacion()
+    def es_nd_exportacion(self):
+        return self.sii_code in [111]
 
-    def es_factura(self):
+    def es_factura_afecta(self):
         return self.sii_code in [30, 33]
 
     def es_factura_exenta(self):
         return self.sii_code in [32, 34]
+
+    def es_factura(self):
+        return self.es_factura_afecta() or self.es_factura_exenta()
+
+    def es_factura_exportacion(self):
+        return self.sii_code in [110]
 
     def es_factura_compra(self):
         return self.sii_code in [45, 46]
@@ -67,3 +70,9 @@ class SIIDocumentClass(models.Model):
 
     def es_nc(self):
         return self.sii_code in [60, 61] or self.es_nc_exportacion()
+
+    def es_nd(self):
+        return self.sii_code in [55, 56] or self.es_nd_exportacion()
+
+    def es_exportacion(self):
+        return self.es_factura_exportacion() or self.es_nc_exportacion() or self.es_nd_exportacion()
