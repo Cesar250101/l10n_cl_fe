@@ -277,6 +277,11 @@ class AccountMove(models.Model):
     sequence_number_next_prefix = fields.Integer(
         compute='_get_sequence_prefix'
     )
+    comision_ids = fields.One2many(
+        'account.move.comision',
+        'move_id',
+        string='Comisiones'
+    )
 
     @api.depends(
         'line_ids.matched_debit_ids.debit_move_id.move_id.payment_id.is_matched',
@@ -332,7 +337,7 @@ class AccountMove(models.Model):
                                 total_tax_currency -= line.amount_currency
                             total -= (sign * line.balance)
                             total_currency -= (sign * line.amount_currency)
-                    elif line.display_type in ('product', 'rounding', 'R', 'D'):
+                    elif line.display_type in ('product', 'rounding', 'R', 'D', 'C'):
                         # Untaxed amount.
                         total_untaxed += line.balance
                         total_untaxed_currency += line.amount_currency
@@ -397,8 +402,8 @@ class AccountMove(models.Model):
                             **line._convert_to_tax_base_line_dict(),
                             'handle_price_include': True,
                             'quantity': 1.0,
-                            'price_unit': line.amount_currency * (-1 if line.display_type == 'D' else 1),
-                            'price_subtotal': line.amount_currency * (-1 if line.display_type == 'D' else 1),
+                            'price_unit': line.amount_currency * (-1 if line.display_type in ['D', 'C'] else 1),
+                            'price_subtotal': line.amount_currency * (-1 if line.display_type in ['D', 'C'] else 1),
                             'taxes': line.tax_ids,
                         }
                         for line in move.line_ids.filtered(lambda line: line.display_type in ['D', 'R'])
@@ -460,6 +465,36 @@ class AccountMove(models.Model):
                             handle_price_include=True,
                             #uom_id
                         ))
+                    for r in move.comision_ids:
+                        sign = -1
+                        kwargs['base_lines'].append(self.env['account.tax']._convert_to_tax_base_line_dict(
+                            None,
+                            partner=move.partner_id,
+                            currency=move.currency_id,
+                            taxes=r.iva,
+                            price_unit=sign*r.valor_neto_comision,
+                            quantity=1.0,
+                            account=r.account_id,
+                            price_subtotal=sign*r.valor_neto_comision,
+                            is_refund=move.move_type in ('out_refund', 'in_refund'),
+                            handle_price_include=True,
+                            #uom_id
+                        ))
+                        if r.valor_exento_comision:
+                            exento = self.env['account.tax'].search([('amount', '=', 0), ('sii_code','=', 0), ('type_tax_use', '=', 'sale'), ('activo_fijo', '=', False) ], limit=1).id
+                            kwargs['base_lines'].append(self.env['account.tax']._convert_to_tax_base_line_dict(
+                                None,
+                                partner=move.partner_id,
+                                currency=move.currency_id,
+                                taxes=exento,
+                                price_unit=sign*r.valor_exento_comision,
+                                quantity=1.0,
+                                account=r.account_id,
+                                price_subtotal=sign*r.valor_exento_comision,
+                                is_refund=move.move_type in ('out_refund', 'in_refund'),
+                                handle_price_include=True,
+                                #uom_id
+                            ))
                 tax_totals = self.env['account.tax']._prepare_tax_totals(**kwargs)
                 move.tax_totals = tax_totals
             else:
@@ -550,7 +585,7 @@ class AccountMove(models.Model):
 
     def _get_last_sequence_domain(self, relaxed=False):
         where_string, param = super(AccountMove, self)._get_last_sequence_domain(relaxed=relaxed)
-        if self.use_documents:
+        if self.use_documents and self.document_class_id:
             where_string += " AND use_documents AND document_class_id = %(document_class_id)s "
             param['document_class_id'] = self.document_class_id.id
         else:
@@ -613,6 +648,12 @@ class AccountMove(models.Model):
         yield
         for invoice in container['records']:
             invoice._recompute_global_gdr_lines()
+
+    @contextmanager
+    def _sync_comisiones_lines(self, container):
+        yield
+        for invoice in container['records']:
+            invoice._recompute_comisiones_lines()
 
     def _get_move_imps(self):
         imps = {}
@@ -718,6 +759,7 @@ class AccountMove(models.Model):
                     container=tax_container,
                 ))
                 stack.enter_context(self._sync_gdr_lines(invoice_container))
+                stack.enter_context(self._sync_comisiones_lines(invoice_container))
                 stack.enter_context(self._sync_dynamic_line(
                     existing_key_fname='epd_key',
                     needed_vals_fname='line_ids.epd_needed',
@@ -987,6 +1029,54 @@ class AccountMove(models.Model):
                 _apply_global_gdr(self, gdr_amount, gdr_amount_currency, gr, gdr, taxes)
         gds.unlink()
         grs.unlink()
+
+    def _recompute_comisiones_lines(self):
+        self.ensure_one()
+
+        def _apply_comision(self, amount, amount_currency, comision_line, comision, taxes):
+            amount_currency *= (-1)
+            if self.move_type in ['in_invoice', 'in_refund']:
+                amount *= (-1)
+            comision_line_vals = {
+                'quantity': 1,
+                'balance': amount,
+                'partner_id': self.partner_id.id,
+                'move_id': self.id,
+                'currency_id': self.currency_id.id,
+                'company_id': self.company_id.id,
+                'company_currency_id': self.company_id.currency_id.id,
+                'display_type': 'C',
+                'name': comision.name,
+                'account_id': comision.account_id.id,
+                'tax_ids': [Command.set(taxes.ids)],
+                'amount_currency': amount_currency,
+            }
+            # Create or update the global gdr line.
+            if comision_line:
+                comision_line.write(comision_line_vals)
+            else:
+                comision_line = self.env['account.move.line'].create(
+                    comision_line_vals)
+        total_comision = 0
+        comisiones = self.line_ids.filtered(lambda l: l.display_type=='C')
+        exento = self.env['account.tax'].search([('amount', '=', 0), ('sii_code','=', 0), ('type_tax_use', '=', 'sale'), ('activo_fijo', '=', False) ], limit=1)
+        for c in self.comision_ids:
+            #if not c.account_id:
+            #    continue
+            comision_line = False
+            for line in comisiones:
+                if line.name == c.name:
+                    comision_line = line
+                    comisiones -= comision_line
+            _apply_comision(self, c.valor_neto_comision, c.valor_neto_comision_currency, comision_line, c, c.iva)
+            if c.valor_exento_comision:
+                comision_line = False
+                for line in comisiones:
+                    if line.name == c.name:
+                        comision_line = line
+                        comisiones -= comision_line
+                _apply_comision(self, c.valor_exento_comision, c.valor_exento_comision_currency, comision_line, c, exento)
+        comisiones.unlink()
 
     def time_stamp(self, formato="%Y-%m-%dT%H:%M:%S"):
         tz = pytz.timezone("America/Santiago")
@@ -1276,6 +1366,20 @@ class AccountMove(models.Model):
             Receptor["CiudadRecep"] = ciudad_recep
         return Receptor
 
+    def _comisiones(self):
+        Comisiones = []
+        for c in self.comision_ids:
+            Comision = {
+                'NroLinCom': c.sequence,
+                'TipoMovim': c.tipo_movimiento,
+                'Glosa': c.name,
+                'TasaComision': c.tasa_comision,
+                'ValComNeto': c.valor_neto_comision,
+                'ValComExe': c.valor_exento_comision,
+                'ValComIVA': c.valor_iva_comision,
+            }
+        return Comisiones
+
     def _totales_otra_moneda(self, currency_id, totales):
         Totales = {}
         Totales["TpoMoneda"] = self._acortar_str(currency_id.abreviatura, 15)
@@ -1362,6 +1466,33 @@ class AccountMove(models.Model):
             Totales["CredEC"] = currency_id.round(totales['CredEC'])
         if totales['MntRet']:
             Totales["MntRet"] = currency_id.round(totales['MntRet'])
+        if totales.get('ValComNeto'):
+            ValComNeto = totales['ValComNeto']
+            if currency_id != self.currency_id:
+                ValComNeto = currency_id._convert(
+                    totales['ValComNeto'],
+                    self.currency_id,
+                    self.company_id,
+                    self.invoice_date)
+            Totales['ValComNeto'] = ValComNeto
+        if totales.get('ValComExe'):
+            ValComExe = totales['ValComExe']
+            if currency_id != self.currency_id:
+                ValComExe = currency_id._convert(
+                    totales['ValComExe'],
+                    self.currency_id,
+                    self.company_id,
+                    self.invoice_date)
+            Totales['ValComExe'] = ValComExe
+        if totales.get('ValComIVA'):
+            ValComIVA = totales['ValComIVA']
+            if currency_id != self.currency_id:
+                ValComIVA = currency_id._convert(
+                    totales['ValComIVA'],
+                    self.currency_id,
+                    self.company_id,
+                    self.invoice_date)
+            Totales['ValComIVA'] = ValComIVA
         MntTotal = totales['MntTotal']
         if currency_id != self.currency_id:
             MntTotal = currency_id._convert(
@@ -1428,9 +1559,24 @@ class AccountMove(models.Model):
                 self._es_exento() and self.document_class_id.sii_code not in [
                                                                 60, 61, 55, 56]:
             raise UserError("Debe ir almenos un producto afecto")
+        val_com_neto = 0
+        val_com_exe = 0
+        val_com_iva = 0
+        if self.comision_ids:
+            for c in self.comision_ids:
+                val_com_neto += c.valor_neto_comision
+                val_com_exe += c.valor_exento_comision
+                val_com_iva += c.valor_iva_comision
+            if val_com_neto:
+                totales['ValComNeto'] = val_com_neto
+            if val_com_exe:
+                totales['ValComExe'] = val_com_exe
+            if val_com_iva:
+                totales['ValComIVA'] = val_com_iva
         totales['MntTotal'] = totales['MntNeto'] + totales['MntExe'] + \
             totales['MntIVA'] + totales['OtrosImp'] + totales['MontoNF'] - \
-            totales['CredEC'] - totales['MntRet']
+            totales['CredEC'] - totales['MntRet'] - val_com_neto - val_com_exe \
+            - val_com_iva
         if not self.document_class_id.es_exportacion():
             totales['VlrPagar'] = totales['MntTotal']
         return totales
@@ -1494,7 +1640,7 @@ class AccountMove(models.Model):
         #):
         #    self._onchange_invoice_line_ids()
         for line in self.with_context(lang="es_CL").invoice_line_ids:
-            if not line.account_id or not line.product_id:
+            if not line.tpo_doc_liq and (not line.account_id or not line.product_id):
                 continue
             product = line.product_id.default_code != "NO_PRODUCT"
             lines = {}
@@ -1518,6 +1664,8 @@ class AccountMove(models.Model):
                 lines['CodImpAdic'] = details['cod_imp_adic']
                 if taxInclude and not details['desglose']:
                     raise UserError("Con impuestos adicionales, la configuración impuesto incluído debe llevar marcado desglose de impuesto en la ficha del impuesto por obligación")
+            if line.tpo_doc_liq:
+                lines['TpoDocLiq'] = line.tpo_doc_liq.sii_code
             if details.get('IndExe'):
                 lines['IndExe'] = details['IndExe']
                 if details['IndExe'] not in [2, 6]:
@@ -1710,6 +1858,8 @@ class AccountMove(models.Model):
         dte["Detalle"] = resumen["Detalle"]
         dte["DscRcgGlobal"] = self._gdr()
         dte["Referencia"] = ref_lines
+        if self.comision_ids:
+            dte['Comisiones'] = self._comisiones()
         dte["CodIVANoRec"] = self.no_rec_code
         dte["IVAUsoComun"] = self.iva_uso_comun
         dte["moneda_decimales"] = self.currency_id.decimal_places
@@ -2053,6 +2203,11 @@ class AccountMove(models.Model):
                 exento += l.price_subtotal
         return exento if exento > 0 else (exento * -1)
 
+    def comisiones(self):
+        total = 0
+        for c in self.comision_ids:
+            total += c.valor_neto_comision + c.valor_iva_comision + c.valor_exento_comision
+        return total
 
     def getTotalDiscount(self):
         total_discount = 0

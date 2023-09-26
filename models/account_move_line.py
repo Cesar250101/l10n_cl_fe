@@ -22,8 +22,9 @@ class AccountInvoiceLine(models.Model):
         selection_add=[
             ('D', 'Descuento Global'),
             ('R', 'Recargo Global'),
+            ('C', 'Comisión u Otros Cargos'),
         ],
-        ondelete={'D': 'set product', 'R': 'set product'})
+        ondelete={'D': 'set product', 'R': 'set product', 'C': 'set product'})
     ind_exe = fields.Selection([
             ('1', 'No afecto o exento de IVA (10)'),
             ('2', 'Producto o servicio no es facturable'),
@@ -34,6 +35,10 @@ class AccountInvoiceLine(models.Model):
         ],
         string="Indicador Exento"
     )
+    tpo_doc_liq = fields.Many2one(
+        'sii.document_class',
+        string="Tipo de documento Liquidación"
+    )
 
     @api.depends('quantity', 'discount', 'price_unit', 'tax_ids', 'currency_id')
     def _compute_totals(self):
@@ -43,9 +48,9 @@ class AccountInvoiceLine(models.Model):
             # Compute 'price_subtotal'.
             line_discount_price_unit = line.price_unit
             sign = 1
-            if line.display_type in ['D', 'R']:
+            if line.display_type in ['D', 'R', 'C']:
                 line_discount_price_unit = line.balance
-                if line.display_type == 'D':
+                if line.display_type in ['D', 'C']:
                     line_discount_price_unit *= -1
             subtotal = line.quantity * line_discount_price_unit
             subtotal -= line.currency_id.round(subtotal *  (line.discount / 100.0))

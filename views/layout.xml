@@ -258,14 +258,65 @@
                             </table>
                         </div>
                     </t>
+                    <t t-if="o.comision_ids">
+                      <span style="font-size:8px;"> Comisiones y otros Cargos</span>
+                      <div class="row" style="border: 2px solid black; min-height:10px;" name="comision_ids">
+                        <table class="table table-condensed">
+                            <thead style="max-height:10px; font-size:8px !important;">
+                                <th style="padding:1px 5px !important;">
+                                    <strong>Tipo Movimiento</strong>
+                                </th>
+                                <th style="padding:1px 5px !important;">
+                                    <strong>Glosa</strong>
+                                </th>
+                                <th style="padding:1px 5px !important;">
+                                    <strong>Tasa</strong>
+                                </th>
+                                <th style="padding:1px 5px !important;">
+                                    <strong>Valor Neto</strong>
+                                </th>
+                                <th style="padding:1px 5px !important;">
+                                    <strong>Valor Exento</strong>
+                                </th>
+                                <th style="padding:1px 5px !important;">
+                                    <strong>Valor IVA</strong>
+                                </th>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.comision_ids" t-as="l" style="max-height:8px; font-size:10px !important;">
+                                  <td style="border-top: 0px !important; padding:0px 5px !important;">
+                                    <span t-field="l.tipo_movimiento" />
+                                  </td>
+                                  <td style="border-top: 0px !important; padding:0px 5px !important;">
+                                    <span t-field="l.name" />
+                                  </td>
+                                  <td style="border-top: 0px !important; padding:0px 5px !important;">
+                                    <span t-field="l.tasa" />
+                                  </td>
+                                  <td style="border-top: 0px !important; padding:0px 5px !important;">
+                                    <span t-field="l.valor_neto_comision" />
+                                  </td>
+                                  <td style="border-top: 0px !important; padding:0px 5px !important;">
+                                    <span t-field="l.valor_exento_comision" />
+                                  </td>
+                                  <td style="border-top: 0px !important; padding:0px 5px !important;">
+                                    <span t-field="l.valor_iva_comision" />
+                                  </td>
+                                </tr>
+                              </tbody>
+                            </table>
+                          </div>
+                    </t>
                     <!-- Is there a discount on at least one line? -->
                     <t t-set="display_discount" t-value="any([l.discount for l in o.invoice_line_ids])" />
+                    <t t-set="display_liquidacion" t-value="any([l.tpo_doc_liq for l in o.invoice_line_ids])" />
                     <t t-set="price_included" t-value="o.is_price_included()" />
                     <div t-if="price_included">Valores IVA incluído</div>
                     <table class="table table-condensed">
                         <thead>
                             <tr style="max-height:8px; line-height:12px; font-size:12px !important; padding:0px;">
                                 <th />
+                                <th t-if="display_liquidacion">Tipo Documento Liquidación</th>
                                 <th>Cantidad</th>
                                 <th>Artículo</th>
                                 <th>Descripción</th>
@@ -286,6 +337,9 @@
                             >
                                 <td style="max-height:8px; line-height:10px !important;">
                                     <span t-field="l.sequence" />
+                                </td>
+                                <td t-if="display_liquidacion" style="max-height:8px; line-height:10px !important;">
+                                    <span t-field="l.tpo_doc_liq" />
                                 </td>
                                 <td style="max-height:8px; line-height:10px !important;">
                                     <span t-field="l.quantity" />
@@ -419,6 +473,12 @@
                                       </tr>
                                   </t>
                                 </t>
+                                <tr t-if="display_liquidacion" class="border-black" style="max-height:12px; font-size:12px !important;">
+                                    <td>Comisiones y Otros Cargos</td>
+                                    <td class="text-right">
+                                        <span t-esc="o.comisiones()"/>
+                                    </td>
+                                </tr>
                                 <t t-set="has_rounding" t-value="'formatted_amount_total_rounded' in tax_totals"/>
                                 <tr class="border-black" style="max-height:12px; font-size:12px !important;">
                                     <t t-if="has_rounding"><td>Total</td></t>

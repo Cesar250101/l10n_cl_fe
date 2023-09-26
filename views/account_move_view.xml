@@ -139,7 +139,12 @@
                   <field name="iva_uso_comun" attrs="{'invisible': [('move_type', 'not in', ('in_invoice', 'in_refund'))]}" />
                   <field name="no_rec_code" attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund'))]}" />
                 </field>
-
+                <field name="product_id" position="before">
+                  <field name="tpo_doc_liq" optional="hide" />
+                </field>
+                <field name="tax_ids" position="before">
+                  <field name="ind_exe" optional="hide" />
+                </field>
                 <xpath expr="//group[hasclass('oe_invoice_lines_tab')]" position="after">
                     <field
                         name="global_descuentos_recargos"
@@ -189,6 +194,23 @@
                           </tree>
                       </field>
                     </group>
+                  </page>
+                  <page string="Comisiones Liquidación Factura" name="liquidacion"  attrs="{'invisible':[ ('sii_code', 'not in', [43, 46])]}">
+                      <group>
+                          <field name="comision_ids" editable="bottom" widget="one2many">
+                            <tree editable="top/bottom">
+                              <field name="sequence" widget="handle" />
+                              <field name="name" />
+                              <field name="currency_id" invisible="True" />
+                              <field name="tipo_movimiento" required="True"/>
+                              <field name="tasa_comision" />
+                              <field name="valor_neto_comision" />
+                              <field name="valor_exento_comision" />
+                              <field name="valor_iva_comision" />
+                              <field name="move_id" invisible="True" />
+                            </tree>
+                          </field>
+                      </group>
                   </page>
                 </page>
 
