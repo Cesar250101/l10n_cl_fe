@@ -46,7 +46,7 @@ class AccountMoveComision(models.Model):
         required=True,
         check_company=True,
         domain="[('deprecated', '=', False), ('company_id', '=', company_id), ('is_off_balance', '=', False)]",
-        default=lambda self: self.move_id.journal_id.default_gd_account_id if self.type == 'D' else self.move_id.journal_id.default_gr_account_id
+        default=lambda self: self.move_id.journal_id.default_comision_account_id
     )
 
     _order = 'sequence'

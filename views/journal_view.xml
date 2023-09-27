@@ -30,6 +30,7 @@
                 <field name="default_account_id" position="before">
                   <field name="default_gd_account_id" attrs="{'invisible': [('type', 'not in', [ 'purchase', 'sale'])]}" />
                   <field name="default_gr_account_id" attrs="{'invisible': [('type', 'not in', [ 'purchase', 'sale'])]}" />
+                  <field name="default_comision_account_id" attrs="{'invisible': [('type', 'not in', [ 'purchase', 'sale'])]}" />
                 </field>
 
                 <field name="type" position="after">

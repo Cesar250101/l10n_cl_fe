@@ -30,6 +30,9 @@ class AccountJournal(models.Model):
     default_gr_account_id = fields.Many2one('account.account', string='Default GR Account',
         company_dependent=True, domain="[('deprecated', '=', False), ('company_id', '=', current_company_id)]"
     )
+    default_comision_account_id = fields.Many2one('account.account', string='Default Comision Account',
+        company_dependent=True, domain="[('deprecated', '=', False), ('company_id', '=', current_company_id)]"
+    )
 
     @api.onchange("journal_document_class_ids")
     def set_documents(self):
