@@ -1033,7 +1033,7 @@ class AccountMove(models.Model):
     def _recompute_comisiones_lines(self):
         self.ensure_one()
 
-        def _apply_comision(self, amount, amount_currency, comision_line, comision, taxes):
+        def _apply_comision(self, name, amount, amount_currency, comision_line, comision, taxes):
             amount_currency *= (-1)
             if self.move_type in ['in_invoice', 'in_refund']:
                 amount *= (-1)
@@ -1046,7 +1046,7 @@ class AccountMove(models.Model):
                 'company_id': self.company_id.id,
                 'company_currency_id': self.company_id.currency_id.id,
                 'display_type': 'C',
-                'name': comision.name,
+                'name': name,
                 'account_id': comision.account_id.id,
                 'tax_ids': [Command.set(taxes.ids)],
                 'amount_currency': amount_currency,
@@ -1057,25 +1057,27 @@ class AccountMove(models.Model):
             else:
                 comision_line = self.env['account.move.line'].create(
                     comision_line_vals)
-        total_comision = 0
         comisiones = self.line_ids.filtered(lambda l: l.display_type=='C')
         exento = self.env['account.tax'].search([('amount', '=', 0), ('sii_code','=', 0), ('type_tax_use', '=', 'sale'), ('activo_fijo', '=', False) ], limit=1)
         for c in self.comision_ids:
             #if not c.account_id:
             #    continue
             comision_line = False
+            name = c.name + '- Afecto'
             for line in comisiones:
-                if line.name == c.name:
+                if line.name == name:
                     comision_line = line
                     comisiones -= comision_line
-            _apply_comision(self, c.valor_neto_comision, c.valor_neto_comision_currency, comision_line, c, c.iva)
+
+            _apply_comision(self, name, c.valor_neto_comision, c.valor_neto_comision_currency, comision_line, c, c.iva)
             if c.valor_exento_comision:
                 comision_line = False
+                name = c.name + '- Exento'
                 for line in comisiones:
-                    if line.name == c.name:
+                    if line.name == name:
                         comision_line = line
                         comisiones -= comision_line
-                _apply_comision(self, c.valor_exento_comision, c.valor_exento_comision_currency, comision_line, c, exento)
+                _apply_comision(self, name, c.valor_exento_comision, c.valor_exento_comision_currency, comision_line, c, exento)
         comisiones.unlink()
 
     def time_stamp(self, formato="%Y-%m-%dT%H:%M:%S"):

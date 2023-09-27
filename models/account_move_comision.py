@@ -17,23 +17,23 @@ class AccountMoveComision(models.Model):
         string="Tipo de Comisión"
     )
     tasa_comision = fields.Float(string="Tasa de Comision")
-    valor_neto_comision = fields.Monetary(string="Valor Neto de Comision", currency_field='currency_id',)
+    valor_neto_comision = fields.Monetary(string="Neto", currency_field='currency_id',)
     valor_neto_comision_currency = fields.Float(
         compute='_compute_amounts',
         string="Monto neto en moneda",
         store=True)
-    valor_exento_comision = fields.Monetary(string="Valor de Comsiones Exentas", currency_field='currency_id',)
+    valor_exento_comision = fields.Monetary(string="Exento", currency_field='currency_id',)
     valor_exento_comision_currency = fields.Float(
         compute='_compute_amounts',
         string="Monto exento en moneda",
         store=True)
-    valor_iva_comision = fields.Monetary(string="Valor de Comisiones Afectas",currency_field='currency_id',)
+    valor_iva_comision = fields.Monetary(string="IVA",currency_field='currency_id',)
     sequence = fields.Integer("Orden", default=0)
     iva = fields.Many2one(
         'account.tax',
         string="IVA a usar",
-        default=lambda self: self.env['account.tax'].search([('sii_code','=', 14), ('type_tax_use', '=', 'sale'), ('activo_fijo', '=', False) ], limit=1).id,
-        domain="[('sii_code','=', 14), ('type_tax_use', '=', 'sale'), ('activo_fijo', '=', False)]"
+        default=lambda self: self.env['account.tax'].search([('sii_code','=', 14), ('type_tax_use', '=', 'sale' if self.move_id.is_sale_document() else 'purchase'), ('activo_fijo', '=', False) ], limit=1).id,
+        domain=lambda self: [('sii_code','=', 14), ('type_tax_use', '=', 'sale' if self.move_id.is_sale_document() else 'purchase'), ('activo_fijo', '=', False)]
     )
     currency_id = fields.Many2one(
         comodel_name='res.currency',
@@ -54,21 +54,26 @@ class AccountMoveComision(models.Model):
     )
 
     _order = 'sequence'
+    _sql_constraints = [
+        ('name_uniq_per_move', 'unique(name, move_id)', 'Ya existe una línea con esta glosa para el documento')
+    ]
 
+
+    @api.depends('valor_neto_comision', 'valor_exento_comision', 'move_id.date')
     def _compute_amounts(self):
         for c in self:
             currency = c.company_id.currency_id
-            c.valor_exento_comision_currency = c.currency_id._convert(
-                c.valor_neto_comision,
-                currency_id,
-                c.company_id,
-                c.move_id.invoice_date
-            )
             c.valor_neto_comision_currency = c.currency_id._convert(
-                c.valor_exento_comision,
-                currency_id,
+                c.valor_neto_comision,
+                currency,
                 c.company_id,
-                c.move_id.invoice_date
+                c.move_id.invoice_date or c.move_id.date or fields.Date.context_today(c)
+            )
+            c.valor_exento_comision_currency = c.currency_id._convert(
+                c.valor_exento_comision,
+                currency,
+                c.company_id,
+                c.move_id.invoice_date or c.move_id.date or fields.Date.context_today(c)
             )
 
 
@@ -82,7 +87,7 @@ class AccountMoveComision(models.Model):
 
     @api.onchange("valor_neto_comision")
     def calcular_iva(self):
-        if self.valor_neto_comision and not self.valor_iva_comision and self.iva:
+        if self.valor_neto_comision and self.iva:
             is_refund = self.move_id.document_class_id.es_nc()
             taxes = self.iva.compute_all(
                 self.valor_neto_comision,
