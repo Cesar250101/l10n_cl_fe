@@ -38,7 +38,7 @@ class AccountMoveComision(models.Model):
     currency_id = fields.Many2one(
         comodel_name='res.currency',
         string='Currency',
-        required=True,
+        related='move_id.currency_id',
     )
     account_id = fields.Many2one(
         'account.account',
@@ -47,6 +47,10 @@ class AccountMoveComision(models.Model):
         check_company=True,
         domain="[('deprecated', '=', False), ('company_id', '=', company_id), ('is_off_balance', '=', False)]",
         default=lambda self: self.move_id.journal_id.default_comision_account_id
+    )
+    company_id = fields.Many2one(
+        related='move_id.company_id', store=True, readonly=True, precompute=True,
+        index=True,
     )
 
     _order = 'sequence'
