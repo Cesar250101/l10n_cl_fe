@@ -1035,8 +1035,8 @@ class AccountMove(models.Model):
 
         def _apply_comision(self, name, amount, amount_currency, comision_line, comision, taxes):
             if self.move_type in ['in_invoice', 'in_refund']:
-                amount_currency *= (-1)
                 amount *= (-1)
+                amount_currency *= (-1)
             comision_line_vals = {
                 'quantity': 1,
                 'balance': amount,

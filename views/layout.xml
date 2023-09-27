@@ -283,7 +283,7 @@
                                 </th>
                             </thead>
                             <tbody>
-                                <tr t-foreach="o.comision_ids" t-as="l" style="max-height:8px; font-size:10px !important;">
+                                <tr t-foreach="o.comision_ids" t-as="l" style="max-height:8px; font-size:10px !important; text-align: center;">
                                   <td style="border-top: 0px !important; padding:0px 5px !important;">
                                     <span t-field="l.tipo_movimiento" />
                                   </td>
@@ -318,7 +318,7 @@
                                 <th />
                                 <th t-if="display_liquidacion">Tipo Documento Liquidación</th>
                                 <th>Cantidad</th>
-                                <th>Artículo</th>
+                                <th>Producto</th>
                                 <th>Descripción</th>
                                 <th class="text-teft">Precio Unitario</th>
                                 <th
@@ -329,9 +329,9 @@
                                 <th class="text-left">Precio</th>
                             </tr>
                         </thead>
-                        <tbody class="invoice_tbody">
+                        <tbody class="invoice_tbody" style="text-align: center;">
                             <tr
-                                t-foreach="o.invoice_line_ids.filtered(lambda line: line.sudo().account_id and line.product_id).sorted(key=lambda l: (l.sequence))"
+                                t-foreach="o.invoice_line_ids.sorted(key=lambda l: (l.sequence))"
                                 t-as="l"
                                 style="max-height:8px;line-height:10px !important; font-size:12px !important;"
                             >
