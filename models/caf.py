@@ -226,7 +226,7 @@ has been exhausted.""",
         self.document_class_id = dc.id
         fa = result.find("FA").text
         self.issued_date = fa
-        if dc.sii_code not in [34, 52] and not dc.es_boleta():
+        if dc.es_factura_afecta() or dc.es_nc() or dc.es_nd() or dc.es_liquidacion() or dc.es_factura_compra():
             self.expiration_date = date(int(fa[:4]), int(fa[5:7]), int(fa[8:10])) + relativedelta(months=6)
         self.rut_n = result.find("RE").text
         if self.rut_n != self.company_id.partner_id.rut():
@@ -340,4 +340,3 @@ WHERE NOT EXISTS (
             'cantidad_folios_vencidos': len(folios_vencidos),
             'cantidad_folios_vencidos_sin_anular': len(folios_vencidos)
             })
-            
