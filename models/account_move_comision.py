@@ -32,8 +32,7 @@ class AccountMoveComision(models.Model):
     iva = fields.Many2one(
         'account.tax',
         string="IVA a usar",
-        default=lambda self: self.env['account.tax'].search([('sii_code','=', 14), ('type_tax_use', '=', 'sale' if self.move_id.is_sale_document() else 'purchase'), ('activo_fijo', '=', False) ], limit=1).id,
-        domain=lambda self: [('sii_code','=', 14), ('type_tax_use', '=', 'sale' if self.move_id.is_sale_document() else 'purchase'), ('activo_fijo', '=', False)]
+        compute='_compute_iva',
     )
     currency_id = fields.Many2one(
         comodel_name='res.currency',
@@ -53,11 +52,20 @@ class AccountMoveComision(models.Model):
         index=True,
     )
 
-    _order = 'sequence'
+    _order = 'sequence ASC'
     _sql_constraints = [
         ('name_uniq_per_move', 'unique(name, move_id)', 'Ya existe una línea con esta glosa para el documento')
     ]
 
+    @api.depends('move_id.move_type')
+    def _compute_iva(self):
+        for r in self:
+            type_tax_use = ('sale' if r.move_id.is_sale_document() else 'purchase')
+            r.iva = self.env['account.tax'].search([
+                ('sii_code','=', 14),
+                ('type_tax_use', '=', type_tax_use),
+                ('activo_fijo', '=', False) ],
+                limit=1)
 
     @api.depends('valor_neto_comision', 'valor_exento_comision', 'move_id.date')
     def _compute_amounts(self):
@@ -85,7 +93,7 @@ class AccountMoveComision(models.Model):
             self.valor_neto_comision = totales.get('MntNeto', 0) * (self.tasa_comision /100.0)
             self.valor_exento_comision = totales.get('MntExe', 0) * (self.tasa_comision /100.0)
 
-    @api.onchange("valor_neto_comision")
+    @api.onchange("valor_neto_comision", 'iva')
     def calcular_iva(self):
         if self.valor_neto_comision and self.iva:
             is_refund = self.move_id.document_class_id.es_nc()
