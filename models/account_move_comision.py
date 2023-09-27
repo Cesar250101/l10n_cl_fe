@@ -14,7 +14,8 @@ class AccountMoveComision(models.Model):
         ('C','Comisiones'),
         ('O','Otros')
         ],
-        string="Tipo de Comisión"
+        string="Tipo de Comisión",
+        default="C"
     )
     tasa_comision = fields.Float(string="Tasa de Comision")
     valor_neto_comision = fields.Monetary(string="Neto", currency_field='currency_id',)
