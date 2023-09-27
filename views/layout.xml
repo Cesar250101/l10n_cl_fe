@@ -291,7 +291,7 @@
                                     <span t-field="l.name" />
                                   </td>
                                   <td style="border-top: 0px !important; padding:0px 5px !important;">
-                                    <span t-field="l.tasa" />
+                                    <span t-field="l.tasa_comision" />
                                   </td>
                                   <td style="border-top: 0px !important; padding:0px 5px !important;">
                                     <span t-field="l.valor_neto_comision" />
@@ -445,6 +445,12 @@
                                         />
                                     </td>
                                 </tr>
+                                <tr t-if="display_liquidacion" class="border-black" style="max-height:12px; font-size:12px !important;">
+                                    <td>Comisiones y Otros Cargos</td>
+                                    <td class="text-right">
+                                        <span t-esc="o.comisiones()"/>
+                                    </td>
+                                </tr>
                                 <tr
                                     name="discount"
                                     t-if="display_discount"
@@ -473,12 +479,6 @@
                                       </tr>
                                   </t>
                                 </t>
-                                <tr t-if="display_liquidacion" class="border-black" style="max-height:12px; font-size:12px !important;">
-                                    <td>Comisiones y Otros Cargos</td>
-                                    <td class="text-right">
-                                        <span t-esc="o.comisiones()"/>
-                                    </td>
-                                </tr>
                                 <t t-set="has_rounding" t-value="'formatted_amount_total_rounded' in tax_totals"/>
                                 <tr class="border-black" style="max-height:12px; font-size:12px !important;">
                                     <t t-if="has_rounding"><td>Total</td></t>
