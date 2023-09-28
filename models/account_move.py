@@ -1371,7 +1371,7 @@ class AccountMove(models.Model):
     def _comisiones(self):
         Comisiones = []
         for c in self.comision_ids:
-            Comision = {
+            Comisiones.append({
                 'NroLinCom': c.sequence,
                 'TipoMovim': c.tipo_movimiento,
                 'Glosa': c.name,
