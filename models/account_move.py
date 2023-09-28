@@ -1037,7 +1037,6 @@ class AccountMove(models.Model):
                 'name': name,
                 'account_id': comision.account_id.id,
                 'tax_ids': [Command.set(taxes.ids)],
-                'amount_currency': amount_currency,
             }
             # Create or update the comision line.
             if comision_line:
