@@ -1025,9 +1025,6 @@ class AccountMove(models.Model):
         self.ensure_one()
 
         def _apply_comision(self, name, amount, amount_currency, comision_line, comision, taxes):
-            if self.is_sale_document():
-                amount *= (-1)
-                amount_currency *= (-1)
             comision_line_vals = {
                 'quantity': 1,
                 'balance': amount,
