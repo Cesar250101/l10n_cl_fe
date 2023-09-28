@@ -1379,7 +1379,7 @@ class AccountMove(models.Model):
                 'ValComNeto': c.valor_neto_comision,
                 'ValComExe': c.valor_exento_comision,
                 'ValComIVA': c.valor_iva_comision,
-            }
+            })
         return Comisiones
 
     def _totales_otra_moneda(self, currency_id, totales):
@@ -1644,6 +1644,8 @@ class AccountMove(models.Model):
         for line in self.with_context(lang="es_CL").invoice_line_ids:
             if not line.tpo_doc_liq and (not line.account_id or not line.product_id):
                 continue
+            if not line.name and not line.product_id:
+                raise UserError("Debe ingrear un producto o una descripción/etiqueta de la línea")
             product = line.product_id.default_code != "NO_PRODUCT"
             lines = {}
             lines["NroLinDet"] = line.sequence
@@ -1681,10 +1683,13 @@ class AccountMove(models.Model):
             #   lines['ItemEspectaculo'] =
             #            if self.es_boleta():
             #                lines['RUTMandante']
-            lines["NmbItem"] = line.product_id.with_context(
-                display_default_code=False).name
-            if line.product_id.name != line.name:
-                lines["DscItem"] = line.name.replace(line.name, lines['NmbItem'])
+            if line.product_id:
+                lines["NmbItem"] = line.product_id.with_context(
+                    display_default_code=False).name
+                if line.product_id.name != line.name:
+                    lines["DscItem"] = line.name.replace(line.name, lines['NmbItem'])
+            else:
+                lines['NmbItem'] = line.name
             # lines['InfoTicket']
             MontoItem = 0
             qty = 0
