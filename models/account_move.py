@@ -1759,7 +1759,7 @@ class AccountMove(models.Model):
                     taxInclude = False
             lines["QtyItem"] = qty
             lines["MontoItem"] = MontoItem
-            if MontoItem < 0:
+            if MontoItem < 0 and not self.document_class_id.es_liquidacion():
                 raise UserError(_("No pueden ir valores negativos en las líneas de detalle"))
             if lines.get("PrcItem", 1) == 0:
                 del lines["PrcItem"]
