@@ -62,8 +62,9 @@ class AccountMoveComision(models.Model):
     def _compute_iva(self):
         for r in self:
             type_tax_use = ('sale' if r.move_id.is_sale_document() else 'purchase')
+            sii_code = 15 if r.move_id.document_class_id.es_factura_compra() or r.move_id.es_nc_factura_compra() else 14
             r.iva = self.env['account.tax'].search([
-                ('sii_code','=', 14),
+                ('sii_code','=', sii_code),
                 ('type_tax_use', '=', type_tax_use),
                 ('activo_fijo', '=', False) ],
                 limit=1)
