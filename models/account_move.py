@@ -406,7 +406,7 @@ class AccountMove(models.Model):
                             'price_subtotal': line.amount_currency * (-1 if line.display_type in ['D', 'C'] else 1),
                             'taxes': line.tax_ids,
                         }
-                        for line in move.line_ids.filtered(lambda line: line.display_type in ['D', 'R'])
+                        for line in move.line_ids.filtered(lambda line: line.display_type in ['D', 'R', 'C'])
                     ]
 
 
@@ -451,7 +451,7 @@ class AccountMove(models.Model):
                             #uom_id
                         ))
                     for r in move.global_descuentos_recargos:
-                        sign = 1 if r.gdr_type == 'D' else -1
+                        sign = -1 if r.type == 'D' else 1
                         kwargs['base_lines'].append(self.env['account.tax']._convert_to_tax_base_line_dict(
                             None,
                             partner=move.partner_id,
@@ -460,7 +460,6 @@ class AccountMove(models.Model):
                             price_unit=sign*r.amount_untaxed,
                             quantity=1.0,
                             account=r.account_id,
-                            price_subtotal=sign*r.amount_untaxed,
                             is_refund=move.move_type in ('out_refund', 'in_refund'),
                             handle_price_include=True,
                             #uom_id
@@ -475,7 +474,6 @@ class AccountMove(models.Model):
                             price_unit=sign*r.valor_neto_comision,
                             quantity=1.0,
                             account=r.account_id,
-                            price_subtotal=sign*r.valor_neto_comision,
                             is_refund=move.move_type in ('out_refund', 'in_refund'),
                             handle_price_include=True,
                             #uom_id
@@ -961,12 +959,6 @@ class AccountMove(models.Model):
         self.ensure_one()
 
         def _apply_global_gdr(self, amount, amount_currency, global_gdr_line, gdr, taxes):
-            amount_currency *= (-1)
-            if self.move_type in ['in_invoice', 'in_refund']:
-                amount *= (-1)
-            if gdr.type == 'R':
-                amount *= (-1)
-                amount_currency *= (-1)
             gdr_line_vals = {
                 'quantity': 1,
                 'balance': amount,
@@ -979,7 +971,6 @@ class AccountMove(models.Model):
                 'name': gdr.name,
                 'account_id': gdr.account_id.id,
                 'tax_ids': [Command.set(taxes.ids)],
-                'amount_currency': amount_currency,
             }
             # Create or update the global gdr line.
             if global_gdr_line:
@@ -1034,7 +1025,7 @@ class AccountMove(models.Model):
         self.ensure_one()
 
         def _apply_comision(self, name, amount, amount_currency, comision_line, comision, taxes):
-            if self.move_type in ['in_invoice', 'in_refund']:
+            if self.is_sale_document():
                 amount *= (-1)
                 amount_currency *= (-1)
             comision_line_vals = {
@@ -1051,7 +1042,7 @@ class AccountMove(models.Model):
                 'tax_ids': [Command.set(taxes.ids)],
                 'amount_currency': amount_currency,
             }
-            # Create or update the global gdr line.
+            # Create or update the comision line.
             if comision_line:
                 comision_line.write(comision_line_vals)
             else:
@@ -1370,15 +1361,17 @@ class AccountMove(models.Model):
 
     def _comisiones(self):
         Comisiones = []
+        sequence = 0
         for c in self.comision_ids:
+            sequence = (c.sequence or sequence ) +1
             Comisiones.append({
-                'NroLinCom': c.sequence,
+                'NroLinCom': sequence,
                 'TipoMovim': c.tipo_movimiento,
                 'Glosa': c.name,
                 'TasaComision': c.tasa_comision,
-                'ValComNeto': c.valor_neto_comision,
-                'ValComExe': c.valor_exento_comision,
-                'ValComIVA': c.valor_iva_comision,
+                'ValComNeto': self.currency_id.round(c.valor_neto_comision),
+                'ValComExe': self.currency_id.round(c.valor_exento_comision),
+                'ValComIVA': self.currency_id.round(c.valor_iva_comision),
             })
         return Comisiones
 
@@ -1476,7 +1469,7 @@ class AccountMove(models.Model):
                     self.currency_id,
                     self.company_id,
                     self.invoice_date)
-            Totales['ValComNeto'] = ValComNeto
+            Totales['ValComNeto'] = currency_id.round(ValComNeto)
         if totales.get('ValComExe'):
             ValComExe = totales['ValComExe']
             if currency_id != self.currency_id:
@@ -1485,7 +1478,7 @@ class AccountMove(models.Model):
                     self.currency_id,
                     self.company_id,
                     self.invoice_date)
-            Totales['ValComExe'] = ValComExe
+            Totales['ValComExe'] = currency_id.round(ValComExe)
         if totales.get('ValComIVA'):
             ValComIVA = totales['ValComIVA']
             if currency_id != self.currency_id:
@@ -1494,7 +1487,7 @@ class AccountMove(models.Model):
                     self.currency_id,
                     self.company_id,
                     self.invoice_date)
-            Totales['ValComIVA'] = ValComIVA
+            Totales['ValComIVA'] = currency_id.round(ValComIVA)
         MntTotal = totales['MntTotal']
         if currency_id != self.currency_id:
             MntTotal = currency_id._convert(

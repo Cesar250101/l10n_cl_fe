@@ -72,15 +72,16 @@ class AccountMoveComision(models.Model):
     @api.depends('valor_neto_comision', 'valor_exento_comision', 'move_id.date')
     def _compute_amounts(self):
         for c in self:
+            sign = -1 if c.move_id.is_sale_document() else 1
             currency = c.company_id.currency_id
             c.valor_neto_comision_currency = c.currency_id._convert(
-                c.valor_neto_comision,
+                sign*c.valor_neto_comision,
                 currency,
                 c.company_id,
                 c.move_id.invoice_date or c.move_id.date or fields.Date.context_today(c)
             )
             c.valor_exento_comision_currency = c.currency_id._convert(
-                c.valor_exento_comision,
+                sign*c.valor_exento_comision,
                 currency,
                 c.company_id,
                 c.move_id.invoice_date or c.move_id.date or fields.Date.context_today(c)

@@ -102,8 +102,10 @@ class GlobalDescuentoRecargo(models.Model):
             price_subtotal = 0
             taxes = self.env['account.tax']
             if gdr.gdr_type == 'amount':
+                sign = -1 if gdr.move_id.is_sale_document() else 1
                 gdr.amount = gdr.valor
-                gdr.amount_currency = gdr.valor
+                gdr.amount_untaxed = gdr.valor
+                gdr.amount_currency = gdr.valor * sign
                 continue
             for line in gdr.move_id.invoice_line_ids.filtered(lambda l: not l.is_gd_line and not l.is_gr_line):
                 ltaxes = line.tax_ids.filtered(lambda t: t.amount>0 and gdr.impuesto == 'afectos' or t.amount==0 and gdr.impuesto == 'exentos')
