@@ -105,5 +105,6 @@ class AccountMoveComision(models.Model):
                 quantity=1,
                 currency=self.currency_id,
                 is_refund=is_refund,
+                handle_price_include=True,
             )
             self.valor_iva_comision = taxes['taxes'][0]['amount']

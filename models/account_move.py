@@ -1553,6 +1553,7 @@ class AccountMove(models.Model):
         val_com_neto = 0
         val_com_exe = 0
         val_com_iva = 0
+        iva = False
         if self.comision_ids:
             for c in self.comision_ids:
                 val_com_neto += c.valor_neto_comision
@@ -1560,10 +1561,22 @@ class AccountMove(models.Model):
                 val_com_iva += c.valor_iva_comision
             if val_com_neto:
                 totales['ValComNeto'] = val_com_neto
+                totales['MntNeto'] += val_com_neto
+                iva = c.iva
             if val_com_exe:
                 totales['ValComExe'] = val_com_exe
-            if val_com_iva:
-                totales['ValComIVA'] = val_com_iva
+                totales['MntExe'] += val_com_exe
+        if val_com_neto:
+            taxes = iva.compute_all(
+                val_com_neto,
+                quantity=1,
+                currency=self.currency_id,
+                is_refund=self.move_type in ('out_refund', 'in_refund'),
+                handle_price_include=True,
+            )
+            val_com_iva = taxes['taxes'][0]['amount']
+            totales['ValComIVA'] = val_com_iva
+            totales['MntIVA'] += val_com_iva
         totales['MntTotal'] = totales['MntNeto'] + totales['MntExe'] + \
             totales['MntIVA'] + totales['OtrosImp'] + totales['MontoNF'] - \
             totales['CredEC'] - totales['MntRet'] - val_com_neto - val_com_exe \
