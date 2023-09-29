@@ -53,3 +53,4 @@ dc_res_sna,True,,812,False,RSN,,RSN,Resolución del SNA donde califica Servicios
 dc_pasap,True,,813,False,PSP,,PSP,Pasaporte,PSP,
 dc_cd_bol,True,,814,False,CRTD,,CRTD,Certificado de Depósito Bolsa Prod. Chile.,CRTD,
 dc_vp_pren,True,,815,False,VLPR,,VLPR,Vale de Prenda Bolsa Prod. Chile,VLPR,
+dc_ant,True,99,False,ANT,other_document,ANT,Anticipo u otras transacciones,ANT,
