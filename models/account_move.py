@@ -1693,18 +1693,19 @@ class AccountMove(models.Model):
                     ).name_get()
                 if uom_name:
                     lines["UnmdItem"] = uom_name[0][1][:4]
-                price_unit = details['price_unit']
-                lines["PrcItem"] = round(price_unit, 6)
-                if currency_id:
-                    lines["OtrMnda"] = {}
-                    lines["OtrMnda"]["PrcOtrMon"] = round(
-                        currency_base._convert(
-                            price_unit, currency_id, self.company_id, self.invoice_date, round=False
-                        ),
-                        6,
-                    )
-                    lines["OtrMnda"]["Moneda"] = self._acortar_str(currency_id.name, 3)
-                    lines["OtrMnda"]["FctConv"] = round(currency_id.rate, 4)
+                if line.product_id:
+                    price_unit = details['price_unit']
+                    lines["PrcItem"] = round(price_unit, 6)
+                    if currency_id:
+                        lines["OtrMnda"] = {}
+                        lines["OtrMnda"]["PrcOtrMon"] = round(
+                            currency_base._convert(
+                                price_unit, currency_id, self.company_id, self.invoice_date, round=False
+                            ),
+                            6,
+                        )
+                        lines["OtrMnda"]["Moneda"] = self._acortar_str(currency_id.name, 3)
+                        lines["OtrMnda"]["FctConv"] = round(currency_id.rate, 4)
                 MontoItem = line.price_subtotal
                 if taxInclude:
                     MontoItem = line.price_total
