@@ -16,7 +16,7 @@ class AccountJournalSiiDocumentClass(models.Model):
         for r in self:
             sequence_name = r.sii_document_class_id.name or ""
             if r.sequence_id:
-                sequence_name = "({}) {}: {} ".format(r.qty_available, sequence_name, r.sequence_id.name)
+                sequence_name = "({}) {}".format(r.qty_available, r.sequence_id.name)
             r.name = sequence_name
 
     name = fields.Char(compute="get_secuence_name",)

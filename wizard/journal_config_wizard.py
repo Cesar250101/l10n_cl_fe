@@ -95,12 +95,11 @@ Include unusual taxes documents, as transfer invoice, and reissue
 
     def create_sequence(self, name, journal, document_class):
         vals = {
-            "name": journal.name + " - " + name,
+            "name": "Folios - " + name,
             "padding": 6,
             "implementation": "no_gap",
             "sii_document_class_id": document_class.id,
             "company_id": journal.company_id.id,
-            "forced_by_caf": True,
             "autoreponer_caf": journal.company_id.dte_service_provider == 'SII',
             "autoreponer_cantidad": 1 if document_class.sii_code in [56, 61, 111, 112] else 10,
             "nivel_minimo": 1 if document_class.sii_code in [56, 61, 111, 112] else 5,
@@ -127,13 +126,24 @@ Include unusual taxes documents, as transfer invoice, and reissue
         if journal.type == "purchase" and not self.factura_compra:
             return
         journal_document_obj = self.env["account.journal.sii_document_class"]
-        sequence = 10
+        sequence = journal_document_obj.search([
+           ('journal_id', '=', journal.id)
+           ],
+           limit=1).sequence
         for document_class in document_class_ids:
-            if not document_class.dte or (journal.type == "purchase" and not document_class.es_factura_compra()):
+            if not document_class.dte or (journal.type == "purchase" and\
+             not document_class.es_factura_compra()) and not journal_document_obj.search([
+                ('sii_document_class_id', '=', document_class.id),
+                ('journal_id', '=', journal.id)
+             ], limit=1):
                 continue
-            sequence_id = self.env["ir.sequence"]
-            seq_vals = self.create_sequence(document_class.name, journal, document_class)
-            sequence_id = self.env["ir.sequence"].create(seq_vals)
+            sequence_id = self.env["ir.sequence"].search([
+                ('sii_document_class_id', '=', document_class.id),
+                limit=1
+            ])
+            if not document_class.es_boleta():
+                seq_vals = self.create_sequence(document_class.name, journal, document_class)
+                sequence_id = self.env["ir.sequence"].create(seq_vals)
             vals = {
                 "sii_document_class_id": document_class.id,
                 "sequence_id": sequence_id.id,
@@ -141,4 +151,4 @@ Include unusual taxes documents, as transfer invoice, and reissue
                 "sequence": sequence,
             }
             journal_document_obj.create(vals)
-            sequence += 10
+            sequence += 1
