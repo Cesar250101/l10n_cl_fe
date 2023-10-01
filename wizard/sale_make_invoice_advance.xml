@@ -8,12 +8,13 @@
     <field name="arch" type="xml">
       <group position="inside">
         <field name="sale_order_ids"  options="{'no_create': True}" >
-          <tree create="false">
+          <tree create="false" editable="bottom">
             <field name="name" />
             <field name="journal_id" />
             <field name="use_documents" />
             <field name="document_class_ids" invisible="1" />
             <field name="journal_document_class_id" options="{'no_create': True}" />
+            <field name="state" />
           </tree>
         </field>
         <field name="referencia_ids" mode="tree">

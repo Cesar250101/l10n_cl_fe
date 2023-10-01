@@ -14,3 +14,8 @@ class SaleAdvancePaymentInv(models.TransientModel):
         'sale.order.referencias',
         string="Referencias DTE",
     )
+
+    @api.onchange('sale_order_ids')
+    def set_referencias(self):
+        self.referencia_ids = self.env['sale.order.referencias'].search([
+        ('so_id', 'in', self.sale_order_ids.ids)])
