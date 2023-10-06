@@ -53,7 +53,7 @@ class UploadXMLWizard(models.TransientModel):
             self.dte_id = dte_id
         if self.type == "ventas":
             created = self.do_create_inv()
-            xml_id = "account.view_move_form"
+            xml_id = "account.view_invoice_tree"
             target_model = "account.move"
         elif self.pre_process or self.option == "upload":
             created = self.do_create_pre()
@@ -64,7 +64,7 @@ class UploadXMLWizard(models.TransientModel):
             return
         elif self.action == "create":
             created = self.do_create_inv()
-            xml_id = "account.view_move_form"
+            xml_id = "account.view_invoice_tree"
             target_model = "account.move"
         if self.action == "create_po":
             self.do_create_po()
