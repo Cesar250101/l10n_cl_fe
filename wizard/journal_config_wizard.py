@@ -103,6 +103,7 @@ Include unusual taxes documents, as transfer invoice, and reissue
             "autoreponer_caf": journal.company_id.dte_service_provider == 'SII',
             "autoreponer_cantidad": 1 if document_class.sii_code in [56, 61, 111, 112] else 10,
             "nivel_minimo": 1 if document_class.sii_code in [56, 61, 111, 112] else 5,
+            "is_dte": True,
         }
         return vals
 
@@ -139,8 +140,7 @@ Include unusual taxes documents, as transfer invoice, and reissue
                 continue
             sequence_id = self.env["ir.sequence"].search([
                 ('sii_document_class_id', '=', document_class.id),
-                limit=1
-            ])
+            ],limit=1)
             if not document_class.es_boleta():
                 seq_vals = self.create_sequence(document_class.name, journal, document_class)
                 sequence_id = self.env["ir.sequence"].create(seq_vals)
