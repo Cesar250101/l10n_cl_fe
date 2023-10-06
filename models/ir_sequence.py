@@ -161,20 +161,21 @@ class IRSequence(models.Model):
         caf = self.env['dte.caf'].search([
             ('sequence_id', '=', self.id),
             ('folio_actual', '>=', self.number_next),
-            ('qty_available', '>', 0)
         ],
         order='folio_actual ASC',
         limit=1)
         if not caf:
             if not self.dte_caf_ids:
                 return 0
-            return self.dte_caf_ids[0].folio_actual
+            caf = self.dte_caf_ids[0]
+            if int(self.number_next) == caf.final_nm:
+                return 0
         caf.compute_folio_actual()
         folio_actual = caf.folio_actual
-        if caf.qty_available == 0:
-            return self.get_folio()
         if folio_actual != int(self.number_next):
             update_next_by_caf(self, folio_actual)
+        if caf.qty_available == 0:
+            return self.get_folio()
         return folio_actual
 
     def time_stamp(self, formato="%Y-%m-%dT%H:%M:%S"):
