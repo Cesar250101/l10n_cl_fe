@@ -887,7 +887,7 @@ class UploadXMLWizard(models.TransientModel):
                     raise UserError(
                         "El archivo XML no contiene documentos para alguna empresa registrada en Odoo, o ya ha sido procesado anteriormente "
                     )
-                if to_post:
+                if to_post and inv.state=="draft":
                     inv._onchange_partner_id()
                     inv._onchange_invoice_line_ids()
                     inv._post()
