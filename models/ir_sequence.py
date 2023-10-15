@@ -10,16 +10,9 @@ from odoo.tools.translate import _
 _logger = logging.getLogger(__name__)
 
 
-def update_next_by_caf(self, folio=False):
+def update_next_by_caf(self, folio, caf):
     if not self.sii_document_class_id:
         return 0
-    caf = self.env['dte.caf'].search([
-            ('sequence_id', '=', self.id),
-            ('folio_actual', '>=', self.number_next),
-            ('qty_available', '>', 0)
-        ],
-        order='folio_actual ASC',
-        limit=1)
     if not caf:
         _logger.warning("No quedan folios disponibles CAFs para %s disponibles" % caf.name)
         return 0
@@ -157,10 +150,10 @@ class IRSequence(models.Model):
         for caf in self.dte_caf_ids:
             caf.inspeccionar_folios_sin_usar()
 
-    def get_folio(self):
+    def get_folio(self, number_next=False):
         caf = self.env['dte.caf'].search([
             ('sequence_id', '=', self.id),
-            ('folio_actual', '>=', self.number_next),
+            ('folio_actual', '>=', number_next or self.number_next),
         ],
         order='folio_actual ASC',
         limit=1)
@@ -173,9 +166,11 @@ class IRSequence(models.Model):
         caf.compute_folio_actual()
         folio_actual = caf.folio_actual
         if folio_actual != int(self.number_next):
-            update_next_by_caf(self, folio_actual)
+            update_next_by_caf(self, folio_actual, caf)
         if caf.qty_available == 0:
-            return self.get_folio()
+            if caf == self.dte_caf_ids[0]:
+                return 0
+            return self.get_folio(folio_actual+1)
         return folio_actual
 
     def time_stamp(self, formato="%Y-%m-%dT%H:%M:%S"):
@@ -244,5 +239,8 @@ obtener folios en la secuencia (usando apicaf.cl)."""
         and number from postgres sequence when standard implementation.'''
         seq_dtes = self.filtered('is_dte')
         for seq in seq_dtes:
-            seq.number_next_actual = seq.get_folio()
+            folio = seq.get_folio()
+            if folio == 0:
+                folio = seq.number_next
+            seq.number_next_actual = folio
         super(IRSequence, (self-seq_dtes))._get_number_next_actual()
