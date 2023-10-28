@@ -328,12 +328,14 @@ class ResPartner(models.Model):
             else:
                 try:
                      data = json.loads(resp.data.decode("ISO-8859-1"))
-                     message = data.get('message')
+                     if data:
+                        message = data.get('message')
                 except:
                      message = "Respuesta inesperada o vacía desde la api: %s " % str(resp.data)
 
             if message:
-                self.env["bus.bus"].sendone(
+                _logger.warning(message)
+                """self.env["bus.bus"].sendone(
                     (self._cr.dbname, "res.partner", self.env.user.partner_id.id),
                     {
                         "title": title,
@@ -341,7 +343,7 @@ class ResPartner(models.Model):
                         "url": "res_config",
                         "type": "dte_notif",
                     },
-                )
+                )"""
         except:
             _logger.error("Error en PUT partner", exc_info=True)
 
