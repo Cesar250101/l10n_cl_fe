@@ -957,7 +957,8 @@ class AccountMove(models.Model):
 
     def _recompute_global_gdr_lines(self):
         self.ensure_one()
-
+        if self.state != 'draft':
+            return
         def _apply_global_gdr(self, amount, amount_currency, global_gdr_line, gdr, taxes):
             gdr_line_vals = {
                 'quantity': 1,
@@ -1023,7 +1024,8 @@ class AccountMove(models.Model):
 
     def _recompute_comisiones_lines(self):
         self.ensure_one()
-
+        if self.state != 'draft':
+            return
         def _apply_comision(self, name, amount, amount_currency, comision_line, comision, taxes):
             comision_line_vals = {
                 'quantity': 1,
