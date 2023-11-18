@@ -55,9 +55,9 @@ class SO(models.Model):
         vals = super(SO, self)._prepare_invoice()
         if self.acteco_id:
             vals["acteco_id"] = self.acteco_id.id
+        vals['use_documents']= self.use_documents
         if self.use_documents:
             vals.update({
-                'use_documents': self.use_documents,
                 'journal_id': self.journal_id.id,
                 'journal_document_class_id': self.journal_document_class_id.id,
                 'document_class_id': self.journal_document_class_id.sii_document_class_id.id,
@@ -65,9 +65,9 @@ class SO(models.Model):
         vals['referencias'] = []
         for r in self.referencia_ids:
             vals['referencias'].append(Command.create({
-                'folio': r.origen,
+                'origen': r.folio,
                 'fecha_documento': r.fecha_documento,
-                'sii_referencia_TpoDocRef': r.sii_referencia_TpoDocRef,
+                'sii_referencia_TpoDocRef': r.sii_referencia_TpoDocRef.id,
                 'motivo': r.motivo,
             }))
         return vals
