@@ -100,23 +100,37 @@ FROM ({union}) AS combined'''.format(
     def compute_folio_actual(self):
         self.folio_actual = self._get_folio_actual()
 
+    @api.onchange('caf_file', 'caf_string')
+    @api.depends('caf_file', 'caf_string')
+    def _load_data(self):
+        for r in self:
+            r.issued_date = False
+            r.expiration_date = False
+            r.document_class_id = False
+            r.start_nm = False
+            r.final_nm = False
+            r.rut_n = False
+            if r.caf_file:
+                r.load_caf()
+
     name = fields.Char(string="File Name", readonly=True, related="filename",)
     filename = fields.Char(string="File Name", required=True,)
-    caf_file = fields.Binary(string="CAF XML File", filters="*.xml", help="Upload the CAF XML File in this holder",)
+    caf_file = fields.Binary(string="CAF XML File", help="Upload the CAF XML File in this holder",)
     caf_string = fields.Text(string="Archivo CAF")
-    issued_date = fields.Date(string="Issued Date")
-    expiration_date = fields.Date(string="Expiration Date")
+    issued_date = fields.Date(string="Issued Date", compute='_load_data', store=True)
+    expiration_date = fields.Date(string="Expiration Date", compute='_load_data', store=True)
     document_class_id = fields.Many2one(
         'sii.document_class',
-        string="SII Document Class"
+        string="SII Document Class",
+        compute='_load_data', store=True
     )
     start_nm = fields.Integer(
         string="Start Number",
-        help="CAF Starts from this number"
+        help="CAF Starts from this number", compute='_load_data', store=True
     )
     final_nm = fields.Integer(
         string="End Number",
-        help="CAF Ends to this number",
+        help="CAF Ends to this number", compute='_load_data', store=True
     )
     state = fields.Selection(
         [("draft", "Draft"), ("in_use", "In Use"), ("spent", "Spent"),],
@@ -126,12 +140,12 @@ FROM ({union}) AS combined'''.format(
 in order to make it available for use. Spent: means that the number interval
 has been exhausted.""",
     )
-    rut_n = fields.Char(string="RUT")
+    rut_n = fields.Char(string="RUT", compute='_load_data', store=True)
     company_id = fields.Many2one(
         "res.company", string="Company", required=False, default=lambda self: self.env.user.company_id,
     )
     sequence_id = fields.Many2one("ir.sequence", string="Sequence",
-        domain=[('is_dte', '=', True)])
+        domain="[('is_dte', '=', True)]")
     use_level = fields.Float(string="Use Level", compute="_used_level",)
     folio_actual = fields.Integer(
         string="Folio Actual",
@@ -184,10 +198,10 @@ has been exhausted.""",
         self.cantidad_folios_sin_usar += 1
 
     def eliminar_folio_sin_usar(self, folio):
-        folios = self.obtener_folios_sin_usar()
-        if folio in folios:
-            folios.remove(folio)
-        self.folios_sin_usar = str(sorted(folios))
+        folios_sin_usar = self.obtener_folios_sin_usar()
+        if folio in folios_sin_usar:
+            folios_sin_usar.remove(folio)
+        self.folios_sin_usar = str(folios_sin_usar)
 
     def _join_inspeccionar(self):
         return 'LEFT JOIN account_move a on s = a.sii_document_number and a.document_class_id = %s' % self.document_class_id.id
@@ -196,28 +210,28 @@ has been exhausted.""",
         return 'a.sii_document_number is null'
 
     def inspeccionar_folios_sin_usar(self):
-        folio = self.sequence_id.get_folio()
-        if self.start_nm > folio:
-            return
-        final_nm = folio if self.start_nm <= folio <= self.final_nm else self.final_nm
         joins = self._join_inspeccionar()
         wheres = self._where_inspeccionar()
         self._cr.execute("SELECT s FROM generate_series({0},{1},1) s {2} WHERE {3}".format(
             self.start_nm,
-            final_nm,
+            self.folio_actual,
             joins,
             wheres,
         ))
         folios = sorted([x[0] for x in self._cr.fetchall()])
+        if self.folio_actual in folios:
+            folios.remove(self.folio_actual)
         self.write({
             'folios_sin_usar': str(folios),
             'cantidad_folios_sin_usar': len(folios)
             })
 
-    @api.onchange('caf_file')
     def load_caf(self):
         if not self.caf_file:
             return
+        if not self.sequence_id:
+            context = dict(self._context or {})
+            self.sequence_id = context.get("default_sequence_id", False)
         if not self.caf_string:
             self.caf_string = base64.b64decode(self.caf_file).decode("ISO-8859-1")
         result = self.decode_caf().find("CAF/DA")
