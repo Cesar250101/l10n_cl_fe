@@ -21,7 +21,7 @@ class ProccessMail(models.Model):
         self.process_message(pre=True)
 
 
-    def process_message(self, pre=False, option=False):
+    def process_message(self, pre=True, option=False):
         created = []
         for r in self:
             mail_id = r.sudo().mail_id or self.env["mail.message"].sudo().search(

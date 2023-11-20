@@ -921,7 +921,11 @@ class UploadXMLWizard(models.TransientModel):
                     inv.with_context(restore_mode=True)._post()
                 if inv.amount_total == monto_xml:
                     continue
-                raise UserError("no se pudo cuadrar la factura")
+                raise UserError("No se pudo cuadrar %s-%s, %s != %s" %(
+                    inv.document_class_id.name,
+                    inv.sii_document_number,
+                    inv.amount_total,
+                    monto_xml))
             except Exception as e:
                 msg = "Error en crear 1 factura con error:  %s" % str(e)
                 _logger.warning(msg, exc_info=True)
