@@ -95,7 +95,7 @@ class UploadXMLWizard(models.TransientModel):
         return xml
 
     def _get_xml_name(self):
-        return self.dte_id.name or self.filename
+        return self.filename or self.dte_id.name
 
     def _read_xml(self, mode="text", check=False):
         xml = (
