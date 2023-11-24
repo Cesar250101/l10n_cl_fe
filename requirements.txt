@@ -1,0 +1,7 @@
+facturacion_electronica>=0.14.0
+suds-jurko
+num2words
+xlsxwriter
+pillow
+PyMuPDF
+pip>=20.0.2

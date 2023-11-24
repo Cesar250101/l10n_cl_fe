@@ -1,0 +1,2487 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data noupdate="0">
+        <record model="res.country.state.region" id="CLP01000">
+            <field name="name">TARAPACÁ</field>
+            <field name="code">CLP01000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP02000">
+            <field name="name">ANTOFAGASTA</field>
+            <field name="code">CLP02000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP03000">
+            <field name="name">ATACAMA</field>
+            <field name="code">CLP03000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP04000">
+            <field name="name">COQUIMBO</field>
+            <field name="code">CLP04000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP05000">
+            <field name="name">VALPARAÍSO</field>
+            <field name="code">CLP05000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP06000">
+            <field name="name">DEL LIBERTADOR GRAL. BERNARDO OHIGGINS</field>
+            <field name="code">CLP06000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP07000">
+            <field name="name">DEL MAULE</field>
+            <field name="code">CLP07000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP08000">
+            <field name="name">DEL BÍOBIO</field>
+            <field name="code">CLP08000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP09000">
+            <field name="name">DE LA ARAUCANIA</field>
+            <field name="code">CLP09000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP10000">
+            <field name="name">DE LOS LAGOS</field>
+            <field name="code">CLP10000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP11000">
+            <field name="name">AYSÉN DEL GRAL. CARLOS IBÁÑEZ DEL CAMPO</field>
+            <field name="code">CLP11000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP12000">
+            <field name="name">MAGALLANES</field>
+            <field name="code">CLP12000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP13000">
+            <field name="name">METROPOLITANA</field>
+            <field name="code">CLP13000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP14000">
+            <field name="name">LOS RÍOS</field>
+            <field name="code">CLP14000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP15000">
+            <field name="name">ARICA Y PARINACOTA</field>
+            <field name="code">CLP15000</field>
+        </record>
+        <record model="res.country.state.region" id="CLP16000">
+            <field name="name">ÑUBLE</field>
+            <field name="code">CLP16000</field>
+        </record>
+        <record model="res.country.state" id="CLP16300">
+            <field name="name">PUNILLA</field>
+            <field name="code">CLP16300</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP16000" />
+        </record>
+        <record model="res.country.state" id="CLP16200">
+            <field name="name">ITATA</field>
+            <field name="code">CLP16200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP16000" />
+        </record>
+        <record model="res.country.state" id="CLP16100">
+            <field name="name">DIGUILLÍN</field>
+            <field name="code">CLP16100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP16000" />
+        </record>
+        <record model="res.country.state" id="CLP05800">
+            <field name="name">MARGA MARGA</field>
+            <field name="code">CLP05800</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP05000" />
+        </record>
+        <record model="res.country.state" id="CLP15200">
+            <field name="name">PARINACOTA</field>
+            <field name="code">CLP15200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP15000" />
+        </record>
+        <record model="res.country.state" id="CLP15100">
+            <field name="name">ARICA</field>
+            <field name="code">CLP15100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP15000" />
+        </record>
+        <record model="res.country.state" id="CLP14200">
+            <field name="name">RANCO</field>
+            <field name="code">CLP14200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP14000" />
+        </record>
+        <record model="res.country.state" id="CLP14100">
+            <field name="name">VALDIVIA</field>
+            <field name="code">CLP14100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP14000" />
+        </record>
+        <record model="res.country.state" id="CLP13600">
+            <field name="name">TALAGANTE</field>
+            <field name="code">CLP13600</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP13000" />
+        </record>
+        <record model="res.country.state" id="CLP13500">
+            <field name="name">MELIPILLA</field>
+            <field name="code">CLP13500</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP13000" />
+        </record>
+        <record model="res.country.state" id="CLP13400">
+            <field name="name">MAIPO</field>
+            <field name="code">CLP13400</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP13000" />
+        </record>
+        <record model="res.country.state" id="CLP13300">
+            <field name="name">CHACABUCO</field>
+            <field name="code">CLP13300</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP13000" />
+        </record>
+        <record model="res.country.state" id="CLP13200">
+            <field name="name">CORDILLERA</field>
+            <field name="code">CLP13200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP13000" />
+        </record>
+        <record model="res.country.state" id="CLP13100">
+            <field name="name">SANTIAGO</field>
+            <field name="code">CLP13100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP13000" />
+        </record>
+        <record model="res.country.state" id="CLP12400">
+            <field name="name">ÚLTIMA ESPERANZA</field>
+            <field name="code">CLP12400</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP12000" />
+        </record>
+        <record model="res.country.state" id="CLP12300">
+            <field name="name">TIERRA DEL FUEGO</field>
+            <field name="code">CLP12300</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP12000" />
+        </record>
+        <record model="res.country.state" id="CLP12200">
+            <field name="name">ANTARTICA CHILENA</field>
+            <field name="code">CLP12200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP12000" />
+        </record>
+        <record model="res.country.state" id="CLP12100">
+            <field name="name">MAGALLANES</field>
+            <field name="code">CLP12100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP12000" />
+        </record>
+        <record model="res.country.state" id="CLP11400">
+            <field name="name">GENERAL CARRERA</field>
+            <field name="code">CLP11400</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP11000" />
+        </record>
+        <record model="res.country.state" id="CLP11300">
+            <field name="name">CAPITAN PRAT</field>
+            <field name="code">CLP11300</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP11000" />
+        </record>
+        <record model="res.country.state" id="CLP11200">
+            <field name="name">AYSÉN</field>
+            <field name="code">CLP11200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP11000" />
+        </record>
+        <record model="res.country.state" id="CLP11100">
+            <field name="name">COIHAIQUE</field>
+            <field name="code">CLP11100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP11000" />
+        </record>
+        <record model="res.country.state" id="CLP10400">
+            <field name="name">PALENA</field>
+            <field name="code">CLP10400</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP10000" />
+        </record>
+        <record model="res.country.state" id="CLP10300">
+            <field name="name">OSORNO</field>
+            <field name="code">CLP10300</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP10000" />
+        </record>
+        <record model="res.country.state" id="CLP10200">
+            <field name="name">CHILOE</field>
+            <field name="code">CLP10200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP10000" />
+        </record>
+        <record model="res.country.state" id="CLP10100">
+            <field name="name">LLANQUIHUE</field>
+            <field name="code">CLP10100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP10000" />
+        </record>
+        <record model="res.country.state" id="CLP09200">
+            <field name="name">MALLECO</field>
+            <field name="code">CLP09200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP09000" />
+        </record>
+        <record model="res.country.state" id="CLP09100">
+            <field name="name">CAUTIN</field>
+            <field name="code">CLP09100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP09000" />
+        </record>
+        <record model="res.country.state" id="CLP08400">
+            <field name="name">ÑUBLE</field>
+            <field name="code">CLP08400</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP08000" />
+        </record>
+        <record model="res.country.state" id="CLP08300">
+            <field name="name">BIOBIO</field>
+            <field name="code">CLP08300</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP08000" />
+        </record>
+        <record model="res.country.state" id="CLP08200">
+            <field name="name">ARAUCO</field>
+            <field name="code">CLP08200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP08000" />
+        </record>
+        <record model="res.country.state" id="CLP08100">
+            <field name="name">CONCEPCIÓN</field>
+            <field name="code">CLP08100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP08000" />
+        </record>
+        <record model="res.country.state" id="CLP07400">
+            <field name="name">LINARES</field>
+            <field name="code">CLP07400</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP07000" />
+        </record>
+        <record model="res.country.state" id="CLP07300">
+            <field name="name">CURICÓ</field>
+            <field name="code">CLP07300</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP07000" />
+        </record>
+        <record model="res.country.state" id="CLP07200">
+            <field name="name">CAUQUENES</field>
+            <field name="code">CLP07200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP07000" />
+        </record>
+        <record model="res.country.state" id="CLP07100">
+            <field name="name">TALCA</field>
+            <field name="code">CLP07100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP07000" />
+        </record>
+        <record model="res.country.state" id="CLP06300">
+            <field name="name">COLCHAGUA</field>
+            <field name="code">CLP06300</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP06000" />
+        </record>
+        <record model="res.country.state" id="CLP06200">
+            <field name="name">CARDENAL CARO</field>
+            <field name="code">CLP06200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP06000" />
+        </record>
+        <record model="res.country.state" id="CLP06100">
+            <field name="name">CACHAPOAL</field>
+            <field name="code">CLP06100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP06000" />
+        </record>
+        <record model="res.country.state" id="CLP05700">
+            <field name="name">SAN FELIPE DE ACONCAGUA</field>
+            <field name="code">CLP05700</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP05000" />
+        </record>
+        <record model="res.country.state" id="CLP05600">
+            <field name="name">SAN ANTONIO</field>
+            <field name="code">CLP05600</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP05000" />
+        </record>
+        <record model="res.country.state" id="CLP05500">
+            <field name="name">QUILLOTA</field>
+            <field name="code">CLP05500</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP05000" />
+        </record>
+        <record model="res.country.state" id="CLP05400">
+            <field name="name">PETORCA</field>
+            <field name="code">CLP05400</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP05000" />
+        </record>
+        <record model="res.country.state" id="CLP05300">
+            <field name="name">LOS ANDES</field>
+            <field name="code">CLP05300</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP05000" />
+        </record>
+        <record model="res.country.state" id="CLP05200">
+            <field name="name">ISLA DE PASCUA</field>
+            <field name="code">CLP05200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP05000" />
+        </record>
+        <record model="res.country.state" id="CLP05100">
+            <field name="name">VALPARAÍSO</field>
+            <field name="code">CLP05100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP05000" />
+        </record>
+        <record model="res.country.state" id="CLP04300">
+            <field name="name">LIMARI</field>
+            <field name="code">CLP04300</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP04000" />
+        </record>
+        <record model="res.country.state" id="CLP04200">
+            <field name="name">CHOAPA</field>
+            <field name="code">CLP04200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP04000" />
+        </record>
+        <record model="res.country.state" id="CLP04100">
+            <field name="name">ELQUI</field>
+            <field name="code">CLP04100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP04000" />
+        </record>
+        <record model="res.country.state" id="CLP03300">
+            <field name="name">HUASCO</field>
+            <field name="code">CLP03300</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP03000" />
+        </record>
+        <record model="res.country.state" id="CLP03200">
+            <field name="name">CHAÑARAL</field>
+            <field name="code">CLP03200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP03000" />
+        </record>
+        <record model="res.country.state" id="CLP03100">
+            <field name="name">COPIAPO</field>
+            <field name="code">CLP03100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP03000" />
+        </record>
+        <record model="res.country.state" id="CLP02300">
+            <field name="name">TOCOPILLA</field>
+            <field name="code">CLP02300</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP02000" />
+        </record>
+        <record model="res.country.state" id="CLP02200">
+            <field name="name">EL LOA</field>
+            <field name="code">CLP02200</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP02000" />
+        </record>
+        <record model="res.country.state" id="CLP02100">
+            <field name="name">ANTOFAGASTA</field>
+            <field name="code">CLP02100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP02000" />
+        </record>
+        <record model="res.country.state" id="CLP01400">
+            <field name="name">TAMARUGAL</field>
+            <field name="code">CLP01400</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP01000" />
+        </record>
+        <record model="res.country.state" id="CLP01100">
+            <field name="name">IQUIQUE</field>
+            <field name="code">CLP01100</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="region_id" ref="CLP01000" />
+        </record>
+        <record model="res.city" id="CLP16104">
+            <field name="name">El Carmen</field>
+            <field name="code">CLP16104</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16100" />
+        </record>
+        <record model="res.city" id="CLP16103">
+            <field name="name">Chillán Viejo</field>
+            <field name="code">CLP16103</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16100" />
+        </record>
+        <record model="res.city" id="CLP16106">
+            <field name="name">Pinto</field>
+            <field name="code">CLP16106</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16100" />
+        </record>
+        <record model="res.city" id="CLP05803">
+            <field name="name">Olmué</field>
+            <field name="code">CLP05803</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05800" />
+        </record>
+        <record model="res.city" id="CLP05804">
+            <field name="name">Villa Alemana</field>
+            <field name="code">CLP05804</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05800" />
+        </record>
+        <record model="res.city" id="CLP05802">
+            <field name="name">Limache</field>
+            <field name="code">CLP05802</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05800" />
+        </record>
+        <record model="res.city" id="CLP05801">
+            <field name="name">Quilpué</field>
+            <field name="code">CLP05801</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05800" />
+        </record>
+        <record model="res.city" id="CLP15201">
+            <field name="name">Putre</field>
+            <field name="code">CLP15201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP15200" />
+        </record>
+        <record model="res.city" id="CLP15202">
+            <field name="name">General Lagos</field>
+            <field name="code">CLP15202</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP15200" />
+        </record>
+        <record model="res.city" id="CLP15101">
+            <field name="name">Arica</field>
+            <field name="code">CLP15101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP15100" />
+        </record>
+        <record model="res.city" id="CLP15102">
+            <field name="name">Camarones</field>
+            <field name="code">CLP15102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP15100" />
+        </record>
+        <record model="res.city" id="CLP14201">
+            <field name="name">La Unión</field>
+            <field name="code">CLP14201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP14200" />
+        </record>
+        <record model="res.city" id="CLP14204">
+            <field name="name">Río Bueno</field>
+            <field name="code">CLP14204</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP14200" />
+        </record>
+        <record model="res.city" id="CLP14202">
+            <field name="name">Futrono</field>
+            <field name="code">CLP14202</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP14200" />
+        </record>
+        <record model="res.city" id="CLP14203">
+            <field name="name">Lago Ranco</field>
+            <field name="code">CLP14203</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP14200" />
+        </record>
+        <record model="res.city" id="CLP14103">
+            <field name="name">Lanco</field>
+            <field name="code">CLP14103</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP14100" />
+        </record>
+        <record model="res.city" id="CLP14102">
+            <field name="name">Corral</field>
+            <field name="code">CLP14102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP14100" />
+        </record>
+        <record model="res.city" id="CLP14101">
+            <field name="name">Valdivia</field>
+            <field name="code">CLP14101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP14100" />
+        </record>
+        <record model="res.city" id="CLP14104">
+            <field name="name">Los Lagos</field>
+            <field name="code">CLP14104</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP14100" />
+        </record>
+        <record model="res.city" id="CLP14105">
+            <field name="name">Máfil</field>
+            <field name="code">CLP14105</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP14100" />
+        </record>
+        <record model="res.city" id="CLP14107">
+            <field name="name">Paillaco</field>
+            <field name="code">CLP14107</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP14100" />
+        </record>
+        <record model="res.city" id="CLP14108">
+            <field name="name">Panguipulli</field>
+            <field name="code">CLP14108</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP14100" />
+        </record>
+        <record model="res.city" id="CLP14106">
+            <field name="name">Mariquina</field>
+            <field name="code">CLP14106</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP14100" />
+        </record>
+        <record model="res.city" id="CLP13601">
+            <field name="name">Talagante</field>
+            <field name="code">CLP13601</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13600" />
+        </record>
+        <record model="res.city" id="CLP13605">
+            <field name="name">Peñaflor</field>
+            <field name="code">CLP13605</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13600" />
+        </record>
+        <record model="res.city" id="CLP13604">
+            <field name="name">Padre Hurtado</field>
+            <field name="code">CLP13604</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13600" />
+        </record>
+        <record model="res.city" id="CLP13603">
+            <field name="name">Isla De Maipo</field>
+            <field name="code">CLP13603</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13600" />
+        </record>
+        <record model="res.city" id="CLP13602">
+            <field name="name">El Monte</field>
+            <field name="code">CLP13602</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13600" />
+        </record>
+        <record model="res.city" id="CLP13503">
+            <field name="name">Curacaví</field>
+            <field name="code">CLP13503</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13500" />
+        </record>
+        <record model="res.city" id="CLP13502">
+            <field name="name">Alhué</field>
+            <field name="code">CLP13502</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13500" />
+        </record>
+        <record model="res.city" id="CLP13505">
+            <field name="name">San Pedro</field>
+            <field name="code">CLP13505</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13500" />
+        </record>
+        <record model="res.city" id="CLP13501">
+            <field name="name">Melipilla</field>
+            <field name="code">CLP13501</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13500" />
+        </record>
+        <record model="res.city" id="CLP13504">
+            <field name="name">María Pinto</field>
+            <field name="code">CLP13504</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13500" />
+        </record>
+        <record model="res.city" id="CLP13402">
+            <field name="name">Buin</field>
+            <field name="code">CLP13402</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13400" />
+        </record>
+        <record model="res.city" id="CLP13403">
+            <field name="name">Calera De Tango</field>
+            <field name="code">CLP13403</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13400" />
+        </record>
+        <record model="res.city" id="CLP13404">
+            <field name="name">Paine</field>
+            <field name="code">CLP13404</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13400" />
+        </record>
+        <record model="res.city" id="CLP13401">
+            <field name="name">San Bernardo</field>
+            <field name="code">CLP13401</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13400" />
+        </record>
+        <record model="res.city" id="CLP13302">
+            <field name="name">Lampa</field>
+            <field name="code">CLP13302</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13300" />
+        </record>
+        <record model="res.city" id="CLP13301">
+            <field name="name">Colina</field>
+            <field name="code">CLP13301</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13300" />
+        </record>
+        <record model="res.city" id="CLP13303">
+            <field name="name">Til Til</field>
+            <field name="code">CLP13303</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13300" />
+        </record>
+        <record model="res.city" id="CLP13201">
+            <field name="name">Puente Alto</field>
+            <field name="code">CLP13201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13200" />
+        </record>
+        <record model="res.city" id="CLP13202">
+            <field name="name">Pirque</field>
+            <field name="code">CLP13202</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13200" />
+        </record>
+        <record model="res.city" id="CLP13203">
+            <field name="name">San José De Maipo</field>
+            <field name="code">CLP13203</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13200" />
+        </record>
+        <record model="res.city" id="CLP13112">
+            <field name="name">La Pintana</field>
+            <field name="code">CLP13112</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13113">
+            <field name="name">La Reina</field>
+            <field name="code">CLP13113</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13114">
+            <field name="name">Las Condes</field>
+            <field name="code">CLP13114</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13115">
+            <field name="name">Lo Barnechea</field>
+            <field name="code">CLP13115</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13116">
+            <field name="name">Lo Espejo</field>
+            <field name="code">CLP13116</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13117">
+            <field name="name">Lo Prado</field>
+            <field name="code">CLP13117</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13118">
+            <field name="name">Macul</field>
+            <field name="code">CLP13118</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13119">
+            <field name="name">Maipú</field>
+            <field name="code">CLP13119</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13120">
+            <field name="name">Ñuñoa</field>
+            <field name="code">CLP13120</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13121">
+            <field name="name">Pedro Aguirre Cerda</field>
+            <field name="code">CLP13121</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13122">
+            <field name="name">Peñalolén</field>
+            <field name="code">CLP13122</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13123">
+            <field name="name">Providencia</field>
+            <field name="code">CLP13123</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13124">
+            <field name="name">Pudahuel</field>
+            <field name="code">CLP13124</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13125">
+            <field name="name">Quilicura</field>
+            <field name="code">CLP13125</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13126">
+            <field name="name">Quinta Normal</field>
+            <field name="code">CLP13126</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13127">
+            <field name="name">Recoleta</field>
+            <field name="code">CLP13127</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13128">
+            <field name="name">Renca</field>
+            <field name="code">CLP13128</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13129">
+            <field name="name">San Joaquín</field>
+            <field name="code">CLP13129</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP10204">
+            <field name="name">Curaco De Vélez</field>
+            <field name="code">CLP10204</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10200" />
+        </record>
+        <record model="res.city" id="CLP10205">
+            <field name="name">Dalcahue</field>
+            <field name="code">CLP10205</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10200" />
+        </record>
+        <record model="res.city" id="CLP10206">
+            <field name="name">Puqueldón</field>
+            <field name="code">CLP10206</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10200" />
+        </record>
+        <record model="res.city" id="CLP10207">
+            <field name="name">Queilén</field>
+            <field name="code">CLP10207</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10200" />
+        </record>
+        <record model="res.city" id="CLP10209">
+            <field name="name">Quemchi</field>
+            <field name="code">CLP10209</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10200" />
+        </record>
+        <record model="res.city" id="CLP10210">
+            <field name="name">Quinchao</field>
+            <field name="code">CLP10210</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10200" />
+        </record>
+        <record model="res.city" id="CLP10201">
+            <field name="name">Castro</field>
+            <field name="code">CLP10201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10200" />
+        </record>
+        <record model="res.city" id="CLP10208">
+            <field name="name">Quellón</field>
+            <field name="code">CLP10208</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10200" />
+        </record>
+        <record model="res.city" id="CLP10101">
+            <field name="name">Puerto Montt</field>
+            <field name="code">CLP10101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10100" />
+        </record>
+        <record model="res.city" id="CLP10102">
+            <field name="name">Calbuco</field>
+            <field name="code">CLP10102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10100" />
+        </record>
+        <record model="res.city" id="CLP10103">
+            <field name="name">Cochamó</field>
+            <field name="code">CLP10103</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10100" />
+        </record>
+        <record model="res.city" id="CLP10104">
+            <field name="name">Fresia</field>
+            <field name="code">CLP10104</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10100" />
+        </record>
+        <record model="res.city" id="CLP10105">
+            <field name="name">Frutillar</field>
+            <field name="code">CLP10105</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10100" />
+        </record>
+        <record model="res.city" id="CLP10106">
+            <field name="name">Los Muermos</field>
+            <field name="code">CLP10106</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10100" />
+        </record>
+        <record model="res.city" id="CLP10107">
+            <field name="name">Llanquihue</field>
+            <field name="code">CLP10107</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10100" />
+        </record>
+        <record model="res.city" id="CLP10108">
+            <field name="name">Maullín</field>
+            <field name="code">CLP10108</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10100" />
+        </record>
+        <record model="res.city" id="CLP10109">
+            <field name="name">Puerto Varas</field>
+            <field name="code">CLP10109</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10100" />
+        </record>
+        <record model="res.city" id="CLP09201">
+            <field name="name">Angol</field>
+            <field name="code">CLP09201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09200" />
+        </record>
+        <record model="res.city" id="CLP09202">
+            <field name="name">Collipulli</field>
+            <field name="code">CLP09202</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09200" />
+        </record>
+        <record model="res.city" id="CLP09203">
+            <field name="name">Curacautín</field>
+            <field name="code">CLP09203</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09200" />
+        </record>
+        <record model="res.city" id="CLP09204">
+            <field name="name">Ercilla</field>
+            <field name="code">CLP09204</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09200" />
+        </record>
+        <record model="res.city" id="CLP09205">
+            <field name="name">Lonquimay</field>
+            <field name="code">CLP09205</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09200" />
+        </record>
+        <record model="res.city" id="CLP09211">
+            <field name="name">Victoria</field>
+            <field name="code">CLP09211</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09200" />
+        </record>
+        <record model="res.city" id="CLP09207">
+            <field name="name">Lumaco</field>
+            <field name="code">CLP09207</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09200" />
+        </record>
+        <record model="res.city" id="CLP09208">
+            <field name="name">Purén</field>
+            <field name="code">CLP09208</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09200" />
+        </record>
+        <record model="res.city" id="CLP09209">
+            <field name="name">Renaico</field>
+            <field name="code">CLP09209</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09200" />
+        </record>
+        <record model="res.city" id="CLP09210">
+            <field name="name">Traiguén</field>
+            <field name="code">CLP09210</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09200" />
+        </record>
+        <record model="res.city" id="CLP09206">
+            <field name="name">Los Sauces</field>
+            <field name="code">CLP09206</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09200" />
+        </record>
+        <record model="res.city" id="CLP09102">
+            <field name="name">Carahue</field>
+            <field name="code">CLP09102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09103">
+            <field name="name">Cunco</field>
+            <field name="code">CLP09103</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09104">
+            <field name="name">Curarrehue</field>
+            <field name="code">CLP09104</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09105">
+            <field name="name">Freire</field>
+            <field name="code">CLP09105</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09106">
+            <field name="name">Galvarino</field>
+            <field name="code">CLP09106</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09107">
+            <field name="name">Gorbea</field>
+            <field name="code">CLP09107</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09108">
+            <field name="name">Lautaro</field>
+            <field name="code">CLP09108</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09109">
+            <field name="name">Loncoche</field>
+            <field name="code">CLP09109</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09110">
+            <field name="name">Melipeuco</field>
+            <field name="code">CLP09110</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09111">
+            <field name="name">Nueva Imperial</field>
+            <field name="code">CLP09111</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09112">
+            <field name="name">Padre Las Casas</field>
+            <field name="code">CLP09112</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09113">
+            <field name="name">Perquenco</field>
+            <field name="code">CLP09113</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09114">
+            <field name="name">Pitrufquén</field>
+            <field name="code">CLP09114</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09115">
+            <field name="name">Pucón</field>
+            <field name="code">CLP09115</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09116">
+            <field name="name">Saavedra</field>
+            <field name="code">CLP09116</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09117">
+            <field name="name">Teodoro Schmidt</field>
+            <field name="code">CLP09117</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09118">
+            <field name="name">Toltén</field>
+            <field name="code">CLP09118</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09119">
+            <field name="name">Vilcún</field>
+            <field name="code">CLP09119</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09120">
+            <field name="name">Villarrica</field>
+            <field name="code">CLP09120</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09121">
+            <field name="name">Cholchol</field>
+            <field name="code">CLP09121</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP09101">
+            <field name="name">Temuco</field>
+            <field name="code">CLP09101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP09100" />
+        </record>
+        <record model="res.city" id="CLP08313">
+            <field name="name">Yumbel</field>
+            <field name="code">CLP08313</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08300" />
+        </record>
+        <record model="res.city" id="CLP08314">
+            <field name="name">Alto Biobío</field>
+            <field name="code">CLP08314</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08300" />
+        </record>
+        <record model="res.city" id="CLP08311">
+            <field name="name">Santa Bárbara</field>
+            <field name="code">CLP08311</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08300" />
+        </record>
+        <record model="res.city" id="CLP08310">
+            <field name="name">San Rosendo</field>
+            <field name="code">CLP08310</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08300" />
+        </record>
+        <record model="res.city" id="CLP08309">
+            <field name="name">Quilleco</field>
+            <field name="code">CLP08309</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08300" />
+        </record>
+        <record model="res.city" id="CLP10305">
+            <field name="name">Río Negro</field>
+            <field name="code">CLP10305</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10300" />
+        </record>
+        <record model="res.city" id="CLP10301">
+            <field name="name">Osorno</field>
+            <field name="code">CLP10301</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10300" />
+        </record>
+        <record model="res.city" id="CLP10302">
+            <field name="name">Puerto Octay</field>
+            <field name="code">CLP10302</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10300" />
+        </record>
+        <record model="res.city" id="CLP10303">
+            <field name="name">Purranque</field>
+            <field name="code">CLP10303</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10300" />
+        </record>
+        <record model="res.city" id="CLP10202">
+            <field name="name">Ancud</field>
+            <field name="code">CLP10202</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10200" />
+        </record>
+        <record model="res.city" id="CLP10203">
+            <field name="name">Chonchi</field>
+            <field name="code">CLP10203</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10200" />
+        </record>
+        <record model="res.city" id="CLP08308">
+            <field name="name">Quilaco</field>
+            <field name="code">CLP08308</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08300" />
+        </record>
+        <record model="res.city" id="CLP08307">
+            <field name="name">Negrete</field>
+            <field name="code">CLP08307</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08300" />
+        </record>
+        <record model="res.city" id="CLP08306">
+            <field name="name">Nacimiento</field>
+            <field name="code">CLP08306</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08300" />
+        </record>
+        <record model="res.city" id="CLP08305">
+            <field name="name">Mulchén</field>
+            <field name="code">CLP08305</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08300" />
+        </record>
+        <record model="res.city" id="CLP08304">
+            <field name="name">Laja</field>
+            <field name="code">CLP08304</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08300" />
+        </record>
+        <record model="res.city" id="CLP08303">
+            <field name="name">Cabrero</field>
+            <field name="code">CLP08303</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08300" />
+        </record>
+        <record model="res.city" id="CLP08302">
+            <field name="name">Antuco</field>
+            <field name="code">CLP08302</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08300" />
+        </record>
+        <record model="res.city" id="CLP08301">
+            <field name="name">Los Ángeles</field>
+            <field name="code">CLP08301</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08300" />
+        </record>
+        <record model="res.city" id="CLP08312">
+            <field name="name">Tucapel</field>
+            <field name="code">CLP08312</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08300" />
+        </record>
+        <record model="res.city" id="CLP08206">
+            <field name="name">Los Alamos</field>
+            <field name="code">CLP08206</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08200" />
+        </record>
+        <record model="res.city" id="CLP08205">
+            <field name="name">Curanilahue</field>
+            <field name="code">CLP08205</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08200" />
+        </record>
+        <record model="res.city" id="CLP08204">
+            <field name="name">Contulmo</field>
+            <field name="code">CLP08204</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08200" />
+        </record>
+        <record model="res.city" id="CLP08203">
+            <field name="name">Cañete</field>
+            <field name="code">CLP08203</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08200" />
+        </record>
+        <record model="res.city" id="CLP08202">
+            <field name="name">Arauco</field>
+            <field name="code">CLP08202</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08200" />
+        </record>
+        <record model="res.city" id="CLP08201">
+            <field name="name">Lebu</field>
+            <field name="code">CLP08201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08200" />
+        </record>
+        <record model="res.city" id="CLP08207">
+            <field name="name">Tirua</field>
+            <field name="code">CLP08207</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08200" />
+        </record>
+        <record model="res.city" id="CLP08102">
+            <field name="name">Coronel</field>
+            <field name="code">CLP08102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08100" />
+        </record>
+        <record model="res.city" id="CLP08112">
+            <field name="name">Hualpén</field>
+            <field name="code">CLP08112</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08100" />
+        </record>
+        <record model="res.city" id="CLP08111">
+            <field name="name">Tomé</field>
+            <field name="code">CLP08111</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08100" />
+        </record>
+        <record model="res.city" id="CLP08110">
+            <field name="name">Talcahuano</field>
+            <field name="code">CLP08110</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08100" />
+        </record>
+        <record model="res.city" id="CLP08109">
+            <field name="name">Santa Juana</field>
+            <field name="code">CLP08109</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08100" />
+        </record>
+        <record model="res.city" id="CLP08108">
+            <field name="name">San Pedro De La Paz</field>
+            <field name="code">CLP08108</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08100" />
+        </record>
+        <record model="res.city" id="CLP08107">
+            <field name="name">Penco</field>
+            <field name="code">CLP08107</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08100" />
+        </record>
+        <record model="res.city" id="CLP08106">
+            <field name="name">Lota</field>
+            <field name="code">CLP08106</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08100" />
+        </record>
+        <record model="res.city" id="CLP08105">
+            <field name="name">Hualqui</field>
+            <field name="code">CLP08105</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08100" />
+        </record>
+        <record model="res.city" id="CLP08104">
+            <field name="name">Florida</field>
+            <field name="code">CLP08104</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08100" />
+        </record>
+        <record model="res.city" id="CLP08103">
+            <field name="name">Chiguayante</field>
+            <field name="code">CLP08103</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08100" />
+        </record>
+        <record model="res.city" id="CLP08101">
+            <field name="name">Concepción</field>
+            <field name="code">CLP08101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP08100" />
+        </record>
+        <record model="res.city" id="CLP07401">
+            <field name="name">Linares</field>
+            <field name="code">CLP07401</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07400" />
+        </record>
+        <record model="res.city" id="CLP07402">
+            <field name="name">Colbún</field>
+            <field name="code">CLP07402</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07400" />
+        </record>
+        <record model="res.city" id="CLP07403">
+            <field name="name">Longaví</field>
+            <field name="code">CLP07403</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07400" />
+        </record>
+        <record model="res.city" id="CLP07404">
+            <field name="name">Parral</field>
+            <field name="code">CLP07404</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07400" />
+        </record>
+        <record model="res.city" id="CLP07405">
+            <field name="name">Retiro</field>
+            <field name="code">CLP07405</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07400" />
+        </record>
+        <record model="res.city" id="CLP07406">
+            <field name="name">San Javier</field>
+            <field name="code">CLP07406</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07400" />
+        </record>
+        <record model="res.city" id="CLP07407">
+            <field name="name">Villa Alegre</field>
+            <field name="code">CLP07407</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07400" />
+        </record>
+        <record model="res.city" id="CLP07408">
+            <field name="name">Yerbas Buenas</field>
+            <field name="code">CLP07408</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07400" />
+        </record>
+        <record model="res.city" id="CLP07302">
+            <field name="name">Hualañé</field>
+            <field name="code">CLP07302</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07300" />
+        </record>
+        <record model="res.city" id="CLP07308">
+            <field name="name">Teno</field>
+            <field name="code">CLP07308</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07300" />
+        </record>
+        <record model="res.city" id="CLP07301">
+            <field name="name">Curicó</field>
+            <field name="code">CLP07301</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07300" />
+        </record>
+        <record model="res.city" id="CLP07309">
+            <field name="name">Vichuquén</field>
+            <field name="code">CLP07309</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07300" />
+        </record>
+        <record model="res.city" id="CLP07303">
+            <field name="name">Licantén</field>
+            <field name="code">CLP07303</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07300" />
+        </record>
+        <record model="res.city" id="CLP07304">
+            <field name="name">Molina</field>
+            <field name="code">CLP07304</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07300" />
+        </record>
+        <record model="res.city" id="CLP07305">
+            <field name="name">Rauco</field>
+            <field name="code">CLP07305</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07300" />
+        </record>
+        <record model="res.city" id="CLP07306">
+            <field name="name">Romeral</field>
+            <field name="code">CLP07306</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07300" />
+        </record>
+        <record model="res.city" id="CLP07307">
+            <field name="name">Sagrada Familia</field>
+            <field name="code">CLP07307</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07300" />
+        </record>
+        <record model="res.city" id="CLP07202">
+            <field name="name">Chanco</field>
+            <field name="code">CLP07202</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07200" />
+        </record>
+        <record model="res.city" id="CLP07203">
+            <field name="name">Pelluhue</field>
+            <field name="code">CLP07203</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07200" />
+        </record>
+        <record model="res.city" id="CLP07201">
+            <field name="name">Cauquenes</field>
+            <field name="code">CLP07201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07200" />
+        </record>
+        <record model="res.city" id="CLP07101">
+            <field name="name">Talca</field>
+            <field name="code">CLP07101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07100" />
+        </record>
+        <record model="res.city" id="CLP07106">
+            <field name="name">Pelarco</field>
+            <field name="code">CLP07106</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07100" />
+        </record>
+        <record model="res.city" id="CLP07105">
+            <field name="name">Maule</field>
+            <field name="code">CLP07105</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07100" />
+        </record>
+        <record model="res.city" id="CLP07104">
+            <field name="name">Empedrado</field>
+            <field name="code">CLP07104</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07100" />
+        </record>
+        <record model="res.city" id="CLP07103">
+            <field name="name">Curepto</field>
+            <field name="code">CLP07103</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07100" />
+        </record>
+        <record model="res.city" id="CLP07102">
+            <field name="name">Constitución</field>
+            <field name="code">CLP07102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07100" />
+        </record>
+        <record model="res.city" id="CLP07108">
+            <field name="name">Río CLParo</field>
+            <field name="code">CLP07108</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07100" />
+        </record>
+        <record model="res.city" id="CLP07109">
+            <field name="name">San CLPemente</field>
+            <field name="code">CLP07109</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07100" />
+        </record>
+        <record model="res.city" id="CLP07110">
+            <field name="name">San Rafael</field>
+            <field name="code">CLP07110</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07100" />
+        </record>
+        <record model="res.city" id="CLP07107">
+            <field name="name">Pencahue</field>
+            <field name="code">CLP07107</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP07100" />
+        </record>
+        <record model="res.city" id="CLP06303">
+            <field name="name">Chimbarongo</field>
+            <field name="code">CLP06303</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06300" />
+        </record>
+        <record model="res.city" id="CLP06305">
+            <field name="name">Nancagua</field>
+            <field name="code">CLP06305</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06300" />
+        </record>
+        <record model="res.city" id="CLP06301">
+            <field name="name">San Fernando</field>
+            <field name="code">CLP06301</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06300" />
+        </record>
+        <record model="res.city" id="CLP06302">
+            <field name="name">Chépica</field>
+            <field name="code">CLP06302</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06300" />
+        </record>
+        <record model="res.city" id="CLP06304">
+            <field name="name">Lolol</field>
+            <field name="code">CLP06304</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06300" />
+        </record>
+        <record model="res.city" id="CLP06309">
+            <field name="name">Pumanque</field>
+            <field name="code">CLP06309</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06300" />
+        </record>
+        <record model="res.city" id="CLP06310">
+            <field name="name">Santa Cruz</field>
+            <field name="code">CLP06310</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06300" />
+        </record>
+        <record model="res.city" id="CLP06308">
+            <field name="name">Placilla</field>
+            <field name="code">CLP06308</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06300" />
+        </record>
+        <record model="res.city" id="CLP06307">
+            <field name="name">Peralillo</field>
+            <field name="code">CLP06307</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06300" />
+        </record>
+        <record model="res.city" id="CLP06306">
+            <field name="name">Palmilla</field>
+            <field name="code">CLP06306</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06300" />
+        </record>
+        <record model="res.city" id="CLP06201">
+            <field name="name">Pichilemu</field>
+            <field name="code">CLP06201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06200" />
+        </record>
+        <record model="res.city" id="CLP06202">
+            <field name="name">La Estrella</field>
+            <field name="code">CLP06202</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06200" />
+        </record>
+        <record model="res.city" id="CLP06203">
+            <field name="name">Litueche</field>
+            <field name="code">CLP06203</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06200" />
+        </record>
+        <record model="res.city" id="CLP06204">
+            <field name="name">Marchihue</field>
+            <field name="code">CLP06204</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06200" />
+        </record>
+        <record model="res.city" id="CLP06205">
+            <field name="name">Navidad</field>
+            <field name="code">CLP06205</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06200" />
+        </record>
+        <record model="res.city" id="CLP06206">
+            <field name="name">Paredones</field>
+            <field name="code">CLP06206</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06200" />
+        </record>
+        <record model="res.city" id="CLP06117">
+            <field name="name">San Vicente</field>
+            <field name="code">CLP06117</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06116">
+            <field name="name">Requinoa</field>
+            <field name="code">CLP06116</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06115">
+            <field name="name">Rengo</field>
+            <field name="code">CLP06115</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06113">
+            <field name="name">Pichidegua</field>
+            <field name="code">CLP06113</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06112">
+            <field name="name">Peumo</field>
+            <field name="code">CLP06112</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06111">
+            <field name="name">Olivar</field>
+            <field name="code">CLP06111</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06110">
+            <field name="name">Mostazal</field>
+            <field name="code">CLP06110</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06109">
+            <field name="name">Malloa</field>
+            <field name="code">CLP06109</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06108">
+            <field name="name">Machalí</field>
+            <field name="code">CLP06108</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06107">
+            <field name="name">Las Cabras</field>
+            <field name="code">CLP06107</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06106">
+            <field name="name">Graneros</field>
+            <field name="code">CLP06106</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06105">
+            <field name="name">Doñihue</field>
+            <field name="code">CLP06105</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06104">
+            <field name="name">Coltauco</field>
+            <field name="code">CLP06104</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06103">
+            <field name="name">Coinco</field>
+            <field name="code">CLP06103</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06102">
+            <field name="name">Codegua</field>
+            <field name="code">CLP06102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06101">
+            <field name="name">Rancagua</field>
+            <field name="code">CLP06101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP06114">
+            <field name="name">Quinta De Tilcoco</field>
+            <field name="code">CLP06114</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP06100" />
+        </record>
+        <record model="res.city" id="CLP05705">
+            <field name="name">Putaendo</field>
+            <field name="code">CLP05705</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05700" />
+        </record>
+        <record model="res.city" id="CLP05704">
+            <field name="name">Panquehue</field>
+            <field name="code">CLP05704</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05700" />
+        </record>
+        <record model="res.city" id="CLP05703">
+            <field name="name">Llay Llay</field>
+            <field name="code">CLP05703</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05700" />
+        </record>
+        <record model="res.city" id="CLP05702">
+            <field name="name">Catemu</field>
+            <field name="code">CLP05702</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05700" />
+        </record>
+        <record model="res.city" id="CLP05701">
+            <field name="name">San Felipe</field>
+            <field name="code">CLP05701</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05700" />
+        </record>
+        <record model="res.city" id="CLP05706">
+            <field name="name">Santa María</field>
+            <field name="code">CLP05706</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05700" />
+        </record>
+        <record model="res.city" id="CLP05603">
+            <field name="name">Cartagena</field>
+            <field name="code">CLP05603</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05600" />
+        </record>
+        <record model="res.city" id="CLP05604">
+            <field name="name">El Quisco</field>
+            <field name="code">CLP05604</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05600" />
+        </record>
+        <record model="res.city" id="CLP05605">
+            <field name="name">El Tabo</field>
+            <field name="code">CLP05605</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05600" />
+        </record>
+        <record model="res.city" id="CLP05606">
+            <field name="name">Santo Domingo</field>
+            <field name="code">CLP05606</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05600" />
+        </record>
+        <record model="res.city" id="CLP05601">
+            <field name="name">San Antonio</field>
+            <field name="code">CLP05601</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05600" />
+        </record>
+        <record model="res.city" id="CLP05602">
+            <field name="name">Algarrobo</field>
+            <field name="code">CLP05602</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05600" />
+        </record>
+        <record model="res.city" id="CLP05502">
+            <field name="name">Calera</field>
+            <field name="code">CLP05502</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05500" />
+        </record>
+        <record model="res.city" id="CLP05503">
+            <field name="name">Hijuelas</field>
+            <field name="code">CLP05503</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05500" />
+        </record>
+        <record model="res.city" id="CLP05504">
+            <field name="name">La Cruz</field>
+            <field name="code">CLP05504</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05500" />
+        </record>
+        <record model="res.city" id="CLP05506">
+            <field name="name">Nogales</field>
+            <field name="code">CLP05506</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05500" />
+        </record>
+        <record model="res.city" id="CLP05501">
+            <field name="name">Quillota</field>
+            <field name="code">CLP05501</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05500" />
+        </record>
+        <record model="res.city" id="CLP05401">
+            <field name="name">La Ligua</field>
+            <field name="code">CLP05401</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05400" />
+        </record>
+        <record model="res.city" id="CLP05405">
+            <field name="name">Zapallar</field>
+            <field name="code">CLP05405</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05400" />
+        </record>
+        <record model="res.city" id="CLP05403">
+            <field name="name">Papudo</field>
+            <field name="code">CLP05403</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05400" />
+        </record>
+        <record model="res.city" id="CLP05404">
+            <field name="name">Petorca</field>
+            <field name="code">CLP05404</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05400" />
+        </record>
+        <record model="res.city" id="CLP05402">
+            <field name="name">Cabildo</field>
+            <field name="code">CLP05402</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05400" />
+        </record>
+        <record model="res.city" id="CLP05303">
+            <field name="name">Rinconada</field>
+            <field name="code">CLP05303</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05300" />
+        </record>
+        <record model="res.city" id="CLP05302">
+            <field name="name">Calle Larga</field>
+            <field name="code">CLP05302</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05300" />
+        </record>
+        <record model="res.city" id="CLP05301">
+            <field name="name">Los Andes</field>
+            <field name="code">CLP05301</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05300" />
+        </record>
+        <record model="res.city" id="CLP05304">
+            <field name="name">San Esteban</field>
+            <field name="code">CLP05304</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05300" />
+        </record>
+        <record model="res.city" id="CLP05201">
+            <field name="name">Isla De Pascua</field>
+            <field name="code">CLP05201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05200" />
+        </record>
+        <record model="res.city" id="CLP05101">
+            <field name="name">Valparaíso</field>
+            <field name="code">CLP05101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05100" />
+        </record>
+        <record model="res.city" id="CLP05102">
+            <field name="name">Casablanca</field>
+            <field name="code">CLP05102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05100" />
+        </record>
+        <record model="res.city" id="CLP05103">
+            <field name="name">Concón</field>
+            <field name="code">CLP05103</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05100" />
+        </record>
+        <record model="res.city" id="CLP05104">
+            <field name="name">Juan Fernández</field>
+            <field name="code">CLP05104</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05100" />
+        </record>
+        <record model="res.city" id="CLP05105">
+            <field name="name">Puchuncaví</field>
+            <field name="code">CLP05105</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05100" />
+        </record>
+        <record model="res.city" id="CLP05109">
+            <field name="name">Viña Del Mar</field>
+            <field name="code">CLP05109</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05100" />
+        </record>
+        <record model="res.city" id="CLP05107">
+            <field name="name">Quintero</field>
+            <field name="code">CLP05107</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP05100" />
+        </record>
+        <record model="res.city" id="CLP04301">
+            <field name="name">Ovalle</field>
+            <field name="code">CLP04301</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04300" />
+        </record>
+        <record model="res.city" id="CLP04302">
+            <field name="name">Combarbalá</field>
+            <field name="code">CLP04302</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04300" />
+        </record>
+        <record model="res.city" id="CLP04303">
+            <field name="name">Monte Patria</field>
+            <field name="code">CLP04303</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04300" />
+        </record>
+        <record model="res.city" id="CLP04304">
+            <field name="name">Punitaqui</field>
+            <field name="code">CLP04304</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04300" />
+        </record>
+        <record model="res.city" id="CLP04305">
+            <field name="name">Río Hurtado</field>
+            <field name="code">CLP04305</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04300" />
+        </record>
+        <record model="res.city" id="CLP04204">
+            <field name="name">Salamanca</field>
+            <field name="code">CLP04204</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04200" />
+        </record>
+        <record model="res.city" id="CLP04203">
+            <field name="name">Los Vilos</field>
+            <field name="code">CLP04203</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04200" />
+        </record>
+        <record model="res.city" id="CLP04201">
+            <field name="name">Illapel</field>
+            <field name="code">CLP04201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04200" />
+        </record>
+        <record model="res.city" id="CLP04202">
+            <field name="name">Canela</field>
+            <field name="code">CLP04202</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04200" />
+        </record>
+        <record model="res.city" id="CLP04105">
+            <field name="name">Paihuano</field>
+            <field name="code">CLP04105</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04100" />
+        </record>
+        <record model="res.city" id="CLP04104">
+            <field name="name">La Higuera</field>
+            <field name="code">CLP04104</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04100" />
+        </record>
+        <record model="res.city" id="CLP04103">
+            <field name="name">Andacollo</field>
+            <field name="code">CLP04103</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04100" />
+        </record>
+        <record model="res.city" id="CLP04102">
+            <field name="name">Coquimbo</field>
+            <field name="code">CLP04102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04100" />
+        </record>
+        <record model="res.city" id="CLP04101">
+            <field name="name">La Serena</field>
+            <field name="code">CLP04101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04100" />
+        </record>
+        <record model="res.city" id="CLP04106">
+            <field name="name">Vicuña</field>
+            <field name="code">CLP04106</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP04100" />
+        </record>
+        <record model="res.city" id="CLP03302">
+            <field name="name">Alto Del Carmen</field>
+            <field name="code">CLP03302</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP03300" />
+        </record>
+        <record model="res.city" id="CLP03304">
+            <field name="name">Huasco</field>
+            <field name="code">CLP03304</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP03300" />
+        </record>
+        <record model="res.city" id="CLP03301">
+            <field name="name">Vallenar</field>
+            <field name="code">CLP03301</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP03300" />
+        </record>
+        <record model="res.city" id="CLP03303">
+            <field name="name">Freirina</field>
+            <field name="code">CLP03303</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP03300" />
+        </record>
+        <record model="res.city" id="CLP03202">
+            <field name="name">Diego De Almagro</field>
+            <field name="code">CLP03202</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP03200" />
+        </record>
+        <record model="res.city" id="CLP03201">
+            <field name="name">Chañaral</field>
+            <field name="code">CLP03201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP03200" />
+        </record>
+        <record model="res.city" id="CLP03101">
+            <field name="name">Copiapó</field>
+            <field name="code">CLP03101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP03100" />
+        </record>
+        <record model="res.city" id="CLP03102">
+            <field name="name">Caldera</field>
+            <field name="code">CLP03102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP03100" />
+        </record>
+        <record model="res.city" id="CLP03103">
+            <field name="name">Tierra Amarilla</field>
+            <field name="code">CLP03103</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP03100" />
+        </record>
+        <record model="res.city" id="CLP02301">
+            <field name="name">Tocopilla</field>
+            <field name="code">CLP02301</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP02300" />
+        </record>
+        <record model="res.city" id="CLP02302">
+            <field name="name">María Elena</field>
+            <field name="code">CLP02302</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP02300" />
+        </record>
+        <record model="res.city" id="CLP02202">
+            <field name="name">Ollague</field>
+            <field name="code">CLP02202</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP02200" />
+        </record>
+        <record model="res.city" id="CLP02203">
+            <field name="name">San Pedro De Atacama</field>
+            <field name="code">CLP02203</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP02200" />
+        </record>
+        <record model="res.city" id="CLP02201">
+            <field name="name">Calama</field>
+            <field name="code">CLP02201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP02200" />
+        </record>
+        <record model="res.city" id="CLP02103">
+            <field name="name">Sierra Gorda</field>
+            <field name="code">CLP02103</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP02100" />
+        </record>
+        <record model="res.city" id="CLP02101">
+            <field name="name">Antofagasta</field>
+            <field name="code">CLP02101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP02100" />
+        </record>
+        <record model="res.city" id="CLP02104">
+            <field name="name">Taltal</field>
+            <field name="code">CLP02104</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP02100" />
+        </record>
+        <record model="res.city" id="CLP02102">
+            <field name="name">Mejillones</field>
+            <field name="code">CLP02102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP02100" />
+        </record>
+        <record model="res.city" id="CLP01401">
+            <field name="name">Pozo Almonte</field>
+            <field name="code">CLP01401</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP01400" />
+        </record>
+        <record model="res.city" id="CLP01402">
+            <field name="name">Camiña</field>
+            <field name="code">CLP01402</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP01400" />
+        </record>
+        <record model="res.city" id="CLP01404">
+            <field name="name">Huara</field>
+            <field name="code">CLP01404</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP01400" />
+        </record>
+        <record model="res.city" id="CLP01405">
+            <field name="name">Pica</field>
+            <field name="code">CLP01405</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP01400" />
+        </record>
+        <record model="res.city" id="CLP01403">
+            <field name="name">Colchane</field>
+            <field name="code">CLP01403</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP01400" />
+        </record>
+        <record model="res.city" id="CLP01101">
+            <field name="name">Iquique</field>
+            <field name="code">CLP01101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP01100" />
+        </record>
+        <record model="res.city" id="CLP01107">
+            <field name="name">Alto Hospicio</field>
+            <field name="code">CLP01107</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP01100" />
+        </record>
+        <record model="res.city" id="CLP16305">
+            <field name="name">San Nicolás</field>
+            <field name="code">CLP16305</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16300" />
+        </record>
+        <record model="res.city" id="CLP16304">
+            <field name="name">San Fabián</field>
+            <field name="code">CLP16304</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16300" />
+        </record>
+        <record model="res.city" id="CLP16303">
+            <field name="name">Ñiquén</field>
+            <field name="code">CLP16303</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16300" />
+        </record>
+        <record model="res.city" id="CLP16302">
+            <field name="name">Coihueco</field>
+            <field name="code">CLP16302</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16300" />
+        </record>
+        <record model="res.city" id="CLP16301">
+            <field name="name">San Carlos</field>
+            <field name="code">CLP16301</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16300" />
+        </record>
+        <record model="res.city" id="CLP16207">
+            <field name="name">Trehuaco</field>
+            <field name="code">CLP16207</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16200" />
+        </record>
+        <record model="res.city" id="CLP16206">
+            <field name="name">Ranquil</field>
+            <field name="code">CLP16206</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16200" />
+        </record>
+        <record model="res.city" id="CLP16205">
+            <field name="name">Portezuelo</field>
+            <field name="code">CLP16205</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16200" />
+        </record>
+        <record model="res.city" id="CLP16204">
+            <field name="name">Ninhue</field>
+            <field name="code">CLP16204</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16200" />
+        </record>
+        <record model="res.city" id="CLP16203">
+            <field name="name">Coelemu</field>
+            <field name="code">CLP16203</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16200" />
+        </record>
+        <record model="res.city" id="CLP16202">
+            <field name="name">Cobquecura</field>
+            <field name="code">CLP16202</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16200" />
+        </record>
+        <record model="res.city" id="CLP16201">
+            <field name="name">Quirihue</field>
+            <field name="code">CLP16201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16200" />
+        </record>
+        <record model="res.city" id="CLP16109">
+            <field name="name">Yungay</field>
+            <field name="code">CLP16109</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16100" />
+        </record>
+        <record model="res.city" id="CLP16101">
+            <field name="name">Chillán</field>
+            <field name="code">CLP16101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16100" />
+        </record>
+        <record model="res.city" id="CLP16108">
+            <field name="name">San Ignacio</field>
+            <field name="code">CLP16108</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16100" />
+        </record>
+        <record model="res.city" id="CLP16107">
+            <field name="name">Quillón</field>
+            <field name="code">CLP16107</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16100" />
+        </record>
+        <record model="res.city" id="CLP16102">
+            <field name="name">Bulnes</field>
+            <field name="code">CLP16102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16100" />
+        </record>
+        <record model="res.city" id="CLP16105">
+            <field name="name">Pemuco</field>
+            <field name="code">CLP16105</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP16100" />
+        </record>
+        <record model="res.city" id="CLP13130">
+            <field name="name">San Miguel</field>
+            <field name="code">CLP13130</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13131">
+            <field name="name">San Ramón</field>
+            <field name="code">CLP13131</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13132">
+            <field name="name">Vitacura</field>
+            <field name="code">CLP13132</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13101">
+            <field name="name">Santiago</field>
+            <field name="code">CLP13101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13102">
+            <field name="name">Cerrillos</field>
+            <field name="code">CLP13102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13103">
+            <field name="name">Cerro Navia</field>
+            <field name="code">CLP13103</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13104">
+            <field name="name">Conchalí</field>
+            <field name="code">CLP13104</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13105">
+            <field name="name">El Bosque</field>
+            <field name="code">CLP13105</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13106">
+            <field name="name">Estación Central</field>
+            <field name="code">CLP13106</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13107">
+            <field name="name">Huechuraba</field>
+            <field name="code">CLP13107</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13108">
+            <field name="name">Independencia</field>
+            <field name="code">CLP13108</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13109">
+            <field name="name">La Cisterna</field>
+            <field name="code">CLP13109</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13110">
+            <field name="name">La Florida</field>
+            <field name="code">CLP13110</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP13111">
+            <field name="name">La Granja</field>
+            <field name="code">CLP13111</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP13100" />
+        </record>
+        <record model="res.city" id="CLP12401">
+            <field name="name">Natales</field>
+            <field name="code">CLP12401</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP12400" />
+        </record>
+        <record model="res.city" id="CLP12402">
+            <field name="name">Torres Del Paine</field>
+            <field name="code">CLP12402</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP12400" />
+        </record>
+        <record model="res.city" id="CLP12302">
+            <field name="name">Primavera</field>
+            <field name="code">CLP12302</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP12300" />
+        </record>
+        <record model="res.city" id="CLP12301">
+            <field name="name">Porvenir</field>
+            <field name="code">CLP12301</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP12300" />
+        </record>
+        <record model="res.city" id="CLP12303">
+            <field name="name">Timaukel</field>
+            <field name="code">CLP12303</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP12300" />
+        </record>
+        <record model="res.city" id="CLP12201">
+            <field name="name">Cabo De Hornos</field>
+            <field name="code">CLP12201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP12200" />
+        </record>
+        <record model="res.city" id="CLP12202">
+            <field name="name">Antártica</field>
+            <field name="code">CLP12202</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP12200" />
+        </record>
+        <record model="res.city" id="CLP12104">
+            <field name="name">San Gregorio</field>
+            <field name="code">CLP12104</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP12100" />
+        </record>
+        <record model="res.city" id="CLP12103">
+            <field name="name">Río Verde</field>
+            <field name="code">CLP12103</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP12100" />
+        </record>
+        <record model="res.city" id="CLP12102">
+            <field name="name">Laguna Blanca</field>
+            <field name="code">CLP12102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP12100" />
+        </record>
+        <record model="res.city" id="CLP12101">
+            <field name="name">Punta Arenas</field>
+            <field name="code">CLP12101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP12100" />
+        </record>
+        <record model="res.city" id="CLP11402">
+            <field name="name">Río Ibáñez</field>
+            <field name="code">CLP11402</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP11400" />
+        </record>
+        <record model="res.city" id="CLP11401">
+            <field name="name">Chile Chico</field>
+            <field name="code">CLP11401</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP11400" />
+        </record>
+        <record model="res.city" id="CLP11301">
+            <field name="name">Cochrane</field>
+            <field name="code">CLP11301</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP11300" />
+        </record>
+        <record model="res.city" id="CLP11302">
+            <field name="name">Ohiggins</field>
+            <field name="code">CLP11302</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP11300" />
+        </record>
+        <record model="res.city" id="CLP11303">
+            <field name="name">Tortel</field>
+            <field name="code">CLP11303</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP11300" />
+        </record>
+        <record model="res.city" id="CLP11202">
+            <field name="name">Cisnes</field>
+            <field name="code">CLP11202</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP11200" />
+        </record>
+        <record model="res.city" id="CLP11201">
+            <field name="name">Aisén</field>
+            <field name="code">CLP11201</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP11200" />
+        </record>
+        <record model="res.city" id="CLP11203">
+            <field name="name">Guaitecas</field>
+            <field name="code">CLP11203</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP11200" />
+        </record>
+        <record model="res.city" id="CLP11102">
+            <field name="name">Lago Verde</field>
+            <field name="code">CLP11102</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP11100" />
+        </record>
+        <record model="res.city" id="CLP11101">
+            <field name="name">Coihaique</field>
+            <field name="code">CLP11101</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP11100" />
+        </record>
+        <record model="res.city" id="CLP10402">
+            <field name="name">Futaleufú</field>
+            <field name="code">CLP10402</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10400" />
+        </record>
+        <record model="res.city" id="CLP10404">
+            <field name="name">Palena</field>
+            <field name="code">CLP10404</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10400" />
+        </record>
+        <record model="res.city" id="CLP10403">
+            <field name="name">Hualaihue</field>
+            <field name="code">CLP10403</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10400" />
+        </record>
+        <record model="res.city" id="CLP10401">
+            <field name="name">Chaitén</field>
+            <field name="code">CLP10401</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10400" />
+        </record>
+        <record model="res.city" id="CLP10307">
+            <field name="name">San Pablo</field>
+            <field name="code">CLP10307</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10300" />
+        </record>
+        <record model="res.city" id="CLP10306">
+            <field name="name">San Juan De La Costa</field>
+            <field name="code">CLP10306</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10300" />
+        </record>
+        <record model="res.city" id="CLP10304">
+            <field name="name">Puyehue</field>
+            <field name="code">CLP10304</field>
+            <field name="country_id" ref="base.CLP" />
+            <field name="state_id" ref="CLP10300" />
+        </record>
+    </data>
+</odoo>
