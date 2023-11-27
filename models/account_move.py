@@ -582,19 +582,62 @@ class AccountMove(models.Model):
                     }
 
     def _get_last_sequence_domain(self, relaxed=False):
-        where_string, param = super(AccountMove, self)._get_last_sequence_domain(relaxed=relaxed)
+        # EXTENDS account sequence.mixin
+        self.ensure_one()
+        if not self.date or not self.journal_id:
+            return "WHERE FALSE", {}
+        where_string = "WHERE journal_id = %(journal_id)s AND name != '/'"
+        param = {'journal_id': self.journal_id.id}
+        is_payment = self.payment_id or self._context.get('is_payment')
+
+        if not relaxed:
+            domain = [('journal_id', '=', self.journal_id.id), ('id', '!=', self.id or self._origin.id), ('name', 'not in', ('/', '', False)), ('use_documents', '=', self.use_documents)]
+            if self.journal_id.refund_sequence:
+                refund_types = ('out_refund', 'in_refund')
+                domain += [('move_type', 'in' if self.move_type in refund_types else 'not in', refund_types)]
+            if self.journal_id.payment_sequence:
+                domain += [('payment_id', '!=' if is_payment else '=', False)]
+            reference_move_name = self.search(domain + [('date', '<=', self.date)], order='date desc', limit=1).name
+            if not reference_move_name:
+                reference_move_name = self.search(domain, order='date asc', limit=1).name
+            sequence_number_reset = self._deduce_sequence_number_reset(reference_move_name)
+            if sequence_number_reset == 'year':
+                where_string += " AND date_trunc('year', date::timestamp without time zone) = date_trunc('year', %(date)s) "
+                param['date'] = self.date
+                param['anti_regex'] = re.sub(r"\?P<\w+>", "?:", self._sequence_monthly_regex.split('(?P<seq>')[0]) + '$'
+            elif sequence_number_reset == 'month':
+                where_string += " AND date_trunc('month', date::timestamp without time zone) = date_trunc('month', %(date)s) "
+                param['date'] = self.date
+            else:
+                param['anti_regex'] = re.sub(r"\?P<\w+>", "?:", self._sequence_yearly_regex.split('(?P<seq>')[0]) + '$'
+
+            if param.get('anti_regex') and not self.journal_id.sequence_override_regex:
+                where_string += " AND sequence_prefix !~ %(anti_regex)s "
+
+        if self.journal_id.refund_sequence:
+            if self.move_type in ('out_refund', 'in_refund'):
+                where_string += " AND move_type IN ('out_refund', 'in_refund') "
+            else:
+                where_string += " AND move_type NOT IN ('out_refund', 'in_refund') "
+        elif self.journal_id.payment_sequence:
+            if is_payment:
+                where_string += " AND payment_id IS NOT NULL "
+            else:
+                where_string += " AND payment_id IS NULL "
+
         if self.use_documents and self.document_class_id:
             where_string += " AND use_documents AND document_class_id = %(document_class_id)s "
             param['document_class_id'] = self.document_class_id.id
         else:
-            where_string += " AND (use_documents is FALSE OR use_documents is NULL)"
+            where_string += " AND (use_documents = FALSE OR use_documents is NULL) "
 
         return where_string, param
 
     def _set_next_sequence(self):
         self.ensure_one()
         if self.use_documents:
-            self.sii_document_number = self.journal_document_class_id.sequence_id.number_next_actual
+            if not (self.journal_id.restore_mode or self._context.get("restore_mode", False)):
+                self.sii_document_number = self.journal_document_class_id.sequence_id.number_next_actual
             self[self._sequence_field] = '%s%s' % (self.document_class_id.doc_code_prefix, self.sii_document_number)
         else:
             super(AccountMove, self)._set_next_sequence()

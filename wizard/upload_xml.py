@@ -612,6 +612,7 @@ class UploadXMLWizard(models.TransientModel):
                 "invoice_origin": "XML Envío: " + name.decode(),
                 "sii_barcode": ted_string.decode(),
                 "invoice_date": FchEmis,
+                "use_documents": self.type=='ventas',
             })
         if journal_id:
             invoice["journal_id"] = journal_id.id
