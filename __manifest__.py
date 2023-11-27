@@ -15,6 +15,7 @@ Facturación Electrónica para Chile. Mayor información en https://globalrespon
         "base",
         "base_address_extended",
         "account",
+        "account_sequence",
         "purchase",
         "sale_management",
         "l10n_cl_chart_of_account",

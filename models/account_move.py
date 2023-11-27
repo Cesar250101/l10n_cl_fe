@@ -11,6 +11,7 @@ from odoo.tools.misc import formatLang, format_date, get_lang
 from odoo.tools import frozendict
 from contextlib import ExitStack, contextmanager
 from .bigint import BigInt
+import re
 
 _logger = logging.getLogger(__name__)
 
