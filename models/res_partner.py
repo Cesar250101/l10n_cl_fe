@@ -93,7 +93,18 @@ class ResPartner(models.Model):
                                 and not r.parent_id
                                 and self.check_vat_cl(r.document_number.replace(".", "").replace("-", ""))
                             ):
-                                r.put_remote_user_data()
+                                company = r.company_id or self.env.company
+                                url = company.url_remote_partners
+                                token = company.token_remote_partners
+                                if not url or not token or not company.sync_remote_partners:
+                                    continue
+                                data = {
+                                    "token": token,
+                                    "version": 2.0,
+                                    "origen": self.env['ir.config_parameter'].sudo().get_param('web.base.url'),
+                                }
+                                data.update(r.get_data_to_put())
+                                r.put_remote_user_data(url, data)
                     except Exception as e:
                         _logger.warning("Error en subida información %s" % str(e), exc_info=True)
                     break
@@ -282,37 +293,12 @@ class ResPartner(models.Model):
             self.document_number = data["rut"]
         self.last_sync_update = data["actualizado"]
 
-    def put_remote_user_data(self):
-        company = self.company_id or self.env.company
-        url = company.url_remote_partners
-        token = company.token_remote_partners
-        sync = company.sync_remote_partners
-        if not url or not token or not sync:
-            return
-        if self.document_number in [False, 0, "0"]:
-            return
+    def put_remote_user_data(self, url, data):
         try:
             resp = pool.request(
                 "PUT",
                 url,
-                body=json.dumps(
-                    {
-                        "rut": self.document_number,
-                        "token": token,
-                        "glosa_giro": self.activity_description.name,
-                        "razon_social": self.name,
-                        "dte_email": self.dte_email,
-                        "email": self.email,
-                        "direccion": self.street,
-                        # 'comuna': self.
-                        "telefono": self.phone,
-                        "actecos": [ac.code for ac in self.acteco_ids],
-                        "url": self.website,
-                        "origen": self.env['ir.config_parameter'].sudo().get_param('web.base.url'),
-                        "logo": self.image_1920.decode() if self.image_1920 else False,
-                        "version": 1.0,
-                    }
-                ).encode("utf-8"),
+                body=json.dumps(data).encode("utf-8"),
                 headers={"Content-Type": "application/json"},
             )
             message = ""
@@ -346,6 +332,23 @@ class ResPartner(models.Model):
                 )"""
         except:
             _logger.error("Error en PUT partner", exc_info=True)
+
+    def get_data_to_put(self):
+        if self.document_number in [False, 0, "0"]:
+            return {}
+        return {
+            "rut": self.document_number,
+            "glosa_giro": self.activity_description.name,
+            "razon_social": self.name,
+            "dte_email": self.dte_email,
+            "email": self.email,
+            "direccion": self.street,
+            # 'comuna': self.
+            "telefono": self.phone,
+            "actecos": [ac.code for ac in self.acteco_ids],
+            "url": self.website,
+            "logo": self.image_1920.decode() if self.image_1920 else False,
+        }
 
     def get_remote_user_data(self, to_check, process_data=True):
         company = self.company_id or self.env.company
@@ -408,24 +411,64 @@ class ResPartner(models.Model):
             self.get_remote_user_data(self.name)
 
     @api.model
-    def _check_need_update(self):
-        for r in self.search([("document_number", "not in", [False, 0]), ("parent_id", "=", False)]):
+    def _check_need_update(self, groups=100):
+        to_sync = {}
+        rut_sync = {}
+        recs = self.search([("document_number", "not in", [False, 0]), ("parent_id", "=", False)])
+        multi = len(recs) > 1
+        i = 0
+        for r in recs:
             company = r.company_id or self.env.company
             url = company.url_remote_partners
             token = company.token_remote_partners
             if not url or not token:
                 continue
+            to_sync.setdefault((url, token, i), {
+                "token": token,
+                "version": 2.0,
+                "origen": self.env['ir.config_parameter'].sudo().get_param('web.base.url'),
+            })
             if company.sync_remote_partners:
-                r.put_remote_user_data()
+                data = r.get_data_to_put()
+                rut_sync[data['rut']] = r
+                if multi:
+                    to_sync[(url, token, i)].setdefault("ruts", {})
+                    to_sync[(url, token, i)]["ruts"][r.document_number] = data
+                    if len(to_sync[(url, token, i)]["ruts"]) == groups:
+                        i+=1
+                else:
+                    to_sync[(url, token, i)].update(data)
+        for k, data in to_sync.items():
             try:
-                resp = pool.request(
-                    "GET", url, {
-                        "rut": r.document_number,
-                        "token": token,
-                        "actualizado": r.last_sync_update,
-                        "version": 1.0,
-                    }
-                )
+                self.put_remote_user_data(k[0], data)
+            except:
+                _logger.warning("Error al hacer PUT", exc_info=True)
+            try:
+                if multi:
+                    ruts = {}
+                    for r, rut_data in data['ruts'].items():
+                        ruts[r] = {
+                            "rut": rut_data['rut'],
+                            "actualizado": str(rut_sync[rut_data['rut']].last_sync_update),
+                        }
+                    resp = pool.request(
+                        "POST", k[0],
+                        body=json.dumps({
+                            "ruts": ruts,
+                            "token": k[1],
+                            "version": 2.0,
+                        }).encode("utf-8"),
+                        headers={"Content-Type": "application/json"}
+                    )
+                else:
+                    resp = pool.request(
+                        "GET", k[0], {
+                            "token": k[1],
+                            "version": 2.0,
+                            "rut": data['rut'],
+                            "actualizado": rut_sync[data['rut']].last_sync_update,
+                        }
+                    )
                 message = ""
                 title = "Advertencia"
                 if resp.status != 200:
@@ -439,9 +482,17 @@ class ResPartner(models.Model):
                 else:
                     data = json.loads(resp.data.decode("ISO-8859-1"))
                     message = data.get('message')
-                    if data.get("result", False):
-                        r.sync = False
-                        r.fill_partner()
+                    result = data.get("result", False)
+                    if result:
+                        if multi:
+                            for rut, valores in result['ruts'].items():
+                                if valores['result']:
+                                    r = rut_sync[rut]
+                                    r._process_data(valores)
+                        else:
+                            r = rut_sync[data.get("rut", False)]
+                            r._process_data(result)
+
                 if message:
                     self.env["bus.bus"].sendone(
                         (self._cr.dbname, "res.partner", self.env.user.partner_id.id),
