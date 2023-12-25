@@ -10,7 +10,7 @@ try:
     import urllib3
 
     urllib3.disable_warnings()
-    pool = urllib3.PoolManager(timeout=10.0)
+    pool = urllib3.PoolManager()
 except ImportError:
     _logger.warning("no se ha cargado urllib3")
 
@@ -430,6 +430,8 @@ class ResPartner(models.Model):
             })
             if company.sync_remote_partners:
                 data = r.get_data_to_put()
+                if not data:
+                    continue
                 rut_sync[data['rut']] = r
                 if multi:
                     to_sync[(url, token, i)].setdefault("ruts", {})
