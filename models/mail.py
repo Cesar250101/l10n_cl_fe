@@ -174,14 +174,18 @@ class ProcessMails(models.Model):
                 if not self.env["mail.message.dte"].search([("name", "=", name)]):
                     self._process_xml(att)
 
-    @api.model
-    def create(self, vals):
-        mail = super(ProcessMails, self).create(vals)
-        if (
-            mail.message_type in ["email"]
-            and mail.attachment_ids
-            and not mail.mail_server_id
-            and mail.author_id not in [self.env.ref("base.partner_root"), self.env.ref("base.partner_admin")]
-        ):
-            mail.process_mess()
-        return mail
+    @api.model_create_multi
+    def create(self, values_list):
+        messages = super(ProcessMails, self).create(values_list)
+        for mail in messages:
+            if (
+                mail.message_type in ["email"]
+                and mail.attachment_ids
+                and not mail.mail_server_id
+                and mail.author_id not in [self.env.ref("base.partner_root"), self.env.ref("base.partner_admin")]
+            ):
+                try:
+                    mail.process_mess()
+                except Exception as e:
+                    _logger.warning("Error en procesar email con XML", exc_info=True)
+        return messages
