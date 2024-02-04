@@ -178,6 +178,7 @@
                       <field name="referencias" mode="tree">
                           <form>
                               <group>
+                                  <field name="sequence" widget="handle" />
                                   <field name="origen" required="True" />
                                   <field name="sii_referencia_TpoDocRef" required="True" />
                                   <field name="sii_referencia_CodRef" />
@@ -186,6 +187,7 @@
                               </group>
                           </form>
                           <tree editable="bottom">
+                              <field name="sequence" widget="handle" />
                               <field name="origen" required="True" />
                               <field name="sii_referencia_TpoDocRef" required="True" />
                               <field name="sii_referencia_CodRef" />
