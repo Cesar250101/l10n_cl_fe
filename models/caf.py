@@ -227,7 +227,7 @@ has been exhausted.""",
             })
 
     def load_caf(self):
-        if not self.caf_file:
+        if not self.caf_file and not self.caf_string:
             return
         if not self.sequence_id:
             context = dict(self._context or {})
