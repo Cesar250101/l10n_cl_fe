@@ -1,12 +1,12 @@
-import logging
+# -*- coding: utf-8 -*-
 from datetime import datetime
-
 from dateutil.relativedelta import relativedelta
-
 from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
 from odoo.tools.translate import _
+import logging
+
 
 _logger = logging.getLogger(__name__)
 try:
@@ -68,6 +68,23 @@ class ProcessMailsDocument(models.Model):
     journal_id = fields.Many2one('account.journal', string="Journal Destino")
 
     _order = "create_date DESC"
+
+    @api.onchange('purchase_to_done')
+    def auto_map_po_lines(self):
+        if self._context.get('no_map_po_lines'):
+            return
+        if not self.purchase_to_done:
+            for line in self.invoice_line_ids:
+                line.purchase_line_id = False
+            return
+        lines = self.purchase_to_done[0].order_line
+        tot_lines = len(lines)
+        for line in self.invoice_line_ids:
+            i = line.sequence
+            if i <= tot_lines:
+                line.purchase_line_id = lines[(i-1)]._origin.id
+            else:
+                line.purchase_line_id = False
 
     def _emisor(self, company_id):
         Emisor = {}
@@ -310,7 +327,7 @@ class ProcessMailsDocumentLines(models.Model):
     product_description = fields.Char(string="Descripción Producto", readonly=True,)
     quantity = fields.Float(string="Cantidad", readonly=True,)
     price_unit = fields.Monetary(string="Precio Unitario", readonly=True,)
-    discount = fields.Monetary(string="Descuento", readonly=True,)
+    discount = fields.Float(string='Discount (%)', readonly=True, digits='Discount', default=0.0,)
     price_subtotal = fields.Monetary(string="Total", readonly=True,)
     product_uom_id = fields.Many2one('uom.uom', string='Unit of Measure', readonly=True)
     currency_id = fields.Many2one(
@@ -337,7 +354,7 @@ class ProcessMailsDocumentLines(models.Model):
         context={'active_test': False},
         check_company=True,
     )
-
+    purchase_line_id = fields.Many2one('purchase.order.line', string="Línea de Órden de Compra")
 
 class MMDTEDGlobalDescuentoRecargo(models.Model):
     _name = "mail.message.dte.document.gdr"

@@ -15,6 +15,7 @@
                     <field name="option" widget="radio" />
                     <field name="pre_process" />
                     <field name="type" />
+                    <field name="purchase_to_done" attrs="{'invisible': [('type', '=', 'create_po')]}"/>
                 </group>
                 <footer>
                         <button string="Confirm" name="confirm" type="object" class="oe_highlight" />

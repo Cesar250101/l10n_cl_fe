@@ -165,6 +165,7 @@
                                     <field name="price_subtotal" />
                                     <field name="tax_ids" />
                                     <field name="ind_exe" />
+                                    <field name="purchase_line_id" />
                                     <field name="currency_id" invisible="True" />
                                 </tree>
                             </field>

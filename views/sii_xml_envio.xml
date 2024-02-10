@@ -65,7 +65,7 @@
 
     <record model="ir.actions.act_window" id="xml_envio">
         <field name="name">SII xml request</field>
-        <field name="res_model">sii.xml.request</field>
+        <field name="res_model">sii.xml.envio</field>
         <field name="view_mode">tree,form</field>
     </record>
     <menuitem
