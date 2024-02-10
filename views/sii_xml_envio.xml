@@ -4,7 +4,7 @@
         <field name="name">xml_envio.form</field>
         <field name="model">sii.xml.envio</field>
         <field name="arch" type="xml">
-            <form string="XML Envío">
+            <form string="XML Request">
                 <header>
                     <field name='state' widget="statusbar" />
                     <button
@@ -53,7 +53,7 @@
         <field name="name">xml_envio.tree</field>
         <field name="model">sii.xml.envio</field>
         <field name="arch" type="xml">
-            <tree string="XML Envío">
+            <tree string="XML Request">
                 <field name="name" />
                 <field name="sii_send_ident" />
                 <field name="user_id" />
@@ -64,12 +64,12 @@
     </record>
 
     <record model="ir.actions.act_window" id="xml_envio">
-        <field name="name">SII xml de envío</field>
-        <field name="res_model">sii.xml.envio</field>
+        <field name="name">SII xml request</field>
+        <field name="res_model">sii.xml.request</field>
         <field name="view_mode">tree,form</field>
     </record>
     <menuitem
-        name="XML de envío"
+        name="XML request"
         action="xml_envio"
         id="menu_action_sii_xml_envio"
         parent="l10n_cl_fe.menu_sii_config"

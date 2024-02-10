@@ -10,7 +10,7 @@
               <field name="name" optional="show"/>
               <field name="document_ids" optional="show"/>
               <field name="company_id" optional="hide"/>
-              <field string="Últ Actualización" name="write_date" optional="hide"/>
+              <field string="Last Update" name="write_date" optional="hide"/>
               <field string="Actualizado por" name="write_uid" optional="hide"/>
             </tree>
         </field>
@@ -21,9 +21,9 @@
         <field name="arch" type="xml">
           <search string="Search">
             <group expand="0" string="Group By">
-                <filter string="Fecha Creación" name="create_date" context="{'group_by':'create_date'}"/>
+                <filter string="Create Date" name="create_date" context="{'group_by':'create_date'}"/>
                 <filter string="Creado por" name="created_by" context="{'group_by':'create_uid'}"/>
-                <filter string="Nombre Envío" name="name" context="{'group_by':'name'}"/>
+                <filter string="Name" name="name" context="{'group_by':'name'}"/>
                 <filter string="Adjunto Principal" name="main_attachment" context="{'group_by':'message_main_attachment_id'}"/>
                 <filter string="Mail" name="mail" context="{'group_by':'mail_id'}"/>
             </group>
@@ -77,7 +77,7 @@
         <field name="arch" type="xml">
             <form string="Mail DTE Process">
                 <header>
-                    <button name="process_message" string="Procesar Envío" type="object" />
+                    <button name="process_message" string="Procesar Mensaje" type="object" />
                 </header>
                 <sheet>
                     <group>
@@ -192,7 +192,7 @@
                         </page>
                         <page string="Registro de Reclamo">
                             <header>
-                                <button name="get_claim" type="object" string="Obtener Información Reclamo" />
+                                <button name="get_claim" type="object" string="Get Claim Result" />
                                 <field name='claim' widget="statusbar" />
                             </header>
                             <field name="claim_description" />
