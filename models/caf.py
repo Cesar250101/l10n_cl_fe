@@ -24,7 +24,7 @@ class CAF(models.Model):
     @api.onchange('start_nm', 'final_nm', 'folio_actual')
     @api.depends('start_nm', 'final_nm', 'folio_actual')
     def _get_qty_available(self):
-        for r in self:
+        for r in self.sudo():
             r.qty_available = 0
             if r.state not in ['draft', 'spent']:
                 r.qty_available = 1 + (r.final_nm - r.folio_actual)
@@ -83,22 +83,24 @@ FROM ({union}) AS combined'''.format(
                 return folio_check
             folio = check_anulado(folio)
             if folio > self.final_nm:
-                self.state = 'spent'
+                self.sudo().write({"state": 'spent'})
                 return self.final_nm
             if self.document_class_id.es_factura_afecta() or self.document_class_id.es_nc() or self.document_class_id.es_nd():
                 folios_vencidos = ast.literal_eval(self.folios_vencidos or '[]')
                 tz = pytz.timezone("America/Santiago")
                 if folio in folios_vencidos or fields.Date.context_today(self.with_context(tz=tz)) >= self.expiration_date:
-                    self.state = 'spent'
+                    self.sudo().write({"state": 'spent'})
                     return self.final_nm
             return folio
         if folio > 0:
-            self.state = 'spent'
+            self.sudo().write({"state": 'spent'})
             return self.final_nm
         return self.start_nm
 
     def compute_folio_actual(self):
-        self.folio_actual = self._get_folio_actual()
+        self.sudo().write({
+            "folio_actual": self._get_folio_actual()
+        })
 
     @api.onchange('caf_file', 'caf_string')
     @api.depends('caf_file', 'caf_string')
