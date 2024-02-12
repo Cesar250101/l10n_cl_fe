@@ -79,23 +79,24 @@ class AccountMove(models.Model):
                 sii_barcode_img = r.get_barcode_img()
             r.sii_barcode_img = sii_barcode_img
 
-    @api.onchange("journal_id", "move_type")
+    @api.onchange("use_documents")
     def get_dc_ids(self):
         for r in self:
             r.document_class_ids = self.env['sii.document_class']
+            r.journal_document_class_id = self.env["account.journal.sii_document_class"]
+            r.document_class_id = self.env['sii.document_class']
             if not self.is_invoice():
-                r.use_documents = False
                 continue
             dc_type = ["invoice", "invoice_in"]
             if r.use_documents and r.move_type == "in_invoice":
                 dc_type = ["invoice_in"]
             elif r.move_type in ['in_refund', 'out_refund']:
                 dc_type = ["credit_note", "debit_note"]
-            if not r.document_class_id:
+            if r.use_documents and not r.journal_document_class_id:
                 r.journal_document_class_id = self.env["account.journal.sii_document_class"].search(
                     [("journal_id", "=", r.journal_id.id), ("sii_document_class_id.document_type", "in", dc_type),], limit=1
                 )
-                r.use_documents = bool(r.journal_document_class_id)
+                r.document_class_id = r.journal_document_class_id.sii_document_class_id
             if not r.use_documents and r.move_type in ["in_invoice", "in_refund"]:
                 for dc in r.journal_id.document_class_ids:
                     if dc.document_type in dc_type:
@@ -696,6 +697,13 @@ class AccountMove(models.Model):
         for invoice in container['records']:
             invoice._recompute_comisiones_lines()
 
+    @api.onchange('journal_id')
+    def _onchange_journal_id(self):
+        super(AccountMove, self)._onchange_journal_id()
+        self.use_documents = bool(self.journal_id.document_class_ids)
+        if self.is_invoice():
+            self.get_dc_ids()
+
     def _get_move_imps(self):
         imps = {}
         for l in self.line_ids:
@@ -751,13 +759,6 @@ class AccountMove(models.Model):
     def _get_sequence_prefix(self):
         for invoice in self:
             invoice.sequence_number_next_prefix = ''
-            if invoice.move_type in ['in_invoice']:
-                invoice.use_documents = False
-                invoice.journal_document_class_id = False
-                for jdc in invoice.journal_id.journal_document_class_ids:
-                    if invoice.document_class_id == jdc.sii_document_class_id:
-                        invoice.use_documents = True
-                        invoice.journal_document_class_id = jdc
             if invoice.journal_document_class_id:
                 invoice.sequence_number_next_prefix = invoice.document_class_id.doc_code_prefix or ""
 
@@ -969,7 +970,8 @@ class AccountMove(models.Model):
 
     @api.onchange("journal_document_class_id")
     def set_document_class_id(self):
-        self.document_class_id = self.journal_document_class_id.sii_document_class_id.id
+        for r in self:
+            r.document_class_id = r.journal_document_class_id.sii_document_class_id
 
     def _validaciones_uso_dte(self):
         if not self.document_class_id:
