@@ -47,7 +47,6 @@ class AccountInvoiceLine(models.Model):
                 line.price_total = line.price_subtotal = False
             # Compute 'price_subtotal'.
             line_discount_price_unit = line.price_unit
-            sign = 1
             if line.display_type in ['D', 'R', 'C']:
                 line_discount_price_unit = line.balance
                 if line.display_type in ['D', 'C']:

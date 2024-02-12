@@ -403,13 +403,12 @@ class AccountMove(models.Model):
                             **line._convert_to_tax_base_line_dict(),
                             'handle_price_include': True,
                             'quantity': 1.0,
-                            'price_unit': line.amount_currency * (-1 if line.display_type in ['D', 'C'] else 1),
-                            'price_subtotal': line.amount_currency * (-1 if line.display_type in ['D', 'C'] else 1),
+                            'price_unit': sign * line.amount_currency ,
+                            'price_subtotal': sign * line.amount_currency,
                             'taxes': line.tax_ids,
                         }
                         for line in move.line_ids.filtered(lambda line: line.display_type in ['D', 'R', 'C'])
                     ]
-
 
                 kwargs = {
                     'base_lines': base_line_values_list,
@@ -1004,9 +1003,12 @@ class AccountMove(models.Model):
         if self.state != 'draft':
             return
         def _apply_global_gdr(self, amount, amount_currency, global_gdr_line, gdr, taxes):
+            if gdr.type == 'D':
+                amount_currency *= -1
             gdr_line_vals = {
                 'quantity': 1,
-                'balance': amount,
+                'balance': amount_currency,
+                'amount_currency': amount_currency,
                 'partner_id': self.partner_id.id,
                 'move_id': self.id,
                 'currency_id': self.currency_id.id,
@@ -1046,9 +1048,9 @@ class AccountMove(models.Model):
                     gd = line
                     gds -= gd
             gdr_amount, gdr_amount_currency = gdr.amount_untaxed, gdr.amount_currency
-            if gdr.type=="D":
-                if self.currency_id.is_zero(gdr_amount):
+            if self.currency_id.is_zero(gdr_amount):
                     continue
+            if gdr.type=="D":
                 total_gd += gdr_amount
                 total_gd_taxed += gdr.amount
                 _apply_global_gdr(self, gdr_amount, gdr_amount_currency, gd, gdr, taxes)
@@ -1058,8 +1060,6 @@ class AccountMove(models.Model):
                     gr = line
                     grs -= gr
             if gdr.type=="R":
-                if self.currency_id.is_zero(gdr_amount):
-                    continue
                 total_gr += gdr_amount
                 total_gr_taxed += gdr.amount
                 _apply_global_gdr(self, gdr_amount, gdr_amount_currency, gr, gdr, taxes)
