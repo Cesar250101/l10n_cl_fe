@@ -416,6 +416,8 @@ class UploadXMLWizard(models.TransientModel):
         return product_id
 
     def _buscar_purchase_line_id(self, line_new):
+        if not self.purchase_to_done:
+            return self.env['purchase.order.line']
         '''busco por nombre'''
         lines = self.purchase_to_done.order_line
         DscItem = line_new.find("DscItem")
