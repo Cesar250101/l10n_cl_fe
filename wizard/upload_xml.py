@@ -550,7 +550,7 @@ class UploadXMLWizard(models.TransientModel):
         return self.env["sii.document_class"].create(vals)
 
     def _procesar_po_to_done(self, vals, company_id):
-        seq = self.with_company(company_id).env['ir.sequence'].next_by_code('purchase.order')
+        seq = self.env['ir.sequence'].search([('code', '=', 'purchase.order'), ('company_id', 'in', [company_id.id, False])], order='company_id')
         self.purchase_to_done = self.env['purchase.order'].search([
             ('name', '=', seq.get_next_char(
                 vals['origen'].upper().replace(seq.prefix, '').replace(' ', '')))
