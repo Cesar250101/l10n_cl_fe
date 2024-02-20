@@ -553,7 +553,7 @@ class UploadXMLWizard(models.TransientModel):
         seq = self.env['ir.sequence'].search([('code', '=', 'purchase.order'), ('company_id', 'in', [company_id.id, False])], order='company_id')
         self.purchase_to_done = self.env['purchase.order'].search([
             ('name', '=', seq.get_next_char(
-                vals['origen'].upper().replace(seq.prefix, '').replace(' ', '')))
+                int(vals['origen'].upper().replace(seq.prefix, '').replace(' ', ''))))
         ])
 
     def _prepare_ref(self, ref, company_id=False):
