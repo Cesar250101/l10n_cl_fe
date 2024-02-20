@@ -553,7 +553,7 @@ class UploadXMLWizard(models.TransientModel):
         seq = self.with_company(company_id).env['ir.sequence'].next_by_code('purchase.order')
         self.purchase_to_done = self.env['purchase.order'].search([
             ('name', '=', seq.get_next_char(
-                val['origen'].upper().replace(seq.prefix, '').replace(' ', '')))
+                vals['origen'].upper().replace(seq.prefix, '').replace(' ', '')))
         ])
 
     def _prepare_ref(self, ref, company_id=False):
@@ -568,7 +568,7 @@ class UploadXMLWizard(models.TransientModel):
         tpo = self.env["sii.document_class"].search(query, limit=1)
         if not tpo:
             tpo = self._create_tpo_doc(TpoDocRef, RazonRef)
-        data = {
+        vals = {
             "origen": ref.find("FolioRef").text,
             "sii_referencia_TpoDocRef": tpo.id,
             "sii_referencia_CodRef": ref.find("CodRef").text if ref.find("CodRef") is not None else None,
