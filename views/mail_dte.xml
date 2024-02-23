@@ -77,7 +77,7 @@
         <field name="arch" type="xml">
             <form string="Mail DTE Process">
                 <header>
-                    <button name="process_message" string="Procesar Mensaje" type="object" />
+                    <button name="pre_process" string="Pre Procesar Mensaje" type="object" />
                 </header>
                 <sheet>
                     <group>
