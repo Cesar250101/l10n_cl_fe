@@ -83,9 +83,9 @@ class AccountMove(models.Model):
     def get_dc_ids(self):
         for r in self:
             r.document_class_ids = self.env['sii.document_class']
-            r.journal_document_class_id = self.env["account.journal.sii_document_class"]
-            r.document_class_id = self.env['sii.document_class']
             if not self.is_invoice():
+                r.journal_document_class_id = False
+                r.document_class_id = False
                 continue
             dc_type = ["invoice", "invoice_in"]
             if r.use_documents and r.move_type == "in_invoice":
@@ -755,14 +755,14 @@ class AccountMove(models.Model):
             if l.sequence == -1 or l.sequence == 0:
                 l.sequence = i
 
-    @api.depends("state", "journal_id", "invoice_date", "document_class_id", "use_documents")
+    @api.depends("state", "journal_id", "invoice_date", "journal_document_class_id", "use_documents")
     def _get_sequence_prefix(self):
         for invoice in self:
             invoice.sequence_number_next_prefix = ''
             if invoice.journal_document_class_id:
                 invoice.sequence_number_next_prefix = invoice.document_class_id.doc_code_prefix or ""
 
-    @api.depends("state", "journal_id", "document_class_id")
+    @api.depends("state", "journal_id", "journal_document_class_id")
     def _get_sequence_number_next(self):
         for invoice in self:
             invoice.sequence_number_next = 0
