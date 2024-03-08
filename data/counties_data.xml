@@ -128,7 +128,7 @@
             <field name="state_id" ref="base.state_cl_11" />
         </record>
         <record model="res.country.state.provincia" id="state_cl_11100">
-            <field name="name">COIHAIQUE</field>
+            <field name="name">COYHAIQUE</field>
             <field name="code">11100</field>
             <field name="country_id" ref="base.cl" />
             <field name="state_id" ref="base.state_cl_11" />
@@ -2710,7 +2710,7 @@
             <field name="provincia_id" ref="state_cl_11100" />
         </record>
         <record model="res.city" id="CL11101">
-            <field name="name">Coihaique</field>
+            <field name="name">Coyhaique</field>
             <field name="code">11101</field>
             <field name="country_id" ref="base.cl" />
             <field name="state_id" ref="base.state_cl_11" />
