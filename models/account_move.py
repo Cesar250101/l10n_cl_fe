@@ -1823,17 +1823,18 @@ class AccountMove(models.Model):
                 del lines["PrcItem"]
             invoice_lines.append(lines)
         if self.invoice_cash_rounding_id:
-            cash_rounding = self.move_ids.filtered(lambda l: l.display_type=='rounding')
-            sign = self.direction_sign
-            MontoItem = cash_rounding.balance * sign
-            MontoNF += MontoItem
-            lines.append({
-                'NroLinDet': len(self.invoice_lines) +1,
-                'NmbItem': cash_rounding.name,
-                'QtyItem': 1,
-                'MontoItem': MontoItem if MontoItem > 0 else MontoItem * -1,
-                'IndExe': 2 if MontoItem > 0 else 6
-            })
+            cash_rounding = self.line_ids.filtered(lambda l: l.display_type=='rounding')
+            if cash_rounding:
+                sign = self.direction_sign
+                MontoItem = cash_rounding.balance * sign
+                MontoNF += MontoItem
+                invoice_lines.append({
+                    'NroLinDet': len(self.invoice_line_ids) +1,
+                    'NmbItem': cash_rounding.name,
+                    'QtyItem': 1,
+                    'MontoItem': MontoItem if MontoItem > 0 else MontoItem * -1,
+                    'IndExe': 2 if MontoItem > 0 else 6
+                })
         return {
             "Detalle": invoice_lines,
             "MntExe": MntExe,
