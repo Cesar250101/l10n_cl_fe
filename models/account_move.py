@@ -2215,7 +2215,7 @@ class AccountMove(models.Model):
                 continue
             if dte_email.email in ["facturacionmipyme2@sii.cl", "facturacionmipyme@sii.cl"]:
                 resp = self.env["sii.respuesta.cliente"].sudo().search([("exchange_id", "=", att.id)])
-                resp.estado = "0"
+                resp.recep_envio = "0"
                 continue
             if not dte_email.email in email_to:
                 email_to += dte_email.email + ","
