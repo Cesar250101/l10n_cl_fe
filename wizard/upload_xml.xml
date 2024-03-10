@@ -8,7 +8,7 @@
                 <group>
                     <field name="dte_id" invisible="True" />
                     <field name="document_id" invisible="True" />
-                    <field name="xml_file" filename="filename" required="True" />
+                    <field name="xml_file" filename="filename" required="True" options="{'accepted_file_extensions': '.xml,.txt'}"/>
                     <field name="num_dtes" />
                     <field name="filename" invisible="True" />
                     <field name="action" widget="radio" />
