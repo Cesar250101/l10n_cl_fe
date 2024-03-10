@@ -24,10 +24,13 @@ class CAF(models.Model):
     @api.onchange('start_nm', 'final_nm', 'folio_actual')
     @api.depends('start_nm', 'final_nm', 'folio_actual')
     def _get_qty_available(self):
-        for r in self.sudo():
-            r.qty_available = 0
+        for r in self:
             if r.state not in ['draft', 'spent']:
-                r.qty_available = 1 + (r.final_nm - r.folio_actual)
+                qty_available = 1 + (r.final_nm - r.folio_actual)
+                if qty_available != r.qty_available:
+                    r.qty_available = qty_available
+                continue
+            r.qty_available = 0
 
     def _get_tables(self):
         return ['account_move']
@@ -98,9 +101,9 @@ FROM ({union}) AS combined'''.format(
         return self.start_nm
 
     def compute_folio_actual(self):
-        self.sudo().write({
-            "folio_actual": self._get_folio_actual()
-        })
+        folio_actual = self._get_folio_actual()
+        if folio_actual != self.folio_actual:
+            self.folio_actual = folio_actual
 
     @api.onchange('caf_file', 'caf_string')
     @api.depends('caf_file', 'caf_string')
