@@ -1,7 +1,10 @@
 import base64
 import logging
+import os
+import tempfile
 from datetime import datetime
 import pytz
+import requests
 
 from odoo import api, fields, models, tools
 from odoo.exceptions import UserError
@@ -53,9 +56,16 @@ class IRSequence(models.Model):
                 #)
         return available
 
+    def write(self, vals):
+        result = super(IRSequence, self).write(vals)
+        if self:
+            for i in self.dte_caf_ids:
+                i.company_id = self.company_id.id
+        return result
+
     @api.onchange("dte_caf_ids", "number_next_actual")
     def _qty_available(self):
-        for i in self.sudo():
+        for i in self:
             i.qty_available = 0
             if i.is_dte and i.sii_document_class_id:
                 i.qty_available = i.get_qty_available()
@@ -109,7 +119,7 @@ class IRSequence(models.Model):
         wiz_caf.conectar_api()
         alert_msg = False
         if not wiz_caf.id_peticion:
-            alert_msg = "Problema al conectar con apicaf.cl"
+            alert_msg = "Problema al conectar con apicaf.cl" + " - " + wiz_caf.message 
         else:
             cantidad = self.autoreponer_cantidad
             if wiz_caf.api_max_autor > 0 and cantidad > wiz_caf.api_max_autor:
@@ -153,7 +163,7 @@ class IRSequence(models.Model):
     def get_folio(self, number_next=False):
         caf = self.env['dte.caf'].search([
             ('sequence_id', '=', self.id),
-            ('folio_actual', '>=', number_next or self.number_next),
+            ('final_nm', '>=', number_next or self.number_next),
         ],
         order='folio_actual ASC',
         limit=1)
@@ -163,15 +173,15 @@ class IRSequence(models.Model):
             caf = self.dte_caf_ids[0]
             if int(self.number_next) == caf.final_nm:
                 return 0
-        caf.compute_folio_actual()
-        folio_actual = caf.folio_actual
-        if folio_actual != int(self.number_next):
-            update_next_by_caf(self, folio_actual, caf)
-        if caf.qty_available == 0:
-            if caf == self.dte_caf_ids[0]:
-                return 0
-            return self.get_folio(folio_actual+1)
-        return folio_actual
+        # caf.compute_folio_actual()
+        # folio_actual = caf.folio_actual
+        # if folio_actual != int(self.number_next):
+        #     update_next_by_caf(self, folio_actual, caf)
+        # if caf.qty_available == 0:
+        #     if caf == self.dte_caf_ids[0]:
+        #         return 0
+        #     return self.get_folio(folio_actual+1)
+        return self.number_next
 
     def time_stamp(self, formato="%Y-%m-%dT%H:%M:%S"):
         tz = pytz.timezone("America/Santiago")
@@ -233,6 +243,99 @@ obtener folios en la secuencia (usando apicaf.cl)."""
                 )
             return self.get_next_char(folio)
         return super(IRSequence, self)._next_do()
+    
+
+#     def consultar_folios_disponibles_sii(self, tipo_dte):
+#         company = self.company_id or self.env.company
+#         firma = self.env.user.sudo().get_digital_signature(company)
+#         if not firma:
+#             raise UserError(_("No se encontró una firma digital válida para la empresa %s") % company.name)
+
+#         rut_certificado = firma.subject_serial_number
+#         password = firma.password or ''
+#         rut_empresa = (company.vat or '').replace('CL', '').strip()
+#         ambiente = 1 if company.dte_service_provider == 'SII' else 0
+#         base_url_servicios = company.simple_api_servidor
+
+#         url = "{}/api/folios/get/{}".format(base_url_servicios, tipo_dte)
+
+#         pfx_bytes = base64.b64decode(firma.file_content)
+#         tmp_dir = tempfile.mkdtemp()
+#         pfx_path = os.path.join(tmp_dir, firma.name)
+#         try:
+#             with open(pfx_path, 'wb') as f:
+#                 f.write(pfx_bytes)
+
+#             payload = {
+#                 'input': '''{
+#    "RutCertificado":"%s",
+#    "Password":"%s",
+#    "RutEmpresa":"%s",
+#    "Ambiente":%s
+# }''' % (rut_certificado, password, rut_empresa, ambiente)
+#             }
+
+#             headers = {
+#                 'Authorization': company.simple_api_token,
+#             }
+
+#             with open(pfx_path, 'rb') as pfx_file:
+#                 files = [
+#                     ('files', (firma.name, pfx_file, 'application/octet-stream'))
+#                 ]
+#                 response = requests.post(url, headers=headers, data=payload, files=files, timeout=30)
+#         finally:
+#             if os.path.exists(pfx_path):
+#                 os.remove(pfx_path)
+#             os.rmdir(tmp_dir)
+#         _logger.info("Folios SII - Status: %s, Response: %s", response.status_code, response.text)
+#         return response.text
+
+#     def solicitar_folios_sii(self, tipo_dte, cantidad_folios):
+#         company = self.company_id or self.env.company
+#         firma = self.env.user.sudo().get_digital_signature(company)
+#         if not firma:
+#             raise UserError(_("No se encontró una firma digital válida para la empresa %s") % company.name)
+
+#         rut_certificado = firma.subject_serial_number
+#         password = firma.password or ''
+#         rut_empresa = (company.vat or '').replace('CL', '').strip()
+#         ambiente = 1 if company.dte_service_provider == 'SII' else 0
+#         base_url_servicios = company.simple_api_servidor
+
+#         url = "{}/api/folios/get/{}/{}".format(base_url_servicios, tipo_dte, cantidad_folios)
+
+#         pfx_bytes = base64.b64decode(firma.file_content)
+#         tmp_dir = tempfile.mkdtemp()
+#         pfx_path = os.path.join(tmp_dir, firma.name)
+#         try:
+#             with open(pfx_path, 'wb') as f:
+#                 f.write(pfx_bytes)
+
+#             payload = {
+#                 'input': '''{
+#    "RutCertificado":"%s",
+#    "Password":"%s",
+#    "RutEmpresa":"%s",
+#    "Ambiente":%s
+# }''' % (rut_certificado, password, rut_empresa, ambiente)
+#             }
+
+#             headers = {
+#                 'Authorization': company.simple_api_token,
+#             }
+
+#             with open(pfx_path, 'rb') as pfx_file:
+#                 files = [
+#                     ('files', (firma.name, pfx_file, 'application/octet-stream'))
+#                 ]
+#                 response = requests.post(url, headers=headers, data=payload, files=files, timeout=30)
+#         finally:
+#             if os.path.exists(pfx_path):
+#                 os.remove(pfx_path)
+#             os.rmdir(tmp_dir)
+#         _logger.info("Solicitar Folios SII - Status: %s, Response: %s", response.status_code, response.text)
+#         return response.text
 
     def _get_number_next_actual(self):
         '''Return number from ir_sequence row when no_gap implementation,

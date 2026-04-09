@@ -21,6 +21,10 @@ class ResConfigSettings(models.TransientModel):
     sync_remote_partners = fields.Boolean(related="company_id.sync_remote_partners", string="Sync Remote Partners", readonly=False)
     url_apicaf = fields.Char(related="company_id.url_apicaf", string="URL APICAF", readonly=False)
     token_apicaf = fields.Char(related="company_id.token_apicaf", string="Token APICAF", readonly=False)
+    # nro_rec_envio = fields.Integer(related="company_id.nro_rec_envio",string='Nro. Registros Envio', readonly=False)
+    # nro_rec_consulta = fields.Integer(related="company_id.nro_rec_consulta",string='Nro. Registros Consulta', readonly=False)
+    # nro_rec_pasivo = fields.Integer(related="company_id.nro_rec_pasivo",string='Nro. Registros Pasivo', readonly=False)
+
     cf_autosend = fields.Boolean(related="company_id.cf_autosend", string="AutoEnviar Consumo de Folios", readonly=False)
     fe_version = fields.Char(string="Versión FE instalado", readonly=True,)
     medios_de_pago_electronico = fields.Many2many(

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <data>
+        <record id="view_convert_to_dte" model="ir.ui.view">
+            <field name="name">account.move.convert.dte.form</field>
+            <field name="model">account.move.convert.dte</field>
+            <field name="arch" type="xml">
+                <form string="Convert To DTE">
+                    <field name="company_id" invisible="1"/>
+                    <field name="move_ids" invisible="1"/>
+                    <field name="warning_message" readonly="1" nolabel="1"/>
+                    <group>
+                        <field name="journal_id"/>
+                        <field name="jdc_id"
+                            domain="[('journal_id', '=', journal_id)]"/>
+                    </group>
+                    <footer>
+                        <button string='Convertir' name="convert" type="object" class="btn-primary"/>
+                        <button string="Cancel" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_convert_to_dte" model="ir.actions.act_window">
+            <field name="name">Convert To DTE</field>
+            <field name="res_model">account.move.convert.dte</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_convert_to_dte"/>
+            <field name="target">new</field>
+            <field name="groups_id" eval="[(4, ref('account.group_account_invoice'))]"/>
+            <field name="binding_model_id" ref="account.model_account_move" />
+            <field name="binding_view_types">list</field>
+        </record>
+    </data>
+</odoo>

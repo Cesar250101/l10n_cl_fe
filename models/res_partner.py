@@ -36,6 +36,10 @@ class ResPartner(models.Model):
     def _get_default_country(self):
         return self.env.user.company_id.country_id.id or self.env.user.partner_id.country_id.id
 
+    @api.model
+    def _get_default_company(self):
+        return self.env.user.company_id.id
+
     @api.depends("child_ids")
     def _compute_dte_email(self):
         for p in self:
@@ -72,13 +76,19 @@ class ResPartner(models.Model):
     sync = fields.Boolean(string="syncred", default=False,)
     last_sync_update = fields.Datetime(string="Fecha Actualizado",)
     es_mipyme = fields.Boolean(string="Es MiPyme", help="Usa el sistema gratuito del SII")
+    company_id = fields.Many2one(comodel_name='res.company', string='Compania',default=lambda self: self._get_default_company() )
+
 
     def rut(self):
         rut = "66666666-6"
-        if self.document_number:
+        if self.document_number and self.document_type_id.name =="RUT":
             d = self.document_number.replace(".", "").split("-")
             rut = str(int(d[0])) + "-" + d[1]
         return rut
+
+    def _fix_vat_number(self, vat, country_id):
+        return vat
+
 
     def write(self, vals):
         result = super(ResPartner, self).write(vals)
@@ -109,6 +119,7 @@ class ResPartner(models.Model):
                         _logger.warning("Error en subida información %s" % str(e), exc_info=True)
                     break
         return result
+
 
     @api.onchange("dte_email")
     def set_temporal_email_cambiar_a_related(self):
@@ -188,6 +199,13 @@ class ResPartner(models.Model):
         for record in self:
             record.tp_sii_code = str(record.responsability_id.tp_sii_code)
 
+    @api.onchange("is_company")
+    def _on_change_es_company(self):
+        if self.is_company==True:
+            self.es_mipyme=False
+        else:
+            self.es_mipyme = True
+
     @api.onchange("document_number", "document_type_id")
     def onchange_document(self):
         if self.document_number and (self.document_type_id == self.env.ref("l10n_cl_fe.dt_RUT")
@@ -201,6 +219,7 @@ class ResPartner(models.Model):
                     ("vat", "=", vat),
                     ("vat", "!=", "CL555555555"),
                     ("commercial_partner_id", "!=", self.commercial_partner_id.id),
+                    ("company_id", "=", self.env.company.id),
                 ],
                 limit=1,
             )
@@ -210,7 +229,7 @@ class ResPartner(models.Model):
                 return {
                     "warning": {
                         "title": "Informacion para el Usuario",
-                        "message": _("El usuario %s está utilizando este documento") % exist.name,
+                        "message": _("El usuario %s está utilizando este documento ESTE ES") % exist.name,
                     }
                 }
             self.vat = vat
@@ -236,34 +255,38 @@ class ResPartner(models.Model):
             if not r.vat or r.parent_id:
                 continue
             partner = self.env["res.partner"].sudo().search(
-                [("vat", "=", r.vat), ("id", "!=", r.id), ("commercial_partner_id", "!=", r.commercial_partner_id.id),]
+                [("vat", "=", r.vat), ("id", "!=", r.id), ("commercial_partner_id", "!=", r.commercial_partner_id.id),('company_id','=',self.env.company.id)]
             )
             if r.vat != "CL555555555" and partner:
                 raise UserError(_("El rut: %s debe ser único") % r.vat)
                 return False
 
     def check_vat_cl(self, vat):
-        body, vdig = "", ""
-        if len(vat) != 9:
-            return False
-        else:
-            body, vdig = vat[:-1], vat[-1].upper()
-        try:
-            vali = list(range(2, 8)) + [2, 3]
-            operar = "0123456789K0"[11 - (sum([int(digit) * factor for digit, factor in zip(body[::-1], vali)]) % 11)]
-            if operar == vdig:
-                return True
-            else:
-                return False
-        except IndexError:
-            return False
+        for i in self:
+            if i.document_number and i.document_type_id.name=='RUT':
+                body, vdig = "", ""
+                vat=vat.replace("-","")
+                if len(vat) != 9:
+                    return False
+                else:
+                    body, vdig = vat[:-1], vat[-1].upper()
+                try:
+                    vali = list(range(2, 8)) + [2, 3]
+                    operar = "0123456789K0"[11 - (sum([int(digit) * factor for digit, factor in zip(body[::-1], vali)]) % 11)]
+                    if operar == vdig:
+                        return True
+                    else:
+                        return False
+                except IndexError:
+                    return False
 
     def _process_data(self, data=None):
         if data is None:
             data = {}
         self.es_mipyme = data.get("es_mipyme", False)
         if data.get("razon_social"):
-            self.name = data["razon_social"]
+            print(len(data["razon_social"]))
+            self.name = data["razon_social"] if len(data["razon_social"])>3 else self.name
         if data.get("dte_email") and data["dte_email"].lower() not in [
             "facturacionmipyme2@sii.cl",
             "facturacionmipyme@sii.cl",
@@ -283,7 +306,14 @@ class ResPartner(models.Model):
             ad = self.env["sii.activity.description"].search(query)
             if not ad:
                 ad = self.env["sii.activity.description"].create({"name": data.get("glosa_giro")})
-            self.activity_description = ad.id
+        else:
+            for a in acs:
+                giro=a.name
+                break
+            ad = self.env["sii.activity.description"].create({"name": giro})
+
+
+        self.activity_description = ad.id
         if data.get("url"):
             self.website = data["url"]
         if data.get("logo"):
@@ -292,6 +322,7 @@ class ResPartner(models.Model):
         if not self.document_number:
             self.document_number = data["rut"]
         self.last_sync_update = data["actualizado"]
+        pass
 
     def put_remote_user_data(self, url, data):
         try:
@@ -351,7 +382,8 @@ class ResPartner(models.Model):
         }
 
     def get_remote_user_data(self, to_check, process_data=True):
-        company = self.company_id or self.env.company
+        company=self.env.context.get('allowed_company_ids',False)[0]
+        company=self.env['res.company'].search([('id','=',company)])
         url = company.url_remote_partners
         token = company.token_remote_partners
         if not url or not token:

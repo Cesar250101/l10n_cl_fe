@@ -1,7 +1,6 @@
 import ast
 import logging
 from datetime import datetime, timedelta
-
 from odoo import SUPERUSER_ID, api, fields, models
 
 _logger = logging.getLogger(__name__)
@@ -55,21 +54,22 @@ class ColaEnvio(models.Model):
         if self.tipo_trabajo == "persistencia":
             if self.date_time and datetime.now() >= self.date_time:
                 for doc in docs:
-                    if (
-                        doc.partner_id
-                        and doc.sii_xml_request.create_date <= (datetime.now() + timedelta(days=8))
-                        and self.env["sii.respuesta.cliente"].search(
-                            [
-                                ("id", "in", doc.respuesta_ids.ids),
-                                ("company_id", "=", self.company_id.id),
-                                ("recep_envio", "=", "no_revisado"),
-                                ("type", "=", "RecepcionEnvio"),
-                            ]
-                        )
-                    ):
-                        self.enviar_email(doc)
-                    else:
-                        docs -= doc
+                    if doc.sii_xml_request:
+                        if (
+                            doc.partner_id
+                            and doc.sii_xml_request.create_date <= (datetime.now() + timedelta(days=8))
+                            and self.env["sii.respuesta.cliente"].search(
+                                [
+                                    ("id", "in", doc.respuesta_ids.ids),
+                                    ("company_id", "=", self.company_id.id),
+                                    ("recep_envio", "=", "no_revisado"),
+                                    ("type", "=", "RecepcionEnvio"),
+                                ]
+                            )
+                        ):
+                            self.enviar_email(doc)
+                        else:
+                            docs -= doc
                 if not docs:
                     self.unlink()
                 else:
@@ -126,9 +126,7 @@ class ColaEnvio(models.Model):
         ):
             envio_id = False
             try:
-                envio_id = docs.with_context(user=self.user_id.id, company_id=self.company_id.id).do_dte_send(
-                    self.n_atencion
-                )
+                envio_id = docs.do_dte_send(self.n_atencion)
                 if envio_id.sii_send_ident:
                     self.tipo_trabajo = "consulta"
             except Exception as e:
@@ -145,7 +143,10 @@ class ColaEnvio(models.Model):
 
     @api.model
     def _cron_procesar_cola(self):
-        ids = self.search([("active", "=", True), ('tipo_trabajo', '=', 'envio')], limit=20)
+        # nro_envio=self.env.company.nro_rec_envio
+        # nro_consulta=self.env.company.nro_rec_consulta
+        # nro_pasivo=self.env.company.nro_rec_pasivo
+        ids = self.search([("active", "=", True), ('tipo_trabajo', '=', 'envio')], limit=100)
         if ids:
             for c in ids:
                 try:
@@ -158,8 +159,8 @@ class ColaEnvio(models.Model):
                 try:
                     c._procesar_tipo_trabajo()
                 except Exception as e:
-                    _logger.warning("error al procesartipo trabajo %s"%str(e), exc_info=True)
-        ids = self.search([("active", "=", True), ('tipo_trabajo', '=', 'consulta')], limit=20)
+                    _logger.warning("error al procesar tipo trabajo %s"%str(e), exc_info=True)
+        ids = self.search([("active", "=", True), ('tipo_trabajo', '=', 'consulta')], limit=100)
         if ids:
             for c in ids:
                 try:
@@ -173,3 +174,9 @@ class ColaEnvio(models.Model):
                     c._procesar_tipo_trabajo()
                 except Exception as e:
                     _logger.warning("error al procesartipo trabajo %s"%str(e), exc_info=True)
+
+#Este metodo es una replica de _cron_procesar_cola y es para poder llamarlo con xml-rpc
+    @api.model
+    def lanzar_trabajo(self):
+        self.with_delay()._cron_procesar_cola()
+        return True

@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <odoo>
+
+    
+
     <record id="view_account_journal_search" model="ir.ui.view">
         <field name="name">account.journal.search</field>
         <field name="model">account.journal</field>

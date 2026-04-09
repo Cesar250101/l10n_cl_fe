@@ -66,7 +66,7 @@
                             <field name="company_activity_ids" invisible="1" />
                             <field
                                 name="journal_activities_ids"
-                                attrs="{'invisible': [('journal_document_class_ids', '=', [])],'required': [('use_documents','=',True), ('journal_document_class_ids', '!=', [])]}"
+                                attrs="{'required': [('use_documents','=',True), ('journal_document_class_ids', '!=', [])]}"
                                 placeholder="Giros del Diario"
                                 widget="many2many_tags"
                                 options="{'no_create': True}"
@@ -87,6 +87,7 @@
                             widget="one2many"
                         >
                             <tree string="Journal SII Documents" editable="bottom">
+                                <field name="company_id" required="1"/>
                                 <field name="sequence" widget="handle" />
                                 <field name="sii_document_class_id" options="{'no_open': True, 'no_create': True}" />
                                 <field

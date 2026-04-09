@@ -222,18 +222,48 @@
                                     <div class="text-muted">
                        Url API Emisión de Folios
                     </div>
-                                </div>
-                            </div>
+                    </div>
+                        </div>
                             <div class="col-xs-12 col-md-6 o_setting_box" id="token_apicaf">
                                 <div class="o_setting_left_pane" />
-                                <div class="o_setting_right_pane" name="token_apicaf_right_pane">
-                                    <label string="Token Api Emisión de Folios" for="token_apicaf" />
-                                    <field name="token_apicaf" />
-                                    <div class="text-muted">
-                       Token API Emisión de Folios
-                    </div>
+                                    <div class="o_setting_right_pane" name="token_apicaf_right_pane">
+                                        <label string="Token Api Emisión de Folios" for="token_apicaf" />
+                                        <field name="token_apicaf" />
+                                        <div class="text-muted">
+                                        Token API Emisión de Folios
+                                    </div>
                                 </div>
                             </div>
+                            <!-- <div class="col-xs-12 col-md-6 o_setting_box" id="nro_rec_envio_id">
+                                <div class="o_setting_left_pane" />
+                                    <div class="o_setting_right_pane" name="token_apicaf_right_pane">
+                                        <label string="Nro. registros Envio" for="nro_rec_envio" />
+                                        <field name="nro_rec_envio" />
+                                        <div class="text-muted">
+                                        Nro. registros Envio
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-6 o_setting_box" id="nro_rec_consulta_id">
+                                <div class="o_setting_left_pane" />
+                                    <div class="o_setting_right_pane" name="token_apicaf_right_pane">
+                                        <label string="Nro. registros Consulta" for="nro_rec_consulta" />
+                                        <field name="nro_rec_consulta" />
+                                        <div class="text-muted">
+                                        Nro. registros Consulta
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-6 o_setting_box" id="nro_rec_pasivo_id">
+                                <div class="o_setting_left_pane" />
+                                    <div class="o_setting_right_pane" name="token_apicaf_right_pane">
+                                        <label string="Nro. registros Pasivo" for="nro_rec_pasivo" />
+                                        <field name="nro_rec_pasivo" />
+                                        <div class="text-muted">
+                                        Nro. registros Pasivo
+                                    </div>
+                                </div>
+                            </div> -->
                         </div>
                     </div>
                 </div>

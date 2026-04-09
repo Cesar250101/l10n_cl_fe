@@ -1,7 +1,7 @@
 from base64 import b64decode
 from werkzeug.exceptions import InternalServerError
 from odoo import http
-from odoo.http import request
+from odoo.http import content_disposition, request
 
 
 class Binary(http.Controller):

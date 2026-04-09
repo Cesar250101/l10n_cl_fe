@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <odoo>
     <data noupdate="1">
+
+
+
         <record id="ir_cron_sii_request" model="ir.cron">
             <field name="name">Cron de envío y consulta estado documento en el sii</field>
             <field name="interval_number">1</field>
@@ -40,6 +43,20 @@
             />
         </record>
     </data>
+    <record id="ir_cron_notify_expiring_signatures" model="ir.cron">
+        <field name="name">Cron Alerta Vencimiento Certificados Digitales</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="numbercall">-1</field>
+        <field name="model_id" ref="model_sii_firma" />
+        <field name="state">code</field>
+        <field name="code">model._cron_notify_expiring_signatures()</field>
+        <field name="active" eval="True" />
+        <field
+            name="nextcall"
+            eval="(datetime.now() + relativedelta(days=1, hour=9, minute=0, second=0)).strftime('%Y-%m-%d %H:%M:%S')"
+        />
+    </record>
     <record id="ir_cron_auto_reponer_caf" model="ir.cron">
         <field name="name">Cron AutoReponer CAF</field>
         <field name="interval_number">1</field>

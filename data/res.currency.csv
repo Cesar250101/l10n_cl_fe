@@ -28,5 +28,5 @@
 "base.EUR",142,"EUR","EURO",0.0001,,"€"
 "base.CLP",200,"CLP","PESO CL",1,"before","$"
 "OTR",900,"OTRAS NO ESPECIFICADAS","Indique abreviatura",0.0001,," "
-"base.UF",,"UF","Unidad Fomento",0.000000001,"after","UF"
-"base.UTM",,"UTM","Unidad Tributara Mensual", 0.000000001,"after","UTM"
+"UF",,"UF","Unidad Fomento",0.010000000,"after","UF"
+"UTM",,"UTM","Unidad Tributara Mensual", 0.000000001,"after","UTM"

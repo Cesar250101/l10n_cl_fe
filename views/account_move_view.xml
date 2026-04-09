@@ -42,7 +42,11 @@
                 </field>
                 <field name="payment_state" position="after">
                     <field name="sii_result" widget="badge" decoration-muted="sii_result in ['draft', 'NoEnviado', 'Anulado'] or state == 'cancel'" decoration-info="sii_result in ['Enviado', 'EnProceso']" decoration-success="sii_result == 'Proceso'" decoration-danger="sii_result == 'Rechazado'" decoration-warning="sii_result == 'Reparo'"/>
+                    <button name="ask_for_dte_status" string="Consultar" type="object" attrs="{'invisible':[('sii_result', '!=', 'EnCola')]}"/>
+                    <button name="do_dte_send_invoice" string="Enviar SII" type="object" attrs="{'invisible':[('sii_result', '!=', 'NoEnviado')]}"/>
+
                 </field>
+
             </field>
         </record>
 
@@ -55,60 +59,66 @@
                     <field name="document_class_ids" invisible="1" />
                     <field name="sii_code" invisible="1" />
                 </form>
-                <button name="preview_invoice" position="after">
+                <!-- <button name="preview_invoice" position="after">
                     <button string="Imprimir Copia y Cedible" type="object" name="print_copy_cedible" />
                     <button string="Imprimir Cedible" type="object" name="print_cedible" />
                     <button name="action_reverse" string='Agregar Nota de Débito'
                             type='object' groups="account.group_account_invoice"
                             attrs="{'invisible': ['|', ('move_type', 'not in', ('out_refund', 'in_refund')), ('state', '!=', 'posted')]}"/>
-                </button>
+                </button> -->
                 <field name="discount" position="after">
                     <field name="discount_amount" invisible="1" />
                 </field>
+
+            <xpath expr="//field[@name='partner_id']" position="attributes">
+                <attribute name="domain">[('parent_id', '=', False)]</attribute>
+            </xpath>
+
+
                 <h1 position="replace">
                     <div attrs="{'invisible': ['|', ('state', '!=', 'draft'),('move_type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund'))]}">
                       <span class="o_form_label">Emitir Documentos</span>
                       <field name="use_documents"/>
                     </div>
-                    <h1>
-                        <div
-                            attrs="{'invisible': [('state', '=', 'draft'), ('use_documents', '=', True)]}"
-                        >
-                          <field
-                              name="document_class_id"
-                              options="{'no_open': True, 'no_create': True}"
-                              domain="[('id', 'in', document_class_ids)]"
-                              class="oe_inline"
-                          />
-                      </div>
-                      <div
-                        attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('use_documents', '=', False)]}"
-                        >
+                    <span>
+                        <!-- <div attrs="{'invisible': [('state', '=', 'draft'), ('use_documents', '=', True)]}"> -->
+                          <field name="document_class_id"
+                                options="{'no_open': True, 'no_create': True}"
+                                domain="[('id', 'in', document_class_ids)]"
+                                class="oe_inline"
+                                attrs="{'invisible': [('state', '=', 'draft'), ('use_documents', '=', True)]}"/>
+
+                        <!-- </div> -->
+                      <!-- <div attrs="{'invisible': ['|', ('state', '!=', 'draft'), ('use_documents', '=', False)]}"> -->
                           <span class="o_form_label" attrs="{'invisible': [('state','!=','draft')]}">Siguiente</span>
                           <field
                                     name="journal_document_class_id"
                                     attrs="{
-                                    'required':[('use_documents', '=', True), ('state', '=', 'draft')]}"
+                                    'required':[('use_documents', '=', True), ('state', '=', 'draft')],
+                                    'invisible': ['|', ('state', '!=', 'draft'), ('use_documents', '=', False)]}"
                                     options="{'no_create': True}"
                                     domain="[('sii_document_class_id', 'in', document_class_ids), ('journal_id', '=', journal_id)]"
-                                    style="width: 100%"
-                                /><br /> Número:
+                                /> Número:
                           <field
                                   name="sequence_number_next"
                                   class="oe_inline"
                                   readonly="1"
                                   attrs="{'invisible': [('sii_document_number','&gt;', 0)]}"
                               />
-                      </div>
-                      <div attrs="{'invisible': [('use_documents', '=', True), ('sii_document_number', '=', 0)]}">
+                      <!-- </div> -->
+                      <!-- <div attrs="{'invisible': [('use_documents', '=', True), ('sii_document_number', '=', 0)]}"> -->
                         Número:
-                        <field
-                              name="sii_document_number"
-                              class="oe_inline"
-                          />
-                      </div>
+                        <field name="sii_document_number" class="oe_inline" attrs="{'invisible': [('use_documents', '=', True), ('sii_document_number', '=', 0)]}"/>
+                      <!-- </div> -->
                       <field name="name" readonly="1" invisible="1" class="oe_inline" />
-                  </h1>
+                      <!-- <button
+                      name="%(action_apicaf_form)d"
+                      string="Obtener Folios desde el SII"
+                      type="action"
+                      class="btn-primary oe_inline"
+                  />                            -->
+
+                  </span>
                 </h1>
                 <field name='partner_id' position="after">
                     <field name="activity_description" placeholder="Glosa descriptiva" options="{'no_open': True}" attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund'))]}"/>

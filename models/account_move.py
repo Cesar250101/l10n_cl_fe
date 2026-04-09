@@ -7,8 +7,13 @@ from collections import defaultdict
 from odoo import api, fields, models, tools, Command
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
+
+
+class CafNotFoundError(Exception):
+    pass
 from odoo.tools.misc import formatLang, format_date, get_lang
 from odoo.tools import frozendict
+from markupsafe import Markup, escape
 from contextlib import ExitStack, contextmanager
 from .bigint import BigInt
 import re
@@ -201,7 +206,7 @@ class AccountMove(models.Model):
     )
     estado_recep_glosa = fields.Char(string="Información Adicional del Estado de Recepción", copy=False,)
     ticket = fields.Boolean(
-        string="Formato Ticket", default=False, readonly=True, states={"draft": [("readonly", False)]},
+        string="Formato Ticket", default=False
     )
     claim = fields.Selection(
         [
@@ -218,13 +223,6 @@ class AccountMove(models.Model):
         copy=False,
     )
     claim_description = fields.Char(string="Detalle Reclamo", readonly=True,)
-    purchase_to_done = fields.Many2many(
-        "purchase.order",
-        string="Ordenes de Compra a validar",
-        domain=[("state", "not in", ["done", "cancel"])],
-        readonly=True,
-        states={"draft": [("readonly", False)]},
-    )
     activity_description = fields.Many2one(
         "sii.activity.description", string="Giro", related="commercial_partner_id.activity_description", readonly=True,
     )
@@ -634,56 +632,144 @@ class AccountMove(models.Model):
 
         return where_string, param
 
-    def _set_next_sequence(self):
-        self.ensure_one()
-        if self.use_documents:
-            if not (self.journal_id.restore_mode or self._context.get("restore_mode", False)):
-                self.sii_document_number = self.journal_document_class_id.sequence_id.number_next_actual
-            self[self._sequence_field] = '%s%s' % (self.document_class_id.doc_code_prefix, self.sii_document_number)
-        else:
-            super(AccountMove, self)._set_next_sequence()
+    # def _set_next_sequence(self):
+    #     self.ensure_one()
+    #     if self.use_documents:
+    #         if not (self.journal_id.restore_mode or self._context.get("restore_mode", False)):
+    #             self.sii_document_number = self.journal_document_class_id.sequence_id.next_by_id()
+    #         self[self._sequence_field] = '%s%s' % (self.document_class_id.doc_code_prefix, self.sii_document_number)
+    #     else:
+    #         super(AccountMove, self)._set_next_sequence()
+
+    def action_post(self):
+        try:
+            with self.env.cr.savepoint():
+                return super().action_post()
+        except CafNotFoundError as e:
+            doc_name = str(e)
+            url = "https://www.youtube.com/watch?v=L3cVE5r3RfE"
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('CAF no encontrado'),
+                    'message': _(
+                        'No se encontró un CAF para el documento %s. '
+                        'Por favor solicite uno al SII o revise la configuración del mismo.',
+                        doc_name,
+                    ),
+                    'links': [{'label': _('👉 Cómo revisar la configuración del CAF'), 'url': url}],
+                    'type': 'warning',
+                    'sticky': True,
+                },
+            }
 
     def _post(self, soft=True):
+        for s in self:
+            s.name=False
+            if s.journal_document_class_id and s.use_documents:
+                s.name=s.journal_document_class_id.sequence_id.name+str(self.sii_document_number if self.sii_document_number else s.journal_document_class_id.sequence_id.number_next_actual)
+            elif not s.use_documents and s.move_type not in["entry",'out_invoice','out_refund']:
+                if not s.ref and not s.sii_document_number:
+                    raise UserError(_("No ha ingresado el numero de documento!"))
+                # s.name = s.journal_id.code+str(s.sii_document_number if s.sii_document_number else s.ref)+str(s.partner_id.document_number if s.partner_id.document_number else s.partner_id.name)
+                s._compute_name()
+                s._set_next_sequence()
         to_post = super(AccountMove, self)._post(soft=soft)
         for inv in to_post:
-            if inv.purchase_to_done:
-                for ptd in inv.purchase_to_done:
-                    ptd.write({"state": "done"})
-            if not inv.is_invoice() or not inv.journal_document_class_id or not inv.use_documents:
-                continue
-            inv.sii_result = "NoEnviado"
-            if inv.journal_id.restore_mode or self._context.get("restore_mode", False):
-                inv.sii_result = "Proceso"
-            else:
-                inv._validaciones_uso_dte()
-                inv._timbrar()
-                ISCP = self.env["ir.config_parameter"].sudo()
-                metodo = ISCP.get_param("account.send_dte_method", default='diferido')
-                if metodo == 'manual':
+            if len(self)==1:
+                if self.move_type in['out_invoice','out_refund'] or (
+                        self.move_type == 'in_invoice'
+                        and self.document_class_id.es_factura_compra()
+                        and self.use_documents
+                        and self.journal_document_class_id):
+                    #Actualizar el proximo número en la secuencia su corresponde
+                    domain=[
+                        ('document_class_id','=',self.document_class_id.id),
+                        ('sii_document_number','!=',0),
+                        ('move_type','=',self.move_type),
+                        ('state','=','posted'),
+                        ('id','!=',self.id)
+                        ]
+
+                    # last_invoice=self.search(domain,order="sii_document_number desc",limit=1)
+                    # if last_invoice.sii_document_number<=self.journal_document_class_id.sequence_id.number_next_actual and last_invoice.sii_document_number!=0:
+                    #     self.sii_document_number=last_invoice.sii_document_number+1
+                    #     self.journal_document_class_id.sequence_id.number_next_actual=last_invoice.sii_document_number+2
+                    # else:
+                    #     self.sii_document_number=self.journal_document_class_id.sequence_id.number_next_actual
+
+                    if len(self)==1:
+                        if self.sii_document_number==0:
+                            self.sii_document_number=self.sequence_number_next
+                            if self.sii_document_number==self.journal_document_class_id.sequence_id.number_next_actual:
+                                self.journal_document_class_id.sequence_id.number_next_actual=self.sii_document_number+1
+                        # self.name='FACT'+str(self.sii_document_number)                        
+                        self.name=self.journal_document_class_id.sequence_id.name+str(self.sii_document_number)
+
+
+                if not inv.is_invoice() or not inv.journal_document_class_id or not inv.use_documents:
                     continue
-                tiempo_pasivo = datetime.now()
-                if metodo == 'diferido':
-                    tipo_trabajo = 'pasivo'
-                    tiempo_pasivo += timedelta(
-                        hours=int(ISCP.get_param("account.auto_send_dte", default=1))
+                inv.sii_result = "NoEnviado"
+                if inv.journal_id.restore_mode or self._context.get("restore_mode", False):
+                    inv.sii_result = "Proceso"
+                else:
+                    inv._validaciones_uso_dte()
+                    inv._timbrar()
+                    ISCP = self.env["ir.config_parameter"].sudo()
+                    metodo = ISCP.get_param("account.send_dte_method", default='diferido')
+                    if metodo == 'manual':
+                        continue
+                    tiempo_pasivo = datetime.now()
+                    if metodo == 'diferido':
+                        tipo_trabajo = 'pasivo'
+                        tiempo_pasivo += timedelta(
+                            hours=int(ISCP.get_param("account.auto_send_dte", default=1))
+                        )
+                    elif metodo == 'imediato':
+                        tipo_trabajo = 'envio'
+                    self.env["sii.cola_envio"].create(
+                        {
+                            "company_id": inv.company_id.id,
+                            "doc_ids": [inv.id],
+                            "model": "account.move",
+                            "user_id": self.env.uid,
+                            "tipo_trabajo": tipo_trabajo,
+                            "date_time": tiempo_pasivo,
+                            "send_email": False
+                            if inv.company_id.dte_service_provider == "SIICERT"
+                            or not ISCP.get_param("account.auto_send_email", default=True)
+                            else True,
+                        }
                     )
-                elif metodo == 'inmediato':
-                    tipo_trabajo = 'envio'
-                self.env["sii.cola_envio"].create(
-                    {
-                        "company_id": inv.company_id.id,
-                        "doc_ids": [inv.id],
-                        "model": "account.move",
-                        "user_id": self.env.uid,
-                        "tipo_trabajo": tipo_trabajo,
-                        "date_time": tiempo_pasivo,
-                        "send_email": False
-                        if inv.company_id.dte_service_provider == "SIICERT"
-                        or not ISCP.get_param("account.auto_send_email", default=True)
-                        else True,
-                    }
-                )
+                po = self.env['purchase.order'].browse(
+                    inv._context.get('purchase_to_done', False))
+                if po:
+                    po.write({"state": "done"})
+        model_sii_cola_envio = self.env["sii.cola_envio"]
+        model_sii_cola_envio.lanzar_trabajo()
         return to_post
+
+
+    @api.onchange('state')
+    def _onchange_state(self):
+        if self.state=='posted':
+            caf = self.env['dte.caf'].search([
+                ('sequence_id', '=', self.id),
+                ('folio_actual', '>=', self.number_next),
+            ],
+            order='folio_actual ASC',
+            limit=1)
+            if not caf:
+                if not self.dte_caf_ids:
+                    return 0
+                caf = self.dte_caf_ids[0]
+                if int(self.number_next) == caf.final_nm:
+                    return 0
+            caf.compute_folio_actual()
+            folio_actual = caf.folio_actual
+            print(folio_actual)
+            print()
 
     @contextmanager
     def _sync_gdr_lines(self, container):
@@ -828,23 +914,27 @@ class AccountMove(models.Model):
     @api.returns('self', lambda value: value.id)
     def copy(self, default=None):
         copied_am = super().copy(default)
-        if default.get('referencias'):
-            if default["referencias"][0][2].get('sii_referencia_CodRef') == '2':
-                copied_am.invoice_line_ids.unlink()
-                prod = self.env['product.product'].search(
-                        [
-                                ('product_tmpl_id', '=', self.env.ref('l10n_cl_fe.no_product').id),
-                        ]
-                    )
-                copied_am.write({'invoice_line_ids': [
-                    Command.create({
-                        'product_id': prod.id,
-                        'name': prod.name,
-                        'quantity': 1,
-                        'price_unit': 0
-                    })
-                ]})
-        return copied_am
+        if default!=None:
+            if default.get('referencias'):
+
+                if default["referencias"][0][2].get('sii_referencia_CodRef') == '2':
+                    copied_am.invoice_line_ids.unlink()
+                    prod = self.env['product.product'].search(
+                            [
+                                    ('product_tmpl_id', '=', self.env.ref('l10n_cl_fe.no_product').id),
+                            ]
+                        )
+                    copied_am.write({'invoice_line_ids': [
+                        Command.create({
+                            'product_id': prod.id,
+                            'name': prod.name,
+                            'quantity': 1,
+                            'price_unit': 0
+                        })
+                    ]})
+            return copied_am
+        else:
+            return self
 
     def _reverse_moves(self, default_values_list=None, cancel=False):
         ''' Reverse a recordset of account.move.
@@ -1388,7 +1478,7 @@ class AccountMove(models.Model):
         street2_recep = self.partner_id.street2 or commercial_partner_id.street2 or False
         if street_recep or street2_recep:
             Receptor["DirRecep"] = self._acortar_str(street_recep + (" " + street2_recep if street2_recep else ""), 70)
-        cmna_recep = self.partner_id.city_id.name or commercial_partner_id.city_id.name
+        cmna_recep = self.partner_id.city_id.name or commercial_partner_id.city_id.name or self.partner_id.state_id.name
         if (
             not cmna_recep
             and not self.es_boleta()
@@ -1676,6 +1766,19 @@ class AccountMove(models.Model):
         if tax.price_include or (not tax.sii_detailed and (self.es_boleta() or self.es_nc_boleta())):
             return True
         return False
+    
+    def _special_characters_replace(self, text):
+        replacements = {
+            '&': 'Y',
+            '<': '',
+            '>': '',
+            '"': '',
+            "'": '',
+            "–": '-'
+        }
+        for old, new in replacements.items():
+            text = text.replace(old, new)
+        return text
 
     def _invoice_lines(self):
         invoice_lines = []
@@ -1734,10 +1837,11 @@ class AccountMove(models.Model):
             #            if self.es_boleta():
             #                lines['RUTMandante']
             if line.product_id:
-                lines["NmbItem"] = line.product_id.with_context(
-                    display_default_code=False).name
+                NmbItem=self._special_characters_replace(line.product_id.with_context(display_default_code=False).name)
+                lines["NmbItem"] = NmbItem
                 if line.product_id.name != line.name:
-                    lines["DscItem"] = line.name.replace(line.name, lines['NmbItem'])
+                    lines["DscItem"] = self._special_characters_replace(line.name)
+
             else:
                 lines['NmbItem'] = line.name
             # lines['InfoTicket']
@@ -1911,7 +2015,7 @@ class AccountMove(models.Model):
                 ref_line["RazonRef"] = ref.motivo
                 if self.es_boleta():
                     ref_line['CodVndor'] = self.user_id.id
-                    ref_lines["CodCaja"] = self.journal_id.point_of_sale_id.name
+                    # ref_lines["CodCaja"] = self.journal_id.point_of_sale_id.name
                 ref_lines.append(ref_line)
                 lin_ref += 1
         dte["Detalle"] = resumen["Detalle"]
@@ -1944,9 +2048,19 @@ class AccountMove(models.Model):
         caf = self.env['dte.caf'].search([
             ('start_nm', '<=', folio),
             ('final_nm', '>=', folio),
+            ('company_id','=',self.env.company.id),
             ('document_class_id', '=', self.document_class_id.id)
         ])
-        self._validaciones_caf(caf)
+        if caf:
+            self._validaciones_caf(caf)
+        else:
+            sequence_id=self.journal_document_class_id.sequence_id
+            folios_obtenidos=sequence_id.solicitar_caf()
+            if folios_obtenidos:
+                pass
+            else:
+                raise CafNotFoundError(self.document_class_id.name)                       
+
         datos["Documento"] = [
             {
                 "TipoDTE": self.document_class_id.sii_code,
@@ -2025,7 +2139,10 @@ class AccountMove(models.Model):
                 'move_ids': [[6,0, self.ids]],
             })
         datos["ID"] = "Env%s" %envio_id.id
+        _logger.info("=== DEBUG do_dte_send: envio_id.id=%s, datos[ID]=%s", envio_id.id, datos["ID"])
         result = fe.timbrar_y_enviar(datos)
+        _logger.info("=== DEBUG do_dte_send result keys: %s", list(result.keys()) if result else "None")
+        _logger.info("=== DEBUG do_dte_send sii_send_ident: %s", result.get("sii_send_ident") if result else "No result")
         envio = {
             "xml_envio": result.get("sii_xml_request", "temporal"),
             "name": result.get("sii_send_filename", "temporal"),
@@ -2036,7 +2153,9 @@ class AccountMove(models.Model):
             "state": result.get("status"),
 
         }
+        _logger.info("=== DEBUG do_dte_send envio dict: %s", envio)
         envio_id.write(envio)
+        _logger.info("=== DEBUG do_dte_send after write: envio_id.sii_send_ident=%s", envio_id.sii_send_ident)
         return envio_id
 
     def _get_dte_status(self):
@@ -2296,7 +2415,7 @@ class AccountMove(models.Model):
 
         buffered = BytesIO()
         img.save(buffered, format="PNG")
-        imm = base64.b64encode(buffered.getvalue()).decode()
+        imm = base64.b64encode(buffered.getvalue())
         return imm
 
 

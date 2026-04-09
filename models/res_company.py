@@ -133,6 +133,10 @@ stamp to be legally valid.""",
         string="Token APICAF",
         default='token_publico',
     )
+    # nro_rec_envio = fields.Integer(string='Nro. Registros Envio',default=200)
+    # nro_rec_consulta = fields.Integer(string='Nro. Registros Consulta',default=200)
+    # nro_rec_pasivo = fields.Integer(string='Nro. Registros Pasivo',default=20)
+
 
     @api.onchange("document_number", "document_type_id")
     def onchange_document(self):

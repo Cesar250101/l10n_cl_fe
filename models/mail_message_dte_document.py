@@ -215,7 +215,7 @@ class ProcessMailsDocument(models.Model):
                 r.state = "accepted"
                 continue
             for i in self.env["account.move"].browse(resp):
-                if i.claim in ["ACD", "ERM", "PAG"]:
+                if i.claim in ["ACD", "ERM", "PAG",False]:
                     r.state = "accepted"
         action = {
             'name': _('Accepted Moves'),

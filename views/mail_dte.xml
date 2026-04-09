@@ -271,10 +271,11 @@
 
     <record id="action_dte_process" model="ir.actions.act_window">
         <field name="name">Aceptar o Rechazar Documentos</field>
-        <field name="domain">[]</field>
+        <field name="domain">[('company_id', '=', allowed_company_ids[0])]</field>
         <field name="res_model">mail.message.dte.document</field>
         <field name="target">current</field>
     </record>
+
     <record id="act_xml_recept" model="ir.actions.act_window">
         <field name="name">XML Recibidos</field>
         <field name="res_model">mail.message.dte</field>

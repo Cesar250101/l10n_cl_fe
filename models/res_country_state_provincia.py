@@ -4,6 +4,7 @@ from odoo import fields, models
 class ResStateRegion(models.Model):
     _name = "res.country.state.provincia"
     _description = "Subdivisión Provincias"
+    _order = "name"
 
     name = fields.Char(string="Region Name", help="The state code.\n", required=True,)
     code = fields.Char(string="Region Code", help="The povincia code.\n", required=True,)

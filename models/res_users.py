@@ -1,6 +1,8 @@
 import logging
 
-from odoo import SUPERUSER_ID, models
+import dateutil.relativedelta as relativedelta
+
+from odoo import SUPERUSER_ID, fields, models
 
 _logger = logging.getLogger(__name__)
 

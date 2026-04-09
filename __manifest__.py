@@ -21,6 +21,7 @@ Facturación Electrónica para Chile. Mayor información en https://globalrespon
         "l10n_cl_chart_of_account",
         "contacts",
         "portal",
+        "queue_job"
     ],
     "external_dependencies": {
         "python": [
@@ -106,13 +107,16 @@ Facturación Electrónica para Chile. Mayor información en https://globalrespon
         "data/uom_uom.xml",
         "security/state_manager.xml",
         "security/ir.model.access.csv",
+        'views/formato_papel.xml',
+        "data/queue_job.xml",
     ],
     'assets': {
         'web.assets_backend': [
             "l10n_cl_fe/static/src/js/upgrade_fields.js",
             "l10n_cl_fe/static/src/js/notify_manager.js",
             "l10n_cl_fe/static/src/js/report/action_manager_report.js",
-            "l10n_cl_fe/static/src/js/totals_widget.js"
+            "l10n_cl_fe/static/src/js/totals_widget.js",
+            "l10n_cl_fe/static/src/js/firma_alert_service.js"
         ],
         'web.assets_qweb': [
             'l10n_cl_fe/static/src/xml/**/*',

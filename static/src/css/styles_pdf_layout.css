@@ -1,0 +1,215 @@
+/*
+  CSS ajustado para Odoo 16.0 con wkhtmltopdf 0.12.6
+  Se han eliminado restricciones excesivas y se usan valores flexibles.
+*/
+
+/* 1. Referencia de la compañía */
+.company-ref {
+  text-align: left;
+  text-transform: uppercase;
+  font-weight: 900;
+  font-size: 20px;
+  color: black !important;
+  margin: 0 0 5px 0;
+}
+
+/* 2. Centrado de contenido */
+.center-text {
+  text-align: center;
+  color: black !important;
+}
+
+/* 3. Imagen del logo */
+.logo-img {
+  max-height: 45px;
+  /* Aseguramos que la imagen se escale correctamente */
+  width: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* 4. Nombre de la compañía */
+.company-name {
+  text-transform: uppercase;
+  font-weight: 900;
+  font-size: 18px;
+  color: black !important;
+  margin: 5px 0;
+}
+
+/* 5. Detalles de la compañía */
+.company-details {
+  text-align: left;
+  font-size: 10px;
+  color: black !important;
+  text-transform: uppercase;
+  word-wrap: break-word;
+  margin: 0;
+}
+
+/* 6. Recuadro del documento */
+.document-box {
+  border: 3px solid red;
+  text-align: center;
+  font-size: 20px;
+  padding: 5px;
+  height: 145px;
+  width: 350px;
+  margin: 0 auto 10px;
+}
+
+/* 7. Encabezado del R.U.T. */
+.rut-header {
+  color: red;
+  font-size: 20px;
+  padding-top: 5px;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* 8. Encabezado del tipo de documento */
+.document-class-header {
+  line-height: 1.2;
+  font-size: 20px;
+  color: red;
+  text-align: center;
+  text-transform: uppercase;
+  padding-bottom: 10px;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* 9. Número SII */
+.sii-doc-number {
+  color: red;
+  text-align: center;
+  font-size: 20px;
+  padding-bottom: 5px;
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* 10. Información del SII */
+.sii-info {
+  color: red;
+  font-size: 11px;
+  text-transform: uppercase;
+  width: 100%;
+  text-align: center;
+  margin: 0;
+}
+
+/* 11. Filas de tablas (encabezados y datos) */
+.table-row-small {
+  font-size: 12px !important;
+  /* Usamos min-height para adaptarse al contenido */
+  min-height: 18px;
+  padding: 2px 0;
+}
+
+/* 12. Celdas sin padding ni borde superior */
+.table-cell-no-padding {
+  border-top: 0 !important;
+  padding: 0 !important;
+}
+
+/* 13. Celdas con ancho fijo */
+.table-cell-wide {
+  border-top: 0 !important;
+  padding: 0 !important;
+  min-width: 440px;
+  max-width: 440px;
+}
+
+/* 14. Contenedores de tablas con borde negro */
+.table-container {
+  border: 2px solid black;
+  /* Se deja margen inferior para separar bloques */
+  margin-bottom: 5px;
+  padding: 2px;
+}
+
+/* 15. Tablas sin margen inferior */
+.table-no-margin {
+  margin-bottom: 0 !important;
+}
+
+/* 16. Contenedor de detalle */
+.detail-container {
+  min-height: 450px;
+  max-height: 450px;
+  padding-top: 5px;
+}
+
+/* 17. Encabezado de tablas pequeñas */
+.table-header-small {
+  font-size: 8px !important;
+  min-height: 12px;
+  padding: 2px 0;
+}
+
+/* 18. Filas de líneas de factura */
+.invoice-line-row {
+  /* Se usa un line-height relativo para mejorar la legibilidad */
+  line-height: 1.2;
+  font-size: 12px !important;
+  min-height: 20px;
+  padding: 2px 0;
+}
+
+/* 19. Celdas de líneas de factura */
+.invoice-line-cell {
+  line-height: 1.2;
+  min-height: 20px;
+  padding: 2px 0;
+}
+
+/* 20. Filas ocultas */
+.hidden-row {
+  display: none !important;
+}
+
+/* 21. Filas de la sección “cedible” */
+.cedible-row {
+  border: 1px solid black;
+  height: 20px;
+  font-size: 15px !important;
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* 22. Contenedores con borde en “cedible” */
+.cedible-border {
+  border: 1px solid black;
+  padding: 2px;
+}
+
+/* 23. Celdas de tabla con padding reducido */
+.table-header-padding {
+  padding: 1px 5px !important;
+}
+
+/* 24. Celdas de tabla en secciones de referencia */
+.table-cell-ref {
+  border-top: 0 !important;
+  padding: 0 5px !important;
+}
+
+/* 25. Filas en tablas de referencia */
+.table-row-reference {
+  font-size: 10px !important;
+  min-height: 12px;
+  padding: 1px 0;
+}
+
+/* Opcional: Resetear márgenes y paddings generales para PDF */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+/* Opcional: Estilos para @page para ajustar márgenes en el PDF */
+@page {
+  margin: 15mm 10mm;
+}

@@ -13,8 +13,8 @@ class ReportAction(models.Model):
     )
 
     @api.model
-    def _render_xlsx(self, docids, data):
-        report_model_name = "report.%s" % self.report_name
+    def _render_xlsx(self, reportname, docids, data):
+        report_model_name = "report.%s" % reportname or self.report_name
         report_model = self.env.get(report_model_name)
         if report_model is None:
             raise UserError(_("%s model was not found") % report_model_name)

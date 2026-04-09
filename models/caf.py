@@ -21,11 +21,12 @@ class CAF(models.Model):
     _name = "dte.caf"
     _description = "Archivo CAF"
 
+    
     @api.onchange('start_nm', 'final_nm', 'folio_actual')
     @api.depends('start_nm', 'final_nm', 'folio_actual')
     def _get_qty_available(self):
         for r in self:
-            if r.state not in ['draft', 'spent']:
+            if r.state not in ['draft']:
                 qty_available = 1 + (r.final_nm - r.folio_actual)
                 if qty_available != r.qty_available:
                     r.qty_available = qty_available
@@ -40,13 +41,16 @@ class CAF(models.Model):
             state IN ('posted', 'cancel')
             AND document_class_id = %(document_class_id)s
             AND use_documents
+            AND company_id = %(company_id)s
         """
         param = {
-            'document_class_id': self.document_class_id.id
+            'document_class_id': self.document_class_id.id,
+            'company_id':self.env.company.id
         }
         return where_string, param
 
     def _get_folio_actual(self):
+        self.company_id=self.sequence_id.company_id.id
         folio = 0
         if not self.document_class_id:
             return folio
@@ -55,26 +59,29 @@ class CAF(models.Model):
         for table in tables:
             where_string, param = getattr(self, "_%s_where_string_and_param" % table)()
             where_clauses.append("""
-                    SELECT {field} FROM {table}
-                    {where_string}
-                    AND {field} >= {start_nm} AND {field} <= {final_nm}
+                SELECT {field} FROM {table}
+                {where_string}
+                AND {field} >= {start_nm} AND {field} <= {final_nm}
+                AND company_id = %(company_id)s
             """.format(
                 table=table,
                 where_string=where_string,
                 field='sii_document_number',
-                start_nm= self.start_nm,
-                final_nm= self.final_nm,
+                start_nm=self.start_nm,
+                final_nm=self.final_nm,
             ))
         if not where_clauses:
             return 0
-        union = 'UNION ALL '.join(where_clauses)
+        union = ' UNION ALL '.join(where_clauses)
         query = '''SELECT MAX({field})
-FROM ({union}) AS combined'''.format(
+    FROM ({union}) AS combined'''.format(
             field='sii_document_number',
             union=union
         )
+        param["company_id"] = self.env.company.id
         self.env.cr.execute(query, param)
         folio = int((self.env.cr.fetchone() or [None])[0] or 0)
+
         if self.start_nm <= folio < self.final_nm:
             folios_anulados = ast.literal_eval(self.folios_anulados or '[]')
             def check_anulado(folio_check):
@@ -147,8 +154,7 @@ has been exhausted.""",
     )
     rut_n = fields.Char(string="RUT", compute='_load_data', store=True)
     company_id = fields.Many2one(
-        "res.company", string="Company", required=False, default=lambda self: self.env.user.company_id,
-    )
+        comodel_name="res.company", string="Company", required=False, related='sequence_id.company_id')
     sequence_id = fields.Many2one("ir.sequence", string="Sequence",
         domain="[('is_dte', '=', True)]")
     use_level = fields.Float(string="Use Level", compute="_used_level",)
@@ -246,13 +252,18 @@ has been exhausted.""",
         self.document_class_id = dc.id
         fa = result.find("FA").text
         self.issued_date = fa
+        self.company_id=self.sequence_id.company_id
         if dc.es_factura_afecta() or dc.es_nc() or dc.es_nd() or dc.es_liquidacion() or dc.es_factura_compra():
             self.expiration_date = date(int(fa[:4]), int(fa[5:7]), int(fa[8:10])) + relativedelta(months=6)
         self.rut_n = result.find("RE").text
-        if self.rut_n != self.company_id.partner_id.rut():
+        # try:
+        #     company_id=self.env['res.company'].search([('id','=',self._context['allowed_company_ids'][0])])
+        # except:
+        #     company_id=self.env['res.company'].search([('id','=',self.company_id.id)])
+        if self.rut_n != self.sequence_id.company_id.partner_id.rut():
             raise UserError(
                 _("Company vat %s should be the same that assigned company's vat: %s!")
-                % (self.rut_n, self.company_id.partner_id.rut())
+                % (self.rut_n, self.sequence_id.company_id.partner_id.rut())
             )
         elif dc != self.sequence_id.sii_document_class_id:
             raise UserError(
@@ -265,6 +276,11 @@ to work properly!"""
             )
         self.state = "in_use"
         self.compute_folio_actual()
+
+    @api.onchange('company_id')
+    def _onchange_company(self):
+        if self.company_id and self.sequence_id.company_id != self.company_id:
+            self.company_id=self.sequence_id.company_id
 
     def _get_cantidad_folios(self):
         for r in self:

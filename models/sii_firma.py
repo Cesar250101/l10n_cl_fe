@@ -33,13 +33,61 @@ class SignatureCert(models.Model):
                 {"title": "Alerta sobre Firma Electrónica", "message": alert_msg, "type": "dte_notif",},
             )
 
+    def _cron_notify_expiring_signatures(self):
+        today = fields.Date.context_today(self)
+        warning_date = today + relativedelta.relativedelta(days=30)
+
+        expiring = self.with_context(active_test=False).search([
+            ('expire_date', '!=', False),
+            ('expire_date', '<=', warning_date),
+            ('state', 'not in', ['incomplete', 'unverified']),
+        ])
+
+        for firma in expiring:
+            is_expired = firma.expire_date < today
+            firma._send_expiry_notification(is_expired)
+
+    def _send_expiry_notification(self, is_expired):
+        today = fields.Date.context_today(self)
+        if is_expired:
+            title = _("⚠️ Certificado Digital VENCIDO")
+            msg = _(
+                "El certificado '%s' (RUT: %s) venció el %s. "
+                "Por favor, suba un nuevo certificado para continuar emitiendo DTEs."
+            ) % (self.name, self.subject_serial_number or '', self.expire_date)
+        else:
+            days_left = (self.expire_date - today).days
+            title = _("🔔 Certificado Digital próximo a vencer")
+            msg = _(
+                "El certificado '%s' (RUT: %s) vencerá en %d día(s) el %s. "
+                "Le recomendamos renovarlo a la brevedad."
+            ) % (self.name, self.subject_serial_number or '', days_left, self.expire_date)
+
+        notif_type = 'danger' if is_expired else 'warning'
+        for user in self.user_ids:
+            self.env['bus.bus']._sendone(
+                user.partner_id,
+                'simple_notification',
+                {
+                    'title': title,
+                    'message': msg,
+                    'sticky': True,
+                    'type': notif_type,
+                },
+            )
+
     def check_signature(self):
+        today = fields.Date.context_today(self)
         for s in self.sudo():
-            expired = s.expire_date < fields.Date.context_today(self)
+            expired = s.expire_date < today
             state = "expired" if expired else "valid"
             if s.state != state:
                 s.state = state
                 s.active = not expired
+            # Notificar si está vencido o próximo a vencer (≤ 30 días)
+            days_left = (s.expire_date - today).days
+            if expired or days_left <= 30:
+                s._send_expiry_notification(expired)
 
     @api.onchange("subject_serial_number")
     def set_state(self):
@@ -47,7 +95,8 @@ class SignatureCert(models.Model):
             check_rut = rut = self.subject_serial_number.replace(".", "").upper()
             if len(rut) == 9:
                 check_rut = "0" + rut
-            if "-" not in check_rut or not self.env.user.partner_id.check_vat_cl(check_rut.replace("-", "")):
+            # if "-" not in check_rut or not self.env.user.partner_id.check_vat_cl(check_rut.replace("-", "")):
+            if "-" not in check_rut:
                 raise UserError(_("Not Valid Subject Serial Number"))
             self.subject_serial_number = rut
         elif self.file_content:

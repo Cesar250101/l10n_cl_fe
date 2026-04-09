@@ -163,29 +163,31 @@ class UploadXMLWizard(models.TransientModel):
         respuesta = fe.recepcion_xml(vals)
         if self.dte_id:
             for r in respuesta:
-                att = self._create_attachment(r["respuesta_xml"], r["nombre_xml"], self.dte_id.id, "mail.message.dte")
-                dte_email_id = self.dte_id.company_id.dte_email_id or self.env.user.company_id.dte_email_id
-                email_to = self.sudo().dte_id.mail_id.email_from
-                if envio is not None:
-                    RUT = envio.find("SetDTE/Caratula/RutEmisor").text
-                    partner_id = self.env["res.partner"].search(
-                        [("active", "=", True), ("parent_id", "=", False), ("vat", "=", self.format_rut(RUT))]
-                    )
-                    if partner_id.dte_email:
-                        email_to = partner_id.dte_email
-                values = {
-                    "res_id": self.dte_id.id,
-                    "email_from": dte_email_id.name_get()[0][1],
-                    "email_to": email_to,
-                    "auto_delete": False,
-                    "model": "mail.message.dte",
-                    "body": "XML de Respuesta Envío, Estado: %s , Glosa: %s "
-                    % (r["EstadoRecepEnv"], r["RecepEnvGlosa"]),
-                    "subject": "XML de Respuesta Envío",
-                    "attachment_ids": [[6, 0, att.ids]],
-                }
-                send_mail = self.env["mail.mail"].sudo().create(values)
-                send_mail.send()
+                if r!='error':
+                    att = self._create_attachment(r["respuesta_xml"], r["nombre_xml"], self.dte_id.id, "mail.message.dte")
+                    dte_email_id = self.dte_id.company_id.dte_email_id or self.env.user.company_id.dte_email_id
+                    email_to = self.sudo().dte_id.mail_id.email_from
+                    if envio is not None:
+                        RUT = envio.find("SetDTE/Caratula/RutEmisor").text
+                        partner_id = self.env["res.partner"].search(
+                            [("active", "=", True), ("parent_id", "=", False), ("vat", "=", self.format_rut(RUT))],
+                            limit=1,
+                        )
+                        if partner_id.dte_email:
+                            email_to = partner_id.dte_email
+                    values = {
+                        "res_id": self.dte_id.id,
+                        "email_from": dte_email_id.name_get()[0][1],
+                        "email_to": email_to,
+                        "auto_delete": False,
+                        "model": "mail.message.dte",
+                        "body": "XML de Respuesta Envío, Estado: %s , Glosa: %s "
+                        % (r["EstadoRecepEnv"], r["RecepEnvGlosa"]),
+                        "subject": "XML de Respuesta Envío",
+                        "attachment_ids": [[6, 0, att.ids]],
+                    }
+                    send_mail = self.env["mail.mail"].sudo().create(values)
+                    send_mail.send()
 
     def _get_data_partner(self, data):
         if self.pre_process and self.type == "compras":
@@ -216,7 +218,7 @@ class UploadXMLWizard(models.TransientModel):
             if self.type == "compras"
             else data.find("RznSocRecep").text
         )
-        city_id = self.env["res.city"].search([("name", "=", data.find("Cmna%s" % dest).text.title())])
+        city_id = self.env["res.city"].search([("name", "=", data.find("Cmna%s" % dest).text.title())],limit=1)
         ciudad = data.find("Ciudad%s" % dest)
         partner = {
             "name": name,
@@ -338,16 +340,11 @@ class UploadXMLWizard(models.TransientModel):
                 values["default_code"] = VlrCodigo
         return values
 
-    def _create_prod(self, data, company_id, price_included=False, exenta=False,
-                     refund=False):
-        product_id = self.env["product.product"].create(
-            self.get_product_values(data, company_id, price_included, exenta,
-                                    refund)
-        )
+    def _create_prod(self, data, company_id, price_included=False, exenta=False,refund=False):
+        product_id = self.env["product.product"].create(self.get_product_values(data, company_id, price_included, exenta,refund))
         return product_id
 
-    def _buscar_producto(self, document_id, line, company_id,
-                        price_included=False, exenta=False, refund=False):
+    def _buscar_producto(self, document_id, line, company_id,price_included=False, exenta=False, refund=False):
         default_code = False
         CdgItem = line.find("CdgItem")
         NmbItem = line.find("NmbItem").text
@@ -368,8 +365,21 @@ class UploadXMLWizard(models.TransientModel):
                 default_code = VlrCodigo.text
         if not query:
             query = [("name", "=", NmbItem)]
-        product_id = self.env["product.product"].search(query)
+
         product_supplier = False
+        query2 = [("partner_id", "=", document_id.partner_id.id)]
+        if default_code:
+            query2.append(("product_code", "=", default_code))
+        else:
+            query2.append(("product_name", "=", NmbItem))
+        product_supplier = self.env["product.supplierinfo"].search(query2)
+        if product_supplier and not product_supplier.product_tmpl_id.active:
+            raise UserError(_("Plantilla Producto para el proveedor marcado como archivado"))
+        product_id = product_supplier.product_id or product_supplier.product_tmpl_id.product_variant_id
+
+        if not product_id:
+            product_id = self.env["product.product"].search(query,limit=1)
+
         if not product_id and self.type == "compras":
             query2 = [("partner_id", "=", document_id.partner_id.id)]
             if default_code:
@@ -382,14 +392,17 @@ class UploadXMLWizard(models.TransientModel):
             product_id = product_supplier.product_id or product_supplier.product_tmpl_id.product_variant_id
             if not product_id:
                 if not self.pre_process:
-                    product_id = self._create_prod(line, company_id,
-                                    price_included, exenta, refund)
+                    product_id = self._create_prod(line, company_id,price_included, exenta, refund)
                 else:
                     code = ""
                     coma = ""
                     for c in line.findall("CdgItem"):
-                        code += coma + c.find("TpoCodigo").text + " " + c.find("VlrCodigo").text
-                        coma = ", "
+                        code=""
+                        try:
+                            code += coma + c.find("TpoCodigo").text + " " + c.find("VlrCodigo").text
+                            coma = ", "
+                        except:
+                            pass
                     return NmbItem + "" + code
         elif self.type == "ventas" and not product_id:
             product_id = self._create_prod(line, company_id, price_included,
@@ -447,13 +460,14 @@ class UploadXMLWizard(models.TransientModel):
                                         document_id, line, company_id,
                                         price_included, exenta, refund)
         uom_id = False
-        if not isinstance(product_id, str):
-            data.update(
-                {"product_id": product_id.id,}
-            )
-            uom_id = product_id.uom_id.id
-        elif not product_id:
-            return False
+        for p in product_id:
+            if not isinstance(p, str):
+                data.update(
+                    {"product_id": p.id,}
+                )
+                uom_id = p.uom_id.id
+            elif not product_id:
+                return False
         price_subtotal = float(line.find("MontoItem").text)
         price = float(line.find("PrcItem").text) if line.find("PrcItem") is not None else price_subtotal
         DscItem = line.find("DscItem")
@@ -551,10 +565,18 @@ class UploadXMLWizard(models.TransientModel):
 
     def _procesar_po_to_done(self, vals, company_id):
         seq = self.env['ir.sequence'].search([('code', '=', 'purchase.order'), ('company_id', 'in', [company_id.id, False])], order='company_id')
-        self.purchase_to_done = self.env['purchase.order'].search([
-            ('name', '=', seq.get_next_char(
-                int(vals['origen'].upper().replace(seq.prefix, '').replace(' ', ''))))
-        ])
+        palabra=vals['origen']
+        index = palabra.find("/")
+        if index and palabra.isnumeric():
+            palabra=palabra[:index]
+        else:
+            palabra="0"
+
+        if self.purchase_to_done:
+            self.purchase_to_done = self.env['purchase.order'].search([
+                ('name', '=', seq.get_next_char(
+                    int(palabra.upper().replace(seq.prefix, '').replace(' ', ''))))
+            ])
 
     def _prepare_ref(self, ref, company_id=False):
         query = []
@@ -607,7 +629,11 @@ class UploadXMLWizard(models.TransientModel):
         RUT = Emisor.find(rut_path).text
         invoice = {}
         partner_id = self.env["res.partner"].search(
-            [("active", "=", True), ("parent_id", "=", False), ("vat", "=", self.format_rut(RUT))]
+            [("active", "=", True), 
+             ("parent_id", "=", False), 
+             ("vat", "=", self.format_rut(RUT)),
+             ("company_id", "=", company_id.id)],
+            limit=1,
         )
         if not partner_id:
             partner_id = self._create_partner(Encabezado.find("%s" % type))
@@ -822,6 +848,8 @@ class UploadXMLWizard(models.TransientModel):
         if inv:
             return inv
         data = self._get_data(documento, company_id)
+        # if not data['purchase_to_done']:
+        data.pop('purchase_to_done')
         inv = self.env["account.move"].create(data)
         return inv
 
@@ -871,11 +899,12 @@ class UploadXMLWizard(models.TransientModel):
 
     def do_create_pre(self):
         created = []
-        self.do_receipt_deliver()
+        # self.do_receipt_deliver()  # Desactivado para evitar envío masivo de correos
         dtes = self._get_dtes()
         for dte in dtes:
             try:
                 documento = dte.find("Documento")
+                vat=documento.find("Encabezado/Receptor/RUTRecep").text
                 company_id = self.env["res.company"].search(
                     [("vat", "=", self.format_rut(documento.find("Encabezado/Receptor/RUTRecep").text)),], limit=1,
                 )
