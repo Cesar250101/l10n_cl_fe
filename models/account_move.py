@@ -704,9 +704,11 @@ class AccountMove(models.Model):
                             self.sii_document_number=self.sequence_number_next
                             if self.sii_document_number==self.journal_document_class_id.sequence_id.number_next_actual:
                                 self.journal_document_class_id.sequence_id.number_next_actual=self.sii_document_number+1
-                        # self.name='FACT'+str(self.sii_document_number)                        
-                        self.name=self.journal_document_class_id.sequence_id.name+str(self.sii_document_number)
-
+                        # self.name='FACT'+str(self.sii_document_number)   
+                        if self.journal_document_class_id:                     
+                            self.name=self.journal_document_class_id.sequence_id.name+str(self.sii_document_number)
+                        else:
+                            self.compute_name()
 
                 if not inv.is_invoice() or not inv.journal_document_class_id or not inv.use_documents:
                     continue
@@ -2045,21 +2047,32 @@ class AccountMove(models.Model):
     def _timbrar(self, n_atencion=None):
         folio = self.get_folio()
         datos = self._get_datos_empresa(self.company_id)
-        caf = self.env['dte.caf'].search([
+        domain_caf = [
             ('start_nm', '<=', folio),
             ('final_nm', '>=', folio),
-            ('company_id','=',self.env.company.id),
-            ('document_class_id', '=', self.document_class_id.id)
-        ])
+            ('company_id', '=', self.env.company.id),
+            ('document_class_id', '=', self.document_class_id.id),
+        ]
+        caf = self.env['dte.caf'].search(domain_caf)
         if caf:
             self._validaciones_caf(caf)
         else:
-            sequence_id=self.journal_document_class_id.sequence_id
-            folios_obtenidos=sequence_id.solicitar_caf()
-            if folios_obtenidos:
-                pass
-            else:
-                raise CafNotFoundError(self.document_class_id.name)                       
+            sequence_id = self.journal_document_class_id.sequence_id
+            firma = self.env.user.sudo().get_digital_signature(self.company_id)
+            wiz_caf = self.env["dte.caf.apicaf"].create({
+                "company_id": self.company_id.id,
+                "sequence_id": sequence_id.id,
+                "firma": firma.id,
+            })
+            wiz_caf.conectar_api()
+            if not wiz_caf.id_peticion:
+                raise CafNotFoundError(self.document_class_id.name)
+            wiz_caf.cant_doctos = wiz_caf.api_max_autor - 1
+            wiz_caf.obtener_caf()
+            caf = self.env['dte.caf'].search(domain_caf)
+            if not caf:
+                raise CafNotFoundError(self.document_class_id.name)
+            self._validaciones_caf(caf)
 
         datos["Documento"] = [
             {
