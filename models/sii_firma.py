@@ -40,7 +40,8 @@ class SignatureCert(models.Model):
         expiring = self.with_context(active_test=False).search([
             ('expire_date', '!=', False),
             ('expire_date', '<=', warning_date),
-            ('state', 'not in', ['incomplete', 'unverified']),
+            ('state', '=', 'valid'),
+            ('active', '=', True),
         ])
 
         for firma in expiring:
@@ -49,19 +50,22 @@ class SignatureCert(models.Model):
 
     def _send_expiry_notification(self, is_expired):
         today = fields.Date.context_today(self)
+        companies = ', '.join(self.company_ids.mapped('name')) or ''
         if is_expired:
             title = _("⚠️ Certificado Digital VENCIDO")
             msg = _(
                 "El certificado '%s' (RUT: %s) venció el %s. "
+                "Empresa(s): %s. "
                 "Por favor, suba un nuevo certificado para continuar emitiendo DTEs."
-            ) % (self.name, self.subject_serial_number or '', self.expire_date)
+            ) % (self.name, self.subject_serial_number or '', self.expire_date, companies)
         else:
             days_left = (self.expire_date - today).days
             title = _("🔔 Certificado Digital próximo a vencer")
             msg = _(
                 "El certificado '%s' (RUT: %s) vencerá en %d día(s) el %s. "
+                "Empresa(s): %s. "
                 "Le recomendamos renovarlo a la brevedad."
-            ) % (self.name, self.subject_serial_number or '', days_left, self.expire_date)
+            ) % (self.name, self.subject_serial_number or '', days_left, self.expire_date, companies)
 
         notif_type = 'danger' if is_expired else 'warning'
         for user in self.user_ids:

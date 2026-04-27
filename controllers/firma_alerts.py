@@ -20,18 +20,21 @@ class FirmaAlertController(Controller):
             ('user_ids', 'in', [user_id]),
             ('expire_date', '!=', False),
             ('expire_date', '<=', warning_date),
-            ('state', 'not in', ['incomplete', 'unverified']),
+            ('state', '=', 'valid'),
+            ('active', '=', True),
         ])
 
         alerts = []
         for firma in firmas:
             is_expired = firma.expire_date < today
+            companies = ', '.join(firma.company_ids.mapped('name')) or ''
             if is_expired:
                 alerts.append({
                     'title': '⚠️ Certificado Digital VENCIDO',
                     'message': "El certificado '%s' (RUT: %s) venció el %s. "
+                               "Empresa(s): %s. "
                                "Por favor, suba un nuevo certificado para continuar emitiendo DTEs."
-                               % (firma.name, firma.subject_serial_number or '', firma.expire_date),
+                               % (firma.name, firma.subject_serial_number or '', firma.expire_date, companies),
                     'type': 'danger',
                 })
             else:
@@ -39,8 +42,9 @@ class FirmaAlertController(Controller):
                 alerts.append({
                     'title': '🔔 Certificado Digital próximo a vencer',
                     'message': "El certificado '%s' (RUT: %s) vencerá en %d día(s) el %s. "
+                               "Empresa(s): %s. "
                                "Le recomendamos renovarlo a la brevedad."
-                               % (firma.name, firma.subject_serial_number or '', days_left, firma.expire_date),
+                               % (firma.name, firma.subject_serial_number or '', days_left, firma.expire_date, companies),
                     'type': 'warning',
                 })
         return alerts
