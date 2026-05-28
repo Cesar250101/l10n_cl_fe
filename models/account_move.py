@@ -2067,7 +2067,14 @@ class AccountMove(models.Model):
             wiz_caf.conectar_api()
             if not wiz_caf.id_peticion:
                 raise CafNotFoundError(self.document_class_id.name)
-            wiz_caf.cant_doctos = wiz_caf.api_max_autor - 1
+            if wiz_caf.api_max_autor <= 0:
+                raise UserError(
+                    _("El SII no autoriza más folios para %s en este momento "
+                      "(folios disponibles sin usar: %s). "
+                      "Verifique situación tributaria en www.sii.cl")
+                    % (self.document_class_id.name, wiz_caf.api_folios_disp)
+                )
+            wiz_caf.cant_doctos = wiz_caf.api_max_autor
             wiz_caf.obtener_caf()
             caf = self.env['dte.caf'].search(domain_caf)
             if not caf:
