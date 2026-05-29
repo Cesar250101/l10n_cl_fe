@@ -148,7 +148,9 @@ stamp to be legally valid.""",
                 return {"warning": {"title": _("Rut Erróneo"), "message": _("Rut Erróneo"),}}
             vat = "CL%s" % document_number
             exist = self.env["res.partner"].search(
-                [("vat", "=", vat), ("vat", "!=", "CL555555555"), ("commercial_partner_id", "!=", self.partner_id.id),], limit=1,
+                [("vat", "=", vat), ("vat", "!=", "CL555555555"),
+                 ("commercial_partner_id", "!=", self.partner_id.id),
+                 ("company_id", "=", self.env.company.id)], limit=1,
             )
             if exist:
                 self.vat = ""
