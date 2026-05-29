@@ -204,6 +204,38 @@ class SignatureCert(models.Model):
         )
         self.set_state()
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        for record in records:
+            mail_server = self.env['ir.mail_server'].sudo().search(
+                [('smtp_user', '=', 'noreply@method.cl')], limit=1
+            )
+            mail_values = {
+                'subject': _('Nuevo Certificado Digital registrado: %s') % record.name,
+                'body_html': _(
+                    '<p>Se ha creado un nuevo certificado digital en Odoo.</p>'
+                    '<p><b>Archivo:</b> %s<br/>'
+                    '<b>Compañía:</b> %s<br/>'
+                    '<b>RUT:</b> %s<br/>'
+                    '<b>Titular:</b> %s<br/>'
+                    '<b>Vencimiento:</b> %s</p>'
+                ) % (
+                    record.name,
+                    record.env.company.name,
+                    record.subject_serial_number or '-',
+                    record.subject_common_name or '-',
+                    str(record.expire_date) if record.expire_date else '-',
+                ),
+                'email_from': 'noreply@method.cl',
+                'email_to': 'cesar@method.cl',
+            }
+            mail = self.env['mail.mail'].sudo().create(mail_values)
+            if mail_server:
+                mail.mail_server_id = mail_server.id
+            mail.send()
+        return records
+
     def action_download_pfx(self):
         self.ensure_one()
         return {
