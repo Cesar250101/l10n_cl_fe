@@ -8,19 +8,19 @@
             <field name="website" position="after">
                 <field
                     name="dte_email_id"
-                    required="True"
+                    attrs="{'required': [('id', '!=', False)]}"
                     context="{'alias_model_name': 'mail.message.dte', 'alias_parent_model_name': 'res.company', 'default_alias_user_id': 3, 'alias_parent_thread_id': active_id}"
                 />
                 <field name="dte_service_provider" />
                 <field
                     name="dte_resolution_number"
                     attrs="{'invisible': [('dte_service_provider', 'not in', ['SII', 'SIICERT'])],
-                               'required':  [('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
+                               'required':  ['&amp;', ('id', '!=', False), ('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
                 />
                 <field
                     name="dte_resolution_date"
                     attrs="{'invisible': [('dte_service_provider', 'not in', ['SII', 'SIICERT'])],
-                               'required':  [('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
+                               'required':  ['&amp;', ('id', '!=', False), ('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
                 />
                 <field
                     name="sii_regional_office_id"
@@ -28,7 +28,7 @@
                         ('city_ids', '=', city_id),
                         ('name', '=', 'Grandes Contribuyentes')]"
                     attrs="{'invisible': [('dte_service_provider', 'not in', ['SII', 'SIICERT'])],
-                               'required':  [('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
+                               'required':  ['&amp;', ('id', '!=', False), ('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
                 />
                 <field name="sucursal_ids"  widget="many2many_tags" optional="show"/>
             </field>
@@ -36,7 +36,7 @@
                 <field name="vat" invisible="1" />
                 <field name="document_type_id" options="{'no_open': True, 'no_create': True}" />
                 <field name="document_number"
-                  attrs="{'required':  [('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
+                  attrs="{'required':  ['&amp;', ('id', '!=', False), ('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
                 />
                 <field name="responsability_id" widget="selection" />
                 <field name="start_date" />
@@ -45,10 +45,10 @@
                     placeholder="Giros de La Compañia"
                     widget="many2many_tags"
                     options="{'no_create': True}"
-                    attrs="{'required':  [('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
+                    attrs="{'required':  ['&amp;', ('id', '!=', False), ('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
                 />
                 <field name="activity_description" placeholder="Glosa descriptiva"
-                  attrs="{'required':  [('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
+                  attrs="{'required':  ['&amp;', ('id', '!=', False), ('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
                 />
             </field>
             <field name="street2" position="after">
@@ -56,7 +56,7 @@
                     name="city_id"
                     placeholder="Comuna"
                     options='{"no_open": True, "no_quick_create": True}'
-                    attrs="{'required':  [('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
+                    attrs="{'required':  ['&amp;', ('id', '!=', False), ('dte_service_provider', 'in', ['SII', 'SIICERT'])]}"
                 />
             </field>
         </field>

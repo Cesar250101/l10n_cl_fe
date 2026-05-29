@@ -81,14 +81,13 @@ stamp to be legally valid.""",
     )
     city_id = fields.Many2one(related="partner_id.city_id", relation="res.city", string="City", readonly=False,)
     document_number = fields.Char(
-        related="partner_id.document_number", string="Document Number", required=True, readonly=False,
+        related="partner_id.document_number", string="Document Number", readonly=False,
     )
     document_type_id = fields.Many2one(
         related="partner_id.document_type_id",
         relation="sii.document_type",
         string="Document type",
         default=lambda self: self._get_default_doc_type(),
-        required=True,
         readonly=False,
     )
     sucursal_ids = fields.One2many(
@@ -149,7 +148,7 @@ stamp to be legally valid.""",
                 return {"warning": {"title": _("Rut Erróneo"), "message": _("Rut Erróneo"),}}
             vat = "CL%s" % document_number
             exist = self.env["res.partner"].search(
-                [("vat", "=", vat), ("vat", "!=", "CL555555555"), ("commercial_partner_id", "!=", self.id),], limit=1,
+                [("vat", "=", vat), ("vat", "!=", "CL555555555"), ("commercial_partner_id", "!=", self.partner_id.id),], limit=1,
             )
             if exist:
                 self.vat = ""
@@ -168,6 +167,24 @@ stamp to be legally valid.""",
             self.document_number = ""
         else:
             self.vat = ""
+
+    def iap_enrich_auto(self):
+        # Before partner_autocomplete enriches the company's partner (which writes
+        # to res.partner and triggers _check_company), ensure the partner's company_id
+        # matches the new company. Otherwise the check fails because the partner was
+        # created with the active user's company_id, not the new company being created.
+        for company in self:
+            if company.partner_id and company.partner_id.company_id != company:
+                company.partner_id.sudo().write({'company_id': company.id})
+        return super().iap_enrich_auto()
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        companies = super().create(vals_list)
+        for company in companies:
+            if company.partner_id and company.partner_id.company_id != company:
+                company.partner_id.sudo().write({'company_id': company.id})
+        return companies
 
     @api.onchange("city_id")
     def _asign_city(self):

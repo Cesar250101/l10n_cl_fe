@@ -262,23 +262,16 @@ class ResPartner(models.Model):
                 return False
 
     def check_vat_cl(self, vat):
-        for i in self:
-            if i.document_number and i.document_type_id.name=='RUT':
-                body, vdig = "", ""
-                vat=vat.replace("-","")
-                if len(vat) != 9:
-                    return False
-                else:
-                    body, vdig = vat[:-1], vat[-1].upper()
-                try:
-                    vali = list(range(2, 8)) + [2, 3]
-                    operar = "0123456789K0"[11 - (sum([int(digit) * factor for digit, factor in zip(body[::-1], vali)]) % 11)]
-                    if operar == vdig:
-                        return True
-                    else:
-                        return False
-                except IndexError:
-                    return False
+        vat = vat.replace("-", "")
+        if len(vat) != 9:
+            return False
+        body, vdig = vat[:-1], vat[-1].upper()
+        try:
+            vali = list(range(2, 8)) + [2, 3]
+            operar = "0123456789K0"[11 - (sum([int(digit) * factor for digit, factor in zip(body[::-1], vali)]) % 11)]
+            return operar == vdig
+        except IndexError:
+            return False
 
     def _process_data(self, data=None):
         if data is None:
