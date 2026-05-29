@@ -13,6 +13,20 @@
                         class="oe_highlight"
                         attrs="{'invisible':[('state', 'not in', ['unverified', 'incomplete'])]}"
                     />
+                    <button
+                        string="Descargar Certificado"
+                        type="object"
+                        name="action_download_pfx"
+                        icon="fa-download"
+                        attrs="{'invisible':[('file_content', '=', False)]}"
+                    />
+                    <button
+                        string="Ver Clave"
+                        type="object"
+                        name="action_show_password"
+                        icon="fa-key"
+                        attrs="{'invisible':[('state', '=', 'unverified')]}"
+                    />
                     <field name="state" widget="statusbar" />
                 </header>
                 <sheet>

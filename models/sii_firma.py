@@ -204,6 +204,31 @@ class SignatureCert(models.Model):
         )
         self.set_state()
 
+    def action_download_pfx(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_url',
+            'url': '/web/content/sii.firma/%d/file_content/%s?download=true' % (self.id, self.name),
+            'target': 'self',
+        }
+
+    def action_show_password(self):
+        self.ensure_one()
+        # Re-read the password directly from DB bypassing field obfuscation
+        self.env.cr.execute("SELECT password FROM sii_firma WHERE id = %s", (self.id,))
+        row = self.env.cr.fetchone()
+        pwd = row[0] if row and row[0] else ''
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Clave del Certificado'),
+                'message': pwd or _('Sin clave registrada'),
+                'type': 'info',
+                'sticky': True,
+            },
+        }
+
     def parametros_firma(self):
         return {
             "priv_key": self.priv_key,
