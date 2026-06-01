@@ -270,7 +270,7 @@ class ResPartner(models.Model):
             vali = list(range(2, 8)) + [2, 3]
             operar = "0123456789K0"[11 - (sum([int(digit) * factor for digit, factor in zip(body[::-1], vali)]) % 11)]
             return operar == vdig
-        except IndexError:
+        except (IndexError, ValueError):
             return False
 
     def _process_data(self, data=None):
