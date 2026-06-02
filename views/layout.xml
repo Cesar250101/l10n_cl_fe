@@ -56,7 +56,9 @@
                             <span>Casa Matriz: </span><span t-field="company.street"/>, <span t-field="company.city_id.name"/>, <span t-field="company.city"/><br/>
                             <t t-if="o.company_id.sucursal_ids and o.move_type in ['out_invoice', 'out_refund']">
                               <t t-foreach="o.company_id.sucursal_ids" t-as="sucursal">
-                                <span>Sucursal: </span><span t-field="sucursal.partner_id.street"/>, <span t-field="sucursal.partner_id.city_id.name"/>, <span t-field="sucursal.partner_id.city"/><br />
+                                <t t-if="sucursal.partner_id.street">
+                                  <span>Sucursal: </span><span t-field="sucursal.partner_id.street"/>, <span t-field="sucursal.partner_id.city_id.name"/>, <span t-field="sucursal.partner_id.city"/><br />
+                                </t>
                               </t>
                             </t>
                             <!-- domicilios -->
