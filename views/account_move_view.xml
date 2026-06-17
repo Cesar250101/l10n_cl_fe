@@ -332,10 +332,7 @@
         <field name="inherit_id" ref="account_debit_note.view_move_form_debit"/>
         <field name="arch" type="xml">
             <button name="%(account_debit_note.action_view_account_move_debit)d" position="attributes">
-                <attribute name="attrs">{'invisible': ['|', '|', '|', ('debit_origin_id', '!=', False),
-                    ('move_type', 'not in', ('out_invoice', 'in_invoice', 'out_refund', 'in_refund')),
-                    ('state', '!=', 'posted'),
-                    ('sii_result', 'in', ['EnCola', 'Enviado', 'EnProceso', 'Aceptado', 'Proceso'])]}</attribute>
+                <attribute name="invisible">1</attribute>
             </button>
         </field>
     </record>
