@@ -2452,3 +2452,10 @@ class AccountMove(models.Model):
             elif self.currency_id.position == 'before':
                 res = '%s %s' % (self.currency_id.symbol, res)
         return res
+
+    def _compute_show_reset_to_draft_button(self):
+        super()._compute_show_reset_to_draft_button()
+        sii_blocked = {'EnCola', 'Enviado', 'EnProceso', 'Aceptado', 'Proceso'}
+        for move in self:
+            if move.show_reset_to_draft_button and move.sii_result in sii_blocked:
+                move.show_reset_to_draft_button = False
