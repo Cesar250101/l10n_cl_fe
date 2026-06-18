@@ -2457,5 +2457,5 @@ class AccountMove(models.Model):
         super()._compute_show_reset_to_draft_button()
         sii_blocked = {'EnCola', 'Enviado', 'EnProceso', 'Aceptado', 'Proceso'}
         for move in self:
-            if move.show_reset_to_draft_button and move.sii_result in sii_blocked:
+            if move.show_reset_to_draft_button and move.journal_id.type == 'sale' and move.sii_result in sii_blocked:
                 move.show_reset_to_draft_button = False

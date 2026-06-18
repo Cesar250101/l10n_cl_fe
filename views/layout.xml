@@ -414,10 +414,10 @@
                             </t>
                         </div>
                         <div class="col-3">
-                            <p t-if="o.narration">
-                                <strong>Comment:</strong>
+                            <p t-if="o.narration" style="font-size:7px; line-height:1.2;">
+                                <strong style="font-size:7px;">Términos y Condiciones:</strong>
                                 <br />
-                                <span t-field="o.narration" />
+                                <span t-field="o.narration" style="font-size:7px;" />
                             </p>
                         </div>
                         <t t-set="tax_totals" t-value="o.tax_totals"/>
