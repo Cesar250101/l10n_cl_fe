@@ -155,6 +155,15 @@
                 <field name="tax_ids" position="before">
                   <field name="ind_exe" optional="hide" />
                 </field>
+                <xpath expr="//field[@name='invoice_line_ids']" position="before">
+                    <div class="d-flex align-items-center gap-3 px-3 py-2 mb-2 rounded"
+                         style="background-color: #f0f4ff; border: 1px solid #c8d8f8;">
+                        <field name="use_codigos_adicionales" widget="boolean_toggle" nolabel="1"/>
+                        <label for="use_codigos_adicionales"
+                               class="mb-0 fw-semibold"
+                               style="color: #3d5a99; font-size: 13px; cursor: pointer;"/>
+                    </div>
+                </xpath>
                 <xpath expr="//group[hasclass('oe_invoice_lines_tab')]" position="after">
                     <field
                         name="global_descuentos_recargos"
@@ -183,6 +192,19 @@
                     <field name="is_gr_line" invisible="1"/>
                 </xpath>
                 <page id="other_tab" position="after">
+                  <page string="Códigos Adicionales"
+                        attrs="{'invisible': [('use_codigos_adicionales', '=', False)]}">
+                    <field name="invoice_cdg_item_ids" nolabel="1">
+                      <tree editable="bottom">
+                        <field name="product_id" string="Producto" readonly="1"/>
+                        <field name="line_id" string="Línea" optional="hide"
+                               domain="[('id', 'in', parent.invoice_line_ids)]"
+                               options="{'no_create': True}"/>
+                        <field name="tpo_codigo" string="Tipo Código"/>
+                        <field name="vlr_codigo" string="Valor Código"/>
+                      </tree>
+                    </field>
+                  </page>
                   <page id="referencias" string="Referencias" attrs="{'invisible': [('move_type', 'not in', ('out_invoice', 'out_refund', 'in_invoice', 'in_refund'))]}">
                     <group>
                       <field name="referencias" mode="tree">

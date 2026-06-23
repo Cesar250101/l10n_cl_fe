@@ -190,6 +190,15 @@ class AccountMove(models.Model):
     referencias = fields.One2many(
         "account.move.referencias", "move_id", readonly=True, states={"draft": [("readonly", False)]},
     )
+    use_codigos_adicionales = fields.Boolean(
+        string='Definir Códigos Adicionales por Línea',
+        default=False,
+    )
+    invoice_cdg_item_ids = fields.One2many(
+        'account.move.line.cdg.item',
+        'move_id',
+        string='Códigos Adicionales',
+    )
     forma_pago = fields.Selection(
         [("1", "Contado"), ("2", "Crédito"), ("3", "Gratuito")],
         string="Forma de pago",
@@ -282,6 +291,82 @@ class AccountMove(models.Model):
         'move_id',
         string='Comisiones'
     )
+
+    @api.onchange('use_codigos_adicionales')
+    def _onchange_use_codigos_adicionales(self):
+        if not self.use_codigos_adicionales:
+            return
+        lines = self.invoice_line_ids.filtered(lambda l: l.display_type == 'product')
+        if not lines:
+            self.use_codigos_adicionales = False
+            return {
+                'warning': {
+                    'title': _('Sin líneas de detalle'),
+                    'message': _(
+                        'Debe agregar líneas de detalle (productos) antes de '
+                        'definir códigos adicionales por línea.'
+                    ),
+                }
+            }
+        # Copia inmediata para que el usuario vea las líneas al activar el
+        # toggle. En una factura nueva los line_id apuntan a líneas todavía
+        # sin guardar; si el cliente web no logra enlazarlos, create()/write()
+        # los reconstruye del lado servidor (ver _strip_unlinked_cdg_items y
+        # _sync_codigos_adicionales).
+        existing_line_ids = self.invoice_cdg_item_ids.line_id.ids
+        new_lines = [
+            (0, 0, {'line_id': line.id})
+            for line in lines
+            if line.id not in existing_line_ids
+        ]
+        if new_lines:
+            self.invoice_cdg_item_ids = new_lines
+
+    @api.model
+    def _strip_unlinked_cdg_items(self, vals):
+        """Quita los comandos de creación de códigos adicionales sin line_id.
+
+        En una factura nueva el cliente web no siempre logra enlazar el
+        line_id (apunta a una línea aún sin guardar) y lo envía vacío, lo que
+        violaría la restricción NOT NULL. Esos los descartamos:
+        _sync_codigos_adicionales los vuelve a crear correctamente una vez
+        que las líneas tienen id real.
+        """
+        cmds = vals.get('invoice_cdg_item_ids')
+        if not cmds:
+            return vals
+        cleaned = [
+            cmd for cmd in cmds
+            if not (isinstance(cmd, (list, tuple)) and cmd[0] == 0
+                    and not (cmd[2] or {}).get('line_id'))
+        ]
+        if len(cleaned) != len(cmds):
+            vals = dict(vals, invoice_cdg_item_ids=cleaned)
+        return vals
+
+    def _sync_codigos_adicionales(self):
+        for move in self:
+            if not move.use_codigos_adicionales:
+                continue
+            existing_line_ids = move.invoice_cdg_item_ids.line_id.ids
+            missing_lines = move.invoice_line_ids.filtered(
+                lambda l: l.display_type == 'product' and l.id not in existing_line_ids
+            )
+            for line in missing_lines:
+                self.env['account.move.line.cdg.item'].create({'line_id': line.id})
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        vals_list = [self._strip_unlinked_cdg_items(vals) for vals in vals_list]
+        moves = super().create(vals_list)
+        moves._sync_codigos_adicionales()
+        return moves
+
+    def write(self, vals):
+        vals = self._strip_unlinked_cdg_items(vals)
+        res = super().write(vals)
+        self._sync_codigos_adicionales()
+        return res
 
     @api.depends(
         'line_ids.matched_debit_ids.debit_move_id.move_id.payment_id.is_matched',
@@ -1804,18 +1889,30 @@ class AccountMove(models.Model):
             product = line.product_id.default_code != "NO_PRODUCT"
             lines = {}
             lines["NroLinDet"] = line.sequence
-            if product and line.product_id.default_code or line.product_id.barcode:
-                lines["CdgItem"] = []
-                if line.product_id.default_code:
-                    lines["CdgItem"].append({
-                        "TpoCodigo": "INT1",
-                        "VlrCodigo": line.product_id.default_code
+            cdg_items = []
+            if product and line.product_id.default_code:
+                cdg_items.append({
+                    "TpoCodigo": "INT1",
+                    "VlrCodigo": line.product_id.default_code
+                })
+            if line.product_id.barcode:
+                cdg_items.append({
+                    "TpoCodigo": "EAN13",
+                    "VlrCodigo": line.product_id.barcode
+                })
+            if self.use_codigos_adicionales:
+                for cdg in line.cdg_item_ids:
+                    if not cdg.vlr_codigo:
+                        raise UserError(_(
+                            'Falta el Valor Código en la línea de "%s" '
+                            '(pestaña Códigos Adicionales).'
+                        ) % line.product_id.display_name)
+                    cdg_items.append({
+                        "TpoCodigo": cdg.tpo_codigo,
+                        "VlrCodigo": cdg.vlr_codigo,
                     })
-                if line.product_id.barcode:
-                    lines["CdgItem"].append({
-                        "TpoCodigo": "EAN13",
-                        "VlrCodigo": line.product_id.barcode
-                    })
+            if cdg_items:
+                lines["CdgItem"] = cdg_items
             details = line.get_tax_detail()
             lines["Impuesto"] = details['impuestos']
             taxInclude = details['taxInclude']

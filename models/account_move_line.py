@@ -39,6 +39,11 @@ class AccountInvoiceLine(models.Model):
         'sii.document_class',
         string="Tipo de documento Liquidación"
     )
+    cdg_item_ids = fields.One2many(
+        'account.move.line.cdg.item',
+        'line_id',
+        string='Códigos Adicionales',
+    )
 
     @api.depends('quantity', 'discount', 'price_unit', 'tax_ids', 'currency_id')
     def _compute_totals(self):
@@ -244,3 +249,41 @@ class AccountInvoiceLine(models.Model):
                     self.move_id.move_type)
             details['price_unit'] = taxes_res.get('price_subtotal', 0.0)
         return details
+
+
+class AccountMoveLineCdgItem(models.Model):
+    _name = 'account.move.line.cdg.item'
+    _description = 'Código adicional de ítem en línea de factura'
+
+    line_id = fields.Many2one(
+        'account.move.line',
+        string='Línea',
+        ondelete='cascade',
+        index=True,
+        required=True,
+    )
+    move_id = fields.Many2one(
+        related='line_id.move_id',
+        string='Documento',
+        store=True,
+        index=True,
+    )
+    product_id = fields.Many2one(
+        related='line_id.product_id',
+        string='Producto',
+        store=True,
+    )
+    tpo_codigo = fields.Selection(
+        [
+            ('INT1', 'INT1 - Código interno'),
+            ('QBLI', 'QBLI - Código de barras'),
+            ('EAN13', 'EAN13'),
+            ('DUN14', 'DUN14'),
+            ('EAN8', 'EAN8'),
+            ('STKPICKING', 'STKPICKING - Picking'),
+        ],
+        string='Tipo Código',
+        required=True,
+        default='QBLI',
+    )
+    vlr_codigo = fields.Char(string='Valor Código')

@@ -330,6 +330,7 @@
                                     <th t-if="display_liquidacion">Tipo Documento Liquidación</th>
                                     <th>Cantidad</th>
                                     <th>Producto</th>
+                                    <th t-if="o.use_codigos_adicionales">Código Adicional</th>
                                     <th>Descripción</th>
                                     <th class="text-left">Precio Unitario</th>
                                     <th
@@ -358,6 +359,12 @@
                                         </td>
                                         <td style="max-height:8px; line-height:8px !important;">
                                             <span t-field="l.product_id.default_code" />
+                                        </td>
+                                        <td t-if="o.use_codigos_adicionales" style="max-height:8px; line-height:8px !important;">
+                                            <t t-foreach="l.cdg_item_ids" t-as="cdg">
+                                                <span t-field="cdg.vlr_codigo" />
+                                                <br t-if="not cdg_last" />
+                                            </t>
                                         </td>
                                         <td style="max-height:8px; line-height:8px !important; text-align: justify;">
                                             <span t-field="l.name" />
