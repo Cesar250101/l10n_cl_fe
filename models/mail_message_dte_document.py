@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from odoo import api, fields, models
+from odoo import api, fields, models, registry
 from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
 from odoo.tools.translate import _
@@ -68,6 +68,29 @@ class ProcessMailsDocument(models.Model):
     journal_id = fields.Many2one('account.journal', string="Journal Destino")
 
     _order = "create_date DESC"
+
+    @api.model
+    def fetch_dte_emails(self, *args):
+        """Descarga manualmente los correos desde los servidores de correo entrante
+        (mismo efecto que el botón "Buscar Ahora" del fetchmail) y procesa los XML
+        adjuntos para generar los Pre Documentos Recibidos.
+
+        Se ejecuta en un cursor/transacción independiente porque ``fetch_mail`` hace
+        ``commit()`` por cada correo; aislarlo evita que un fallo en un XML aborte la
+        transacción del request web (InFailedSqlTransaction)."""
+        with registry(self.env.cr.dbname).cursor() as new_cr:
+            new_env = api.Environment(new_cr, self.env.uid, self.env.context)
+            try:
+                new_env["fetchmail.server"]._fetch_mails()
+                new_env["mail.message"]._cron_process_mess()
+                new_cr.commit()
+            except Exception:
+                new_cr.rollback()
+                _logger.exception("Error al buscar/procesar correos DTE manualmente")
+                raise UserError(
+                    _("Ocurrió un error al buscar los correos. Revise el log del servidor.")
+                )
+        return True
 
     @api.onchange('purchase_to_done')
     def auto_map_po_lines(self):

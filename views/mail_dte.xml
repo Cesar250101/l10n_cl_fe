@@ -34,7 +34,7 @@
         <field name="name">dte.document.tree</field>
         <field name="model">mail.message.dte.document</field>
         <field name="arch" type="xml">
-            <tree string="Documentos" decoration-info="state == 'draft'" decoration-muted="state == 'rejected'">
+            <tree string="Documentos" js_class="dte_document_list" decoration-info="state == 'draft'" decoration-muted="state == 'rejected'">
                 <field name="date" optional="show"/>
                 <field name="document_class_id" optional="show"/>
                 <field name="number" optional="show"/>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="l10n_cl_fe.DteDocumentListView.Buttons" t-inherit="web.ListView.Buttons" t-inherit-mode="primary" owl="1">
+        <xpath expr="//t[@t-if='props.showButtons']" position="inside">
+            <button type="button"
+                    class="btn btn-secondary o_dte_fetch_emails"
+                    t-on-click="onFetchDteEmails">
+                <i class="fa fa-envelope-o me-1"/>Buscar XML Correo
+            </button>
+        </xpath>
+    </t>
+</templates>

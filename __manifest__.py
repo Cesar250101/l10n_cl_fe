@@ -116,7 +116,9 @@ Facturación Electrónica para Chile. Mayor información en https://globalrespon
             "l10n_cl_fe/static/src/js/notify_manager.js",
             "l10n_cl_fe/static/src/js/report/action_manager_report.js",
             "l10n_cl_fe/static/src/js/totals_widget.js",
-            "l10n_cl_fe/static/src/js/firma_alert_service.js"
+            "l10n_cl_fe/static/src/js/firma_alert_service.js",
+            "l10n_cl_fe/static/src/js/dte_document_list.js",
+            "l10n_cl_fe/static/src/xml/dte_document_list_buttons.xml",
         ],
         'web.assets_qweb': [
             'l10n_cl_fe/static/src/xml/**/*',

@@ -1,36 +1,11 @@
 import logging
-import threading
-import time
 from base64 import b64decode
 
 from lxml import etree
 
-from odoo import api, models, registry, SUPERUSER_ID
+from odoo import api, models
 
 _logger = logging.getLogger(__name__)
-
-# Control para evitar hilos duplicados por base de datos en el mismo proceso
-STARTED_THREADS = set()
-
-
-def run_process_mess_timer(db_name):
-    """Función que corre en un hilo independiente para procesar mensajes cada hora."""
-    _logger.info("Iniciando timer de Python para procesamiento de mensajes en DB: %s", db_name)
-    while True:
-        try:
-            # Esperar 1 hora
-            time.sleep(3600)
-
-            _logger.info("Ejecutando proceso programado de mensajes (timer Python) para DB: %s", db_name)
-            with registry(db_name).cursor() as cr:
-                env = api.Environment(cr, SUPERUSER_ID, {})
-                # Ejecutamos el método que busca y procesa mensajes
-                env["mail.message"]._cron_process_mess()
-                cr.commit()
-        except Exception:
-            _logger.exception("Error en el timer de Python para procesamiento de mensajes (DB: %s)", db_name)
-            # Esperar un minuto antes de reintentar en caso de error crítico
-            time.sleep(60)
 
 
 status_dte = [
@@ -223,20 +198,6 @@ class ProcessMails(models.Model):
             except Exception:
                 _logger.warning("Error en cron procesar email con XML para el mensaje ID %s", mail.id)
                 continue
-
-    def _register_hook(self):
-        """Registrar el timer al cargar el módulo si no está iniciado."""
-        super(ProcessMails, self)._register_hook()
-        db_name = self.env.cr.dbname
-        if db_name and db_name not in STARTED_THREADS:
-            # No iniciamos el timer si estamos en modo testing o shell
-            import sys
-            if "odoo-bin" in sys.argv[0] and ("test" in sys.argv or "shell" in sys.argv):
-                return
-            
-            thread = threading.Thread(target=run_process_mess_timer, args=(db_name,), daemon=True)
-            thread.start()
-            STARTED_THREADS.add(db_name)
 
     @api.model_create_multi
     def create(self, values_list):

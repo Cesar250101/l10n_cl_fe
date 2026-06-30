@@ -4,6 +4,17 @@
 
 
 
+        <record id="ir_cron_fetch_dte_mail" model="ir.cron">
+            <field name="name">Cron Descarga Correos DTE Proveedores</field>
+            <field name="interval_number">5</field>
+            <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="model_id" ref="mail.model_fetchmail_server" />
+            <field name="state">code</field>
+            <field name="code">model._fetch_mails()
+env['mail.message']._cron_process_mess()</field>
+            <field name="active" eval="True" />
+        </record>
         <record id="ir_cron_sii_request" model="ir.cron">
             <field name="name">Cron de envío y consulta estado documento en el sii</field>
             <field name="interval_number">1</field>
