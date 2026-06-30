@@ -157,7 +157,8 @@
                 </field>
                 <xpath expr="//field[@name='invoice_line_ids']" position="before">
                     <div class="d-flex align-items-center gap-3 px-3 py-2 mb-2 rounded"
-                         style="background-color: #f0f4ff; border: 1px solid #c8d8f8;">
+                         style="background-color: #f0f4ff; border: 1px solid #c8d8f8;"
+                         attrs="{'invisible': [('use_documents', '=', False)]}">
                         <field name="use_codigos_adicionales" widget="boolean_toggle" nolabel="1"/>
                         <label for="use_codigos_adicionales"
                                class="mb-0 fw-semibold"

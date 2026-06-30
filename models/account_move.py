@@ -873,7 +873,7 @@ class AccountMove(models.Model):
     @api.onchange('journal_id')
     def _onchange_journal_id(self):
         super(AccountMove, self)._onchange_journal_id()
-        self.use_documents = bool(self.journal_id.document_class_ids)
+        self.use_documents = self.journal_id.type == 'sale' and bool(self.journal_id.document_class_ids)
         if self.is_invoice():
             self.get_dc_ids()
 
