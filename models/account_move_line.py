@@ -76,6 +76,25 @@ class AccountInvoiceLine(models.Model):
             else:
                 line.price_total = line.price_subtotal = subtotal
 
+    def net_price_unit(self):
+        """Precio unitario neto (sin IVA), independiente de si el impuesto
+        está incluido o no en el precio. Se usa en el reporte para que la
+        columna 'Precio Unitario' muestre siempre el valor neto."""
+        self.ensure_one()
+        if not self.tax_ids:
+            return self.price_unit
+        taxes_res = self.tax_ids.compute_all(
+            self.price_unit,
+            quantity=1.0,
+            currency=self.currency_id,
+            product=self.product_id,
+            partner=self.partner_id,
+            is_refund=self.is_refund,
+            discount=0.0,
+            uom_id=self.product_uom_id,
+        )
+        return taxes_res['total_excluded']
+
     @api.depends('tax_ids', 'currency_id', 'partner_id', 'analytic_distribution', 'balance', 'partner_id', 'move_id.partner_id', 'price_unit')
     def _compute_all_tax(self):
         for line in self:

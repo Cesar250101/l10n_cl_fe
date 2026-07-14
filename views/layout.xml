@@ -424,8 +424,6 @@
                     <!-- Is there a discount on at least one line? -->
                     <t t-set="display_discount" t-value="any([l.discount for l in o.invoice_line_ids])" />
                     <t t-set="display_liquidacion" t-value="any([l.tpo_doc_liq for l in o.invoice_line_ids])" />
-                    <t t-set="price_included" t-value="o.is_price_included()" />
-                    <div t-if="price_included" class="dte-section-label">Valores IVA incluído</div>
                     <div style="padding-top:5px;">
                         <table class="table table-condensed dte-items" style="padding-top:5px;">
                             <thead>
@@ -474,20 +472,14 @@
                                             <span t-field="l.name" />
                                         </td>
                                         <td style="max-height:8px;width:90px; line-height:8px !important; text-align:right;">
-                                            <span t-esc="o.currency_format(l.price_unit, 'Product Price')"/>
+                                            <span t-esc="o.currency_format(l.net_price_unit(), 'Product Price')"/>
                                         </td>
                                         <td t-if="display_discount" class="text-right" style="max-height:8px;line-height:8px !important;">
                                             <span t-field="l.discount" />
                                         </td>
                                         <td style="max-height:8px; line-height:8px !important; text-align:right;">
                                             <span
-                                                t-if="not price_included"
                                                 t-field="l.price_subtotal"
-                                                t-field-options="{'widget': 'monetary', 'display_currency': o.currency_id}"
-                                            />
-                                            <span
-                                                t-if="price_included"
-                                                t-field="l.price_total"
                                                 t-field-options="{'widget': 'monetary', 'display_currency': o.currency_id}"
                                             />
                                         </td>
@@ -538,10 +530,10 @@
                 </style>
                 <div class="clearfix">
                     <div class="row" style="text-align: center;">
-                        <div class="col-8" style="text-align:left;">
+                        <div class="col-4" style="text-align:left;">
                             <t t-if="o.sii_barcode_img">
                                 <div class="col-xs-12" style="text-align:left;">
-                                    <img style="height: 100px;width:300px;"
+                                    <img style="height: 100px;width:300px;max-width:100%;"
                                         t-if="o.sii_barcode_img"
                                         t-att-src="image_data_uri(o.sii_barcode_img)"
                                     />
@@ -560,8 +552,15 @@
                                 </div>
                             </t>
                         </div>
+                        <div class="col-3">
+                            <p t-if="o.narration" style="font-size:7px; line-height:1.2;">
+                                <strong style="font-size:7px;">Términos y Condiciones:</strong>
+                                <br />
+                                <span t-field="o.narration" style="font-size:7px;" />
+                            </p>
+                        </div>
                         <t t-set="tax_totals" t-value="o.tax_totals"/>
-                        <div id="total" t-attf-class="#{'col-4' if report_move_type != 'html' else 'col-md-5'}">
+                        <div id="total" t-attf-class="#{'col-5' if report_move_type != 'html' else 'col-md-5'}">
                             <table class="table table-sm">
                                 <t t-if="o.global_descuentos_recargos">
                                     <tr
