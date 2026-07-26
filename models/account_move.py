@@ -291,6 +291,65 @@ class AccountMove(models.Model):
         'move_id',
         string='Comisiones'
     )
+    repair_order_count = fields.Integer(
+        string='Reparaciones',
+        compute='_compute_repair_order_count',
+    )
+
+    # ─────────────────────────────────────────────────────────────
+    # Navegación a las órdenes de reparación (RMA) que originaron
+    # la factura. El módulo 'repair' no es dependencia de l10n_cl_fe,
+    # así que se consulta el modelo solo si está instalado; si no lo
+    # está el contador queda en 0 y el botón no se muestra.
+    # ─────────────────────────────────────────────────────────────
+
+    def _compute_repair_order_count(self):
+        counts = {}
+        Repair = self._get_repair_order_model()
+        if Repair is not None and self.ids:
+            data = Repair.read_group(
+                [('invoice_id', 'in', self.ids)], ['invoice_id'], ['invoice_id']
+            )
+            counts = {d['invoice_id'][0]: d['invoice_id_count'] for d in data}
+        for move in self:
+            move.repair_order_count = counts.get(move.id, 0)
+
+    def _get_repair_order_model(self):
+        """repair.order si el módulo está instalado y el usuario puede leerlo.
+
+        El acceso a repair.order exige stock.group_stock_user; sin él el
+        contador queda en 0 y el botón no aparece, en vez de fallar al pulsarlo.
+        No se usa groups= en la vista porque 'stock' tampoco es dependencia.
+        """
+        if 'repair.order' not in self.env:
+            return None
+        Repair = self.env['repair.order']
+        if not Repair.check_access_rights('read', raise_exception=False):
+            return None
+        return Repair
+
+    def action_view_repair_orders(self):
+        self.ensure_one()
+        Repair = self._get_repair_order_model()
+        if Repair is None:
+            return False
+        repairs = Repair.search([('invoice_id', '=', self.id)])
+        action = {
+            'type': 'ir.actions.act_window',
+            'res_model': 'repair.order',
+        }
+        if len(repairs) == 1:
+            action.update({
+                'view_mode': 'form',
+                'res_id': repairs.id,
+            })
+        else:
+            action.update({
+                'name': _("Reparaciones de %s") % (self.name or ''),
+                'domain': [('id', 'in', repairs.ids)],
+                'view_mode': 'tree,form',
+            })
+        return action
 
     @api.onchange('use_codigos_adicionales')
     def _onchange_use_codigos_adicionales(self):

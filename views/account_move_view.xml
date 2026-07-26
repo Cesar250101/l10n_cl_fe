@@ -70,6 +70,20 @@
                     <field name="discount_amount" invisible="1" />
                 </field>
 
+                <!-- Navegación a las órdenes de reparación (RMA) que originaron
+                     la factura. El contador queda en 0 si el módulo 'repair' no
+                     está instalado o el usuario no tiene acceso, y el botón se
+                     oculta. -->
+                <xpath expr="//div[@name='button_box']" position="inside">
+                    <button name="action_view_repair_orders"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-wrench"
+                            attrs="{'invisible': [('repair_order_count', '=', 0)]}">
+                        <field name="repair_order_count" widget="statinfo" string="Reparaciones" />
+                    </button>
+                </xpath>
+
             <xpath expr="//field[@name='partner_id']" position="attributes">
                 <attribute name="domain">[('parent_id', '=', False)]</attribute>
             </xpath>
