@@ -40,6 +40,10 @@
                     <field name="restore_mode" attrs="{'invisible': [('use_documents', '=', False)]}" />
                 </field>
 
+                <xpath expr="//form/sheet/group/group[2]" position="inside">
+                    <field name="use_variant_description" attrs="{'invisible': [('type', '!=', 'sale')]}" />
+                </xpath>
+
                 <notebook position="inside">
                     <page
                         string="Documents"

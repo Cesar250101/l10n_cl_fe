@@ -33,6 +33,21 @@ class AccountJournal(models.Model):
     default_comision_account_id = fields.Many2one('account.account', string='Default Comision Account',
         company_dependent=True, domain="[('deprecated', '=', False), ('company_id', '=', current_company_id)]"
     )
+    use_variant_description = fields.Boolean(
+        string="Usar descripción de variante",
+        help="Reemplaza la descripción de las líneas de facturas de cliente por el nombre del producto y sus atributos de variante.",
+    )
+
+    def write(self, vals):
+        res = super().write(vals)
+        if vals.get('use_variant_description'):
+            draft_customer_moves = self.env['account.move'].search([
+                ('journal_id', 'in', self.ids),
+                ('state', '=', 'draft'),
+                ('move_type', 'in', ('out_invoice', 'out_refund')),
+            ])
+            draft_customer_moves._sync_variant_descriptions()
+        return res
 
     @api.onchange("journal_document_class_ids")
     def set_documents(self):

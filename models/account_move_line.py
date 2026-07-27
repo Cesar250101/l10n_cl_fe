@@ -45,6 +45,68 @@ class AccountInvoiceLine(models.Model):
         string='Códigos Adicionales',
     )
 
+    def _uses_variant_description(self):
+        self.ensure_one()
+        return bool(
+            self.product_id
+            and self.display_type == 'product'
+            and self.move_id.state == 'draft'
+            and self.move_id.move_type in ('out_invoice', 'out_refund')
+            and self.move_id.journal_id.use_variant_description
+        )
+
+    def _get_variant_description(self):
+        """Return the journal-specific description for a product variant."""
+        self.ensure_one()
+        if not self.product_id:
+            return False
+
+        lang = self.partner_id.lang or self.env.lang
+        product = self.product_id.with_context(lang=lang)
+        attribute_values = product.product_template_attribute_value_ids.sorted(
+            key=lambda value: (
+                value.attribute_id.sequence,
+                value.attribute_id.id,
+                value.product_attribute_value_id.sequence,
+                value.id,
+            )
+        )
+        attributes = [
+            '%s: %s' % (value.attribute_id.name, value.product_attribute_value_id.name)
+            for value in attribute_values
+        ]
+        return ' '.join(filter(None, [product.product_tmpl_id.name, ', '.join(attributes)]))
+
+    def _sync_variant_descriptions(self):
+        for line in self:
+            if line._uses_variant_description():
+                description = line._get_variant_description()
+                if description and line.name != description:
+                    line.name = description
+
+    @api.depends(
+        'product_id',
+        'move_id.payment_reference',
+        'move_id.journal_id.use_variant_description',
+        'move_id.move_type',
+        'move_id.state',
+    )
+    def _compute_name(self):
+        super()._compute_name()
+        self._sync_variant_descriptions()
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        lines = super().create(vals_list)
+        lines._sync_variant_descriptions()
+        return lines
+
+    def write(self, vals):
+        res = super().write(vals)
+        if {'display_type', 'move_id', 'product_id'} & set(vals):
+            self._sync_variant_descriptions()
+        return res
+
     @api.depends('quantity', 'discount', 'price_unit', 'tax_ids', 'currency_id')
     def _compute_totals(self):
         for line in self:

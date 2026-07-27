@@ -414,17 +414,28 @@ class AccountMove(models.Model):
             for line in missing_lines:
                 self.env['account.move.line.cdg.item'].create({'line_id': line.id})
 
+    def _sync_variant_descriptions(self):
+        draft_customer_moves = self.filtered(
+            lambda move: move.state == 'draft'
+            and move.move_type in ('out_invoice', 'out_refund')
+            and move.journal_id.use_variant_description
+        )
+        draft_customer_moves.invoice_line_ids._sync_variant_descriptions()
+
     @api.model_create_multi
     def create(self, vals_list):
         vals_list = [self._strip_unlinked_cdg_items(vals) for vals in vals_list]
         moves = super().create(vals_list)
         moves._sync_codigos_adicionales()
+        moves._sync_variant_descriptions()
         return moves
 
     def write(self, vals):
         vals = self._strip_unlinked_cdg_items(vals)
         res = super().write(vals)
         self._sync_codigos_adicionales()
+        if {'invoice_line_ids', 'journal_id', 'state'} & set(vals):
+            self._sync_variant_descriptions()
         return res
 
     @api.depends(
@@ -1926,6 +1937,11 @@ class AccountMove(models.Model):
             text = text.replace(old, new)
         return text
 
+    def _get_dte_line_description(self, line):
+        if line._uses_variant_description():
+            return line._get_variant_description()
+        return line.name
+
     def _invoice_lines(self):
         invoice_lines = []
         product = True
@@ -1997,8 +2013,9 @@ class AccountMove(models.Model):
             if line.product_id:
                 NmbItem=self._special_characters_replace(line.product_id.with_context(display_default_code=False).name)
                 lines["NmbItem"] = NmbItem
-                if line.product_id.name != line.name:
-                    lines["DscItem"] = self._special_characters_replace(line.name)
+                description = self._get_dte_line_description(line)
+                if line.product_id.name != description:
+                    lines["DscItem"] = self._special_characters_replace(description)
 
             else:
                 lines['NmbItem'] = line.name
