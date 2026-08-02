@@ -1925,6 +1925,8 @@ class AccountMove(models.Model):
         return False
     
     def _special_characters_replace(self, text):
+        if not text:
+            return text
         replacements = {
             '&': 'Y',
             '<': '',
@@ -2014,7 +2016,7 @@ class AccountMove(models.Model):
                 NmbItem=self._special_characters_replace(line.product_id.with_context(display_default_code=False).name)
                 lines["NmbItem"] = NmbItem
                 description = self._get_dte_line_description(line)
-                if line.product_id.name != description:
+                if description and line.product_id.name != description:
                     lines["DscItem"] = self._special_characters_replace(description)
 
             else:
