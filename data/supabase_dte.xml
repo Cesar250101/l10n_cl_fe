@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <data noupdate="0">
+        <function model="fetchmail.server" name="_configure_supabase_dte_source"/>
+    </data>
+</odoo>

@@ -9,10 +9,9 @@
             <field name="interval_number">5</field>
             <field name="interval_type">minutes</field>
             <field name="numbercall">-1</field>
-            <field name="model_id" ref="mail.model_fetchmail_server" />
+            <field name="model_id" ref="model_mail_message_dte_document" />
             <field name="state">code</field>
-            <field name="code">model._fetch_mails()
-env['mail.message']._cron_process_mess()</field>
+            <field name="code">model._cron_fetch_dte_supabase()</field>
             <field name="active" eval="True" />
         </record>
         <record id="ir_cron_sii_request" model="ir.cron">

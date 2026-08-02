@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="fetchmail_server_view_form_supabase_dte" model="ir.ui.view">
+        <field name="name">fetchmail.server.form.supabase.dte</field>
+        <field name="model">fetchmail.server</field>
+        <field name="inherit_id" ref="mail.view_email_server_form"/>
+        <field name="arch" type="xml">
+            <field name="object_id" position="after">
+                <field name="use_supabase_dte_source"/>
+            </field>
+        </field>
+    </record>
+</odoo>

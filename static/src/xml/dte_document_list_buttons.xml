@@ -5,7 +5,7 @@
             <button type="button"
                     class="btn btn-secondary o_dte_fetch_emails"
                     t-on-click="onFetchDteEmails">
-                <i class="fa fa-envelope-o me-1"/>Buscar XML Correo
+                <i class="fa fa-database me-1"/>Buscar XML Supabase
             </button>
         </xpath>
     </t>

@@ -1,11 +1,15 @@
 # -*- coding: utf-8 -*-
+import base64
+import logging
+import re
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from odoo import api, fields, models, registry
 from odoo.exceptions import UserError
 from odoo.tools.safe_eval import safe_eval
 from odoo.tools.translate import _
-import logging
+
+from .supabase_dte import SupabaseDteClient, SupabaseDteError
 
 
 _logger = logging.getLogger(__name__)
@@ -70,27 +74,139 @@ class ProcessMailsDocument(models.Model):
     _order = "create_date DESC"
 
     @api.model
-    def fetch_dte_emails(self, *args):
-        """Descarga manualmente los correos desde los servidores de correo entrante
-        (mismo efecto que el botón "Buscar Ahora" del fetchmail) y procesa los XML
-        adjuntos para generar los Pre Documentos Recibidos.
-
-        Se ejecuta en un cursor/transacción independiente porque ``fetch_mail`` hace
-        ``commit()`` por cada correo; aislarlo evita que un fallo en un XML aborte la
-        transacción del request web (InFailedSqlTransaction)."""
+    def fetch_dte_supabase(self, *args):
+        """Importa un lote de DTE almacenados por el servicio IMAP en Supabase."""
         with registry(self.env.cr.dbname).cursor() as new_cr:
             new_env = api.Environment(new_cr, self.env.uid, self.env.context)
             try:
-                new_env["fetchmail.server"]._fetch_mails()
-                new_env["mail.message"]._cron_process_mess()
-                new_cr.commit()
+                result = new_env["mail.message.dte.document"]._sync_dte_supabase()
             except Exception:
                 new_cr.rollback()
-                _logger.exception("Error al buscar/procesar correos DTE manualmente")
+                _logger.exception("Error al importar DTE desde Supabase")
                 raise UserError(
-                    _("Ocurrió un error al buscar los correos. Revise el log del servidor.")
+                    _("Ocurrió un error al buscar DTE en Supabase. Revise la configuración y el log del servidor.")
                 )
-        return True
+        return result
+
+    @api.model
+    def fetch_dte_emails(self, *args):
+        """Compatibilidad con llamadas previas del botón de pre-documentos."""
+        return self.fetch_dte_supabase(*args)
+
+    @staticmethod
+    def _supabase_normalize_rut(value):
+        return re.sub(r"[^0-9K]", "", (value or "").upper())
+
+    @api.model
+    def _supabase_receiver_ruts(self):
+        ruts = set()
+        for company in self.env["res.company"].sudo().search([]):
+            values = [company.vat, company.partner_id.vat]
+            try:
+                values.append(company.partner_id.rut())
+            except Exception:
+                _logger.debug("No fue posible obtener RUT de la compañía %s", company.id)
+            for value in values:
+                rut = self._supabase_normalize_rut(value)
+                if rut:
+                    ruts.add(rut)
+        return sorted(ruts)
+
+    @api.model
+    def _import_supabase_dte(self, source):
+        document_id = str(source["id"])
+        xml_text = source.get("xml_text")
+        encoding = source.get("xml_encoding") or "ISO-8859-1"
+        if not xml_text:
+            raise UserError(_("El DTE %s no contiene XML de texto.") % document_id)
+        try:
+            xml_file = base64.b64encode(xml_text.encode(encoding)).decode("ascii")
+        except (LookupError, UnicodeEncodeError) as error:
+            raise UserError(_("No fue posible codificar el DTE %s.") % document_id) from error
+
+        filename = "supabase-%s.xml" % document_id
+        dte_model = self.env["mail.message.dte"].sudo()
+        dte = dte_model.search([("name", "=", filename)], limit=1)
+        if not dte:
+            dte = dte_model.create({"name": filename})
+
+        wizard = self.env["sii.dte.upload_xml.wizard"].with_user(
+            self.env.ref("base.user_admin").id
+        ).create(
+            {
+                "xml_file": xml_file,
+                "filename": filename,
+                "pre_process": True,
+                "dte_id": dte.id,
+            }
+        )
+        document_ids = wizard.confirm(ret=True)
+        if not document_ids:
+            raise UserError(_("El DTE %s no generó un Pre Documento Recibido.") % document_id)
+        return document_ids[0]
+
+    @api.model
+    def _sync_dte_supabase(self):
+        client = SupabaseDteClient.from_env(self.env)
+        receiver_ruts = self._supabase_receiver_ruts()
+        if not receiver_ruts:
+            raise UserError(_("No hay compañías con RUT configurado para importar DTE desde Supabase."))
+
+        sources = client.claim(receiver_ruts)
+        stats = {"claimed": len(sources), "imported": 0, "errors": 0}
+        for source in sources:
+            document_id = source["id"]
+            claim_token = source["claim_token"]
+            try:
+                odoo_document_id = self._import_supabase_dte(source)
+                self.env.cr.commit()
+            except Exception as error:
+                self.env.cr.rollback()
+                stats["errors"] += 1
+                _logger.exception("Error al importar DTE Supabase %s", document_id)
+                try:
+                    client.fail(document_id, claim_token, str(error))
+                except SupabaseDteError:
+                    _logger.exception("No fue posible registrar el error del DTE Supabase %s", document_id)
+                continue
+
+            try:
+                client.complete(document_id, claim_token, odoo_document_id)
+                stats["imported"] += 1
+            except SupabaseDteError:
+                # El pre-documento ya fue confirmado en Odoo. La concesión expirará y
+                # una nueva ejecución reutilizará el mismo DTE sin crear duplicados.
+                _logger.exception("No fue posible confirmar el DTE Supabase %s", document_id)
+        _logger.info(
+            "Sincronización Supabase DTE: reclamados=%s importados=%s errores=%s",
+            stats["claimed"],
+            stats["imported"],
+            stats["errors"],
+        )
+        return stats
+
+    @api.model
+    def _cron_fetch_dte_supabase(self):
+        try:
+            return self.fetch_dte_supabase()
+        except UserError:
+            _logger.exception("Falló el cron de importación DTE desde Supabase")
+            return False
+
+    @api.model
+    def retry_supabase_dte_errors(self):
+        client = SupabaseDteClient.from_env(self.env)
+        reset_count = client.retry_errors()
+        return {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "title": _("DTE desde Supabase"),
+                "message": _("Se reprogramaron %s DTE con error.") % reset_count,
+                "type": "success",
+                "sticky": False,
+            },
+        }
 
     @api.onchange('purchase_to_done')
     def auto_map_po_lines(self):

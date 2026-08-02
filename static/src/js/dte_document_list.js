@@ -14,11 +14,11 @@ export class DteDocumentListController extends ListController {
     }
 
     async onFetchDteEmails() {
-        await this.orm.call("mail.message.dte.document", "fetch_dte_emails", []);
+        await this.orm.call("mail.message.dte.document", "fetch_dte_supabase", []);
         await this.model.load();
         this.model.notify();
         this.notification.add(
-            _t("Búsqueda de correos finalizada. Se procesaron los XML recibidos."),
+            _t("Búsqueda en Supabase finalizada. Se procesaron los XML disponibles."),
             { type: "success" }
         );
     }

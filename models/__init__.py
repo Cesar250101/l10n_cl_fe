@@ -17,6 +17,8 @@ from . import ir_report
 from . import ir_sequence
 from . import libro
 from . import mail
+from . import supabase_dte
+from . import fetchmail_server
 from . import mail_message_dte
 from . import mail_message_dte_document
 from . import partner_activities

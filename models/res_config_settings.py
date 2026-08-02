@@ -21,6 +21,28 @@ class ResConfigSettings(models.TransientModel):
     sync_remote_partners = fields.Boolean(related="company_id.sync_remote_partners", string="Sync Remote Partners", readonly=False)
     url_apicaf = fields.Char(related="company_id.url_apicaf", string="URL APICAF", readonly=False)
     token_apicaf = fields.Char(related="company_id.token_apicaf", string="Token APICAF", readonly=False)
+    supabase_dte_url = fields.Char(
+        string="URL Supabase DTE",
+        config_parameter="l10n_cl_fe.supabase_dte_url",
+    )
+    supabase_dte_api_key = fields.Char(
+        string="Clave API publica Supabase DTE",
+        config_parameter="l10n_cl_fe.supabase_dte_api_key",
+    )
+    supabase_dte_key = fields.Char(
+        string="Clave Supabase DTE",
+        config_parameter="l10n_cl_fe.supabase_dte_key",
+    )
+    supabase_dte_consumer = fields.Char(
+        string="Consumidor Supabase DTE",
+        config_parameter="l10n_cl_fe.supabase_dte_consumer",
+        default=lambda self: "odoo:%s" % self.env.cr.dbname,
+    )
+    supabase_dte_batch_size = fields.Integer(
+        string="DTE por lote Supabase",
+        config_parameter="l10n_cl_fe.supabase_dte_batch_size",
+        default=50,
+    )
     # nro_rec_envio = fields.Integer(related="company_id.nro_rec_envio",string='Nro. Registros Envio', readonly=False)
     # nro_rec_consulta = fields.Integer(related="company_id.nro_rec_consulta",string='Nro. Registros Consulta', readonly=False)
     # nro_rec_pasivo = fields.Integer(related="company_id.nro_rec_pasivo",string='Nro. Registros Pasivo', readonly=False)
@@ -59,3 +81,6 @@ class ResConfigSettings(models.TransientModel):
         ICPSudo.set_param("account.auto_send_dte", self.auto_send_dte)
         ICPSudo.set_param("account.auto_send_email", self.auto_send_email)
         ICPSudo.set_param("account.auto_send_peresistencia", self.auto_send_persistencia)
+
+    def action_retry_supabase_dte_errors(self):
+        return self.env["mail.message.dte.document"].retry_supabase_dte_errors()

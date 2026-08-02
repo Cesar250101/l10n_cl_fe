@@ -73,6 +73,50 @@
                       </div>
                                 </div>
                             </div>
+                            <div class="col-12">
+                                <h2 class="mt32">DTE desde Supabase</h2>
+                            </div>
+                            <div class="col-xs-12 col-md-6 o_setting_box" id="supabase_dte_url">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <label for="supabase_dte_url"/>
+                                    <field name="supabase_dte_url" placeholder="https://supabase.example.cl"/>
+                                    <div class="text-muted">Servicio que almacena los XML DTE recibidos desde correo.</div>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-6 o_setting_box" id="supabase_dte_api_key">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <label for="supabase_dte_api_key"/>
+                                    <field name="supabase_dte_api_key" password="True"/>
+                                    <div class="text-muted">Use la ANON_KEY de Supabase para autenticar la pasarela API.</div>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-6 o_setting_box" id="supabase_dte_key">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <label for="supabase_dte_key"/>
+                                    <field name="supabase_dte_key" password="True"/>
+                                    <div class="text-muted">Use el JWT limitado al rol dte_odoo_sync.</div>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-6 o_setting_box" id="supabase_dte_consumer">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <label for="supabase_dte_consumer"/>
+                                    <field name="supabase_dte_consumer"/>
+                                    <div class="text-muted">Identificador único de esta base Odoo en Supabase.</div>
+                                </div>
+                            </div>
+                            <div class="col-xs-12 col-md-6 o_setting_box" id="supabase_dte_batch_size">
+                                <div class="o_setting_left_pane"/>
+                                <div class="o_setting_right_pane">
+                                    <label for="supabase_dte_batch_size"/>
+                                    <field name="supabase_dte_batch_size"/>
+                                    <div class="text-muted">Máximo 200 documentos por ejecución.</div>
+                                    <button name="action_retry_supabase_dte_errors" type="object" string="Reintentar errores de Supabase" class="btn-link"/>
+                                </div>
+                            </div>
                         </div>
                         <h2>Envío Automático</h2>
                         <div class="row mt16 o_settings_container">
