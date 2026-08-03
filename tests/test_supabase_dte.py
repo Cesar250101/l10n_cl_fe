@@ -1,3 +1,4 @@
+import base64
 import json
 from unittest.mock import patch
 
@@ -63,3 +64,19 @@ class TestSupabaseDteClient(TransactionCase):
     def test_normalizes_company_rut(self):
         document_model = self.env["mail.message.dte.document"]
         self.assertEqual(document_model._supabase_normalize_rut("CL77.986.648-3"), "779866483")
+
+    def test_upload_xml_accepts_encoding_declaration_from_supabase(self):
+        xml = '<?xml version="1.0" encoding="UTF-8"?><DTE><Documento><Nombre>Ñandú</Nombre></Documento></DTE>'.encode(
+            "utf-8"
+        )
+        wizard = self.env["sii.dte.upload_xml.wizard"].create(
+            {
+                "xml_file": base64.b64encode(xml),
+                "filename": "supabase-test.xml",
+                "xml_encoding": "UTF-8",
+            }
+        )
+
+        dtes = wizard._get_dtes()
+        self.assertEqual(len(dtes), 1)
+        self.assertEqual(dtes[0].findtext("Documento/Nombre"), "Ñandú")

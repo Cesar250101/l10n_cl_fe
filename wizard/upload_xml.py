@@ -1,5 +1,6 @@
 import base64
 import logging
+import re
 
 from facturacion_electronica import facturacion_electronica as fe
 from lxml import etree
@@ -22,6 +23,7 @@ class UploadXMLWizard(models.TransientModel):
     )
     xml_file = fields.Binary(string="XML File", filters="*.xml", store=True, help="Upload the XML File in this holder",)
     filename = fields.Char(string="File Name",)
+    xml_encoding = fields.Char(string="XML Encoding", default="ISO-8859-1")
     pre_process = fields.Boolean(default=True,)
     dte_id = fields.Many2one("mail.message.dte", string="DTE",)
     document_id = fields.Many2one("mail.message.dte.document", string="Documento",)
@@ -91,7 +93,7 @@ class UploadXMLWizard(models.TransientModel):
         if self.document_id:
             xml = self.document_id.xml
         elif self.xml_file:
-            xml = base64.b64decode(self.xml_file).decode("ISO-8859-1")
+            xml = base64.b64decode(self.xml_file).decode(self.xml_encoding or "ISO-8859-1")
         return xml
 
     def _get_xml_name(self):
@@ -107,6 +109,14 @@ class UploadXMLWizard(models.TransientModel):
             return xml
         xml = xml.replace('xmlns="http://www.sii.cl/SiiDte"', "")
         if mode == "etree":
+            # ``xml`` is decoded to text by ``_get_xml``.  lxml rejects a
+            # Unicode string that still contains an XML declaration with an
+            # encoding (for example ``encoding="UTF-8"``), and Supabase can
+            # return declarations other than the two ISO-8859-1 variants
+            # handled above.  The encoding has already been applied while
+            # reading the binary field, so the declaration is not needed for
+            # parsing the text value.
+            xml = re.sub(r"<\?xml\b[^>]*\?>", "", xml, count=1, flags=re.IGNORECASE)
             parser = etree.XMLParser(remove_blank_text=True)
             return etree.fromstring(xml, parser=parser)
         return xml
@@ -676,7 +686,10 @@ class UploadXMLWizard(models.TransientModel):
         if DscRcgGlobal:
             drs = [(5,)]
             for dr in DscRcgGlobal:
-                drs.append((0, 0, self.process_dr(dr, journal_id)))
+                # A pre-document only stores the XML data for later review;
+                # the accounting account is required when an invoice is
+                # created, not while staging the received document.
+                drs.append((0, 0, self.process_dr(dr, journal_id if not document else False)))
             invoice.update(
                 {"global_descuentos_recargos": drs,}
             )
@@ -841,7 +854,7 @@ class UploadXMLWizard(models.TransientModel):
             Emisor = encabezado.find("Emisor")
             query.append(("partner_id.vat", "=", self.format_rut(Emisor.find("RUTEmisor").text)))
             query.append(("move_type", "in", ["in_invoice", "in_refund"]))
-        return self.env["account.move"].search(query)
+        return self.env["account.move"].search(query, limit=1)
 
     def _create_inv(self, documento, company_id):
         inv = self._inv_exist(documento)

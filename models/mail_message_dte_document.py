@@ -99,11 +99,23 @@ class ProcessMailsDocument(models.Model):
 
     @api.model
     def _supabase_receiver_ruts(self):
+        """RUT receptor(es) a reclamar en Supabase.
+
+        Se restringe a la(s) compañía(s) activa(s) en el contexto de la
+        sesión (selector de compañías / company_id), en lugar de todas las
+        compañías de la base de datos, para evitar traer DTE de otras
+        compañías al hacer clic en "Buscar XML Supabase". El RUT se toma
+        de company.partner_id.vat, normalizado a solo dígitos/K (sin
+        puntos ni guión), que es el mismo formato que usa la función SQL
+        `claim_dte_inbox_documents` al comparar con `rut_receptor`
+        (regexp_replace(upper(rut_receptor), '[^0-9K]', '', 'g')).
+        """
         ruts = set()
-        for company in self.env["res.company"].sudo().search([]):
-            values = [company.vat, company.partner_id.vat]
+        for company in self.env.companies.sudo():
+            partner = company.partner_id
+            values = [partner.vat]
             try:
-                values.append(company.partner_id.rut())
+                values.append(partner.rut())
             except Exception:
                 _logger.debug("No fue posible obtener RUT de la compañía %s", company.id)
             for value in values:
@@ -136,6 +148,7 @@ class ProcessMailsDocument(models.Model):
             {
                 "xml_file": xml_file,
                 "filename": filename,
+                "xml_encoding": encoding,
                 "pre_process": True,
                 "dte_id": dte.id,
             }
@@ -187,11 +200,37 @@ class ProcessMailsDocument(models.Model):
 
     @api.model
     def _cron_fetch_dte_supabase(self):
-        try:
-            return self.fetch_dte_supabase()
-        except UserError:
-            _logger.exception("Falló el cron de importación DTE desde Supabase")
-            return False
+        """Sincroniza cada compañía activa sin depender de la del cron.
+
+        El botón manual conserva la compañía elegida por el usuario, pero un
+        cron no tiene ese selector y se ejecuta con una sola compañía por
+        defecto.  Si se usara directamente ``fetch_dte_supabase()``, los DTE
+        de las demás compañías nunca se reclamarían.
+        """
+        stats = {"claimed": 0, "imported": 0, "errors": 0}
+        companies = self.env["res.company"].sudo().search([("active", "=", True)])
+        for company in companies:
+            company_model = self.with_company(company).with_context(
+                allowed_company_ids=[company.id], company_id=company.id
+            )
+            try:
+                result = company_model.fetch_dte_supabase()
+            except UserError:
+                _logger.exception(
+                    "Falló el cron de importación DTE desde Supabase para la compañía %s",
+                    company.display_name,
+                )
+                stats["errors"] += 1
+                continue
+            for key in stats:
+                stats[key] += result.get(key, 0)
+        _logger.info(
+            "Cron Supabase DTE: reclamados=%s importados=%s errores=%s",
+            stats["claimed"],
+            stats["imported"],
+            stats["errors"],
+        )
+        return stats
 
     @api.model
     def retry_supabase_dte_errors(self):
