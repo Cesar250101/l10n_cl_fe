@@ -92,7 +92,7 @@ class ResPartner(models.Model):
 
     def write(self, vals):
         result = super(ResPartner, self).write(vals)
-        if not vals.get("sync", False):
+        if not vals.get("sync", False) and not self.env.context.get("skip_remote_partner_sync"):
             for k in vals.keys():
                 if k in ("name", "dte_email", "street", "email", "acteco_ids", "website"):
                     try:
@@ -425,6 +425,67 @@ class ResPartner(models.Model):
             self._process_data(data)
         except:
             _logger.error("Error en get remote partner", exc_info=True)
+
+    def complete_missing_dte_data_from_remote(self):
+        """Complete only missing DTE receiver data with the configured SII source.
+
+        The remote lookup is intentionally best-effort: posting an invoice must
+        not depend on the availability or shape of the remote response.
+        """
+        for partner in self.commercial_partner_id:
+            missing_giro = not partner.activity_description
+            missing_actecos = not partner.acteco_ids
+            missing_dte_email = not partner.dte_email
+            if not (missing_giro or missing_actecos or missing_dte_email):
+                continue
+            if not partner.document_number:
+                continue
+            rut = partner.document_number.replace(".", "").replace("-", "")
+            if not partner.check_vat_cl(rut):
+                continue
+            try:
+                data = partner.get_remote_user_data(
+                    partner.document_number, process_data=False,
+                )
+                if not isinstance(data, dict):
+                    continue
+
+                values = {}
+                if missing_dte_email:
+                    dte_email = data.get("dte_email")
+                    if dte_email and dte_email.lower() not in [
+                        "facturacionmipyme2@sii.cl",
+                        "facturacionmipyme@sii.cl",
+                    ]:
+                        values["dte_email"] = dte_email
+
+                if missing_actecos and data.get("actecos"):
+                    actecos = self.env["partner.activities"].search(
+                        [("code", "in", data["actecos"])],
+                    )
+                    if actecos:
+                        values["acteco_ids"] = [(6, 0, actecos.ids)]
+
+                if missing_giro and data.get("glosa_giro"):
+                    activity_description = self.env[
+                        "sii.activity.description"
+                    ].search([("name", "=", data["glosa_giro"])], limit=1)
+                    if not activity_description:
+                        activity_description = self.env[
+                            "sii.activity.description"
+                        ].create({"name": data["glosa_giro"]})
+                    values["activity_description"] = activity_description.id
+
+                if values:
+                    # Do not publish data obtained from the remote source
+                    # through the existing partner synchronization hook.
+                    partner.with_context(skip_remote_partner_sync=True).write(values)
+            except Exception:
+                _logger.warning(
+                    "No se pudieron completar los datos DTE del partner %s",
+                    partner.id,
+                    exc_info=True,
+                )
 
     @api.onchange("name")
     def fill_partner(self):

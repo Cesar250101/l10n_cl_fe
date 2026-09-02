@@ -796,9 +796,17 @@ class AccountMove(models.Model):
     #     else:
     #         super(AccountMove, self)._set_next_sequence()
 
+    def _complete_dte_receiver_data_before_post(self):
+        """Best-effort refresh for customer invoice receivers before posting."""
+        for move in self.filtered(
+            lambda m: m.move_type == "out_invoice" and m.state == "draft" and m.use_documents
+        ):
+            move.partner_id.commercial_partner_id.complete_missing_dte_data_from_remote()
+
     def action_post(self):
         try:
             with self.env.cr.savepoint():
+                self._complete_dte_receiver_data_before_post()
                 return super().action_post()
         except CafNotFoundError as e:
             doc_name = str(e)
