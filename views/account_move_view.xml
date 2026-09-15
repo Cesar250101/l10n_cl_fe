@@ -59,13 +59,11 @@
                     <field name="document_class_ids" invisible="1" />
                     <field name="sii_code" invisible="1" />
                 </form>
-                <!-- <button name="preview_invoice" position="after">
-                    <button string="Imprimir Copia y Cedible" type="object" name="print_copy_cedible" />
-                    <button string="Imprimir Cedible" type="object" name="print_cedible" />
+                <button name="preview_invoice" position="after">
                     <button name="action_reverse" string='Agregar Nota de Débito'
                             type='object' groups="account.group_account_invoice"
                             attrs="{'invisible': ['|', ('move_type', 'not in', ('out_refund', 'in_refund')), ('state', '!=', 'posted')]}"/>
-                </button> -->
+                </button>
                 <field name="discount" position="after">
                     <field name="discount_amount" invisible="1" />
                 </field>
