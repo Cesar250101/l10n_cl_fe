@@ -493,8 +493,12 @@ class UploadXMLWizard(models.TransientModel):
             }
         )
         if document:
+            if isinstance(product_id, str):
+                new_product = product_id
+            else:
+                new_product = product_id.display_name if product_id else ""
             data.update(
-                {"new_product": product_id, "product_description": DscItem.text if DscItem is not None else "",}
+                {"new_product": new_product, "product_description": DscItem.text if DscItem is not None else "",}
             )
         amount = 0
         sii_code = 0
@@ -928,7 +932,7 @@ class UploadXMLWizard(models.TransientModel):
                 if pre:
                     inv = self._inv_exist(documento)
                     pre.write(
-                        {"xml": etree.tostring(dte), "move_id": inv.id,}
+                        {"xml": etree.tostring(dte, pretty_print=True), "move_id": inv.id,}
                     )
                     created.append(pre.id)
             except Exception as e:
