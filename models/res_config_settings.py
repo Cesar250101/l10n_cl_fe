@@ -16,6 +16,7 @@ class ResConfigSettings(models.TransientModel):
     auto_send_persistencia = fields.Integer(string="Enviar Email automático al Cliente cada  n horas", default=24,)
     dte_email_id = fields.Many2one("mail.alias", related="company_id.dte_email_id", readonly=False)
     limit_dte_lines = fields.Boolean(related="company_id.limit_dte_lines", string="Limitar Cantidad de líneas por documento", readonly=False)
+    dte_sanitize_text = fields.Boolean(related="company_id.dte_sanitize_text", readonly=False)
     url_remote_partners = fields.Char(related="company_id.url_remote_partners", string="Url Remote Partners", readonly=False)
     token_remote_partners = fields.Char(related="company_id.token_remote_partners", string="Token Remote Partners", readonly=False)
     sync_remote_partners = fields.Boolean(related="company_id.sync_remote_partners", string="Sync Remote Partners", readonly=False)

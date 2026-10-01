@@ -216,6 +216,17 @@
                     </div>
                                 </div>
                             </div>
+                            <div class="col-xs-12 col-md-6 o_setting_box" id="dte_sanitize_text">
+                                <div class="o_setting_left_pane">
+                                    <field name="dte_sanitize_text" />
+                                </div>
+                                <div class="o_setting_right_pane" name="dte_sanitize_text_right_pane">
+                                    <label string="Reemplazar caracteres inválidos SII" for="dte_sanitize_text" />
+                                    <div class="text-muted">
+                       Al validar, reemplaza en encabezado y detalle del DTE los caracteres que el SII rechaza (comillas tipográficas, guiones largos, emojis, &amp; &lt; &gt;, etc.)
+                    </div>
+                                </div>
+                            </div>
                             <div class="col-xs-12 col-md-6 o_setting_box" id="cf_autosend">
                                 <div class="o_setting_left_pane">
                                     <field name="cf_autosend" widget="upgrade_odoocoop_boolean" />

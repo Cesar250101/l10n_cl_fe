@@ -16,6 +16,7 @@ from odoo.tools import frozendict
 from markupsafe import Markup, escape
 from contextlib import ExitStack, contextmanager
 from .bigint import BigInt
+from ..tools.sii_text import sii_sanitize_record_payload
 import re
 
 _logger = logging.getLogger(__name__)
@@ -2227,6 +2228,9 @@ class AccountMove(models.Model):
             "firma_electronica": signature_id.parametros_firma(),
         }
 
+    def _sii_sanitize_payload(self, datos):
+        return sii_sanitize_record_payload(self, datos, self.company_id)
+
     def _timbrar(self, n_atencion=None):
         folio = self.get_folio()
         datos = self._get_datos_empresa(self.company_id)
@@ -2271,7 +2275,7 @@ class AccountMove(models.Model):
                 "documentos": [self._dte(n_atencion)],
             },
         ]
-        result = fe.timbrar(datos)
+        result = fe.timbrar(self._sii_sanitize_payload(datos))
         if result[0].get("error"):
             raise UserError(result[0].get("error"))
         bci = self.get_barcode_img(xml=result[0]["sii_barcode"])

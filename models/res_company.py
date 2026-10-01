@@ -104,6 +104,14 @@ stamp to be legally valid.""",
         string="Limitar Cantidad de líneas por documento",
         default=False,
     )
+    dte_sanitize_text = fields.Boolean(
+        string="Reemplazar caracteres inválidos SII",
+        default=True,
+        help="Al validar el documento, detecta y reemplaza en el encabezado, detalle y "
+             "referencias del DTE los caracteres no aceptados por el SII (comillas "
+             "tipográficas, guiones largos, tabulaciones, emojis, caracteres fuera de "
+             "ISO-8859-1, & < > \" ').",
+    )
     url_remote_partners = fields.Char(
         string="Url Remote Partners",
         default="https://sre.cl/api/company_info"

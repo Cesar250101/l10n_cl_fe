@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 import dateutil.relativedelta as relativedelta
 from odoo.tools import DEFAULT_SERVER_DATETIME_FORMAT as DTF
 import logging
+from ..tools.sii_text import sii_sanitize_record_payload
 _logger = logging.getLogger(__name__)
 
 try:
@@ -500,6 +501,9 @@ class SIIResumenBoletaVoucher(models.Model):
             'moneda_decimales': self.currency_id.decimal_places,
         }
 
+    def _sii_sanitize_payload(self, datos):
+        return sii_sanitize_record_payload(self, datos, self.company_id)
+
     def _timbrar(self):
         folio = self.get_folio()
         dte = self._get_datos_empresa()
@@ -510,7 +514,7 @@ class SIIResumenBoletaVoucher(models.Model):
             'documentos': [self._dte()]
             },
         ]
-        result = fe.timbrar(dte)
+        result = fe.timbrar(self._sii_sanitize_payload(dte))
         if result[0].get('error'):
             raise UserError(result[0].get('error'))
         self.write({
