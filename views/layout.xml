@@ -510,8 +510,8 @@
                         color: #111827 !important;
                         padding-top: 8px !important;
                     }
-                    /* Términos y Condiciones: bloque completo, alineado a la izquierda y compacto */
-                    .dte-terms { text-align: left; margin-top: 12px; padding-top: 8px; border-top: 1px solid #e5e7eb; }
+                    /* Términos y Condiciones: columna central junto al timbre, alineado a la izquierda y compacto */
+                    .dte-terms { text-align: left; margin: 0; padding: 0; word-wrap: break-word; overflow-wrap: anywhere; }
                     .dte-terms-label {
                         display: block; font-size: 11px; font-weight: 700; text-transform: uppercase;
                         letter-spacing: .6px; color: #6b7280; margin-bottom: 4px;
@@ -521,6 +521,12 @@
                         text-align: left !important;
                     }
                     .dte-terms-body p { margin: 0 0 3px 0 !important; }
+                    /* narration puede traer bloques pre: sin scroll, con saltos de línea y ajuste de ancho */
+                    .dte-terms-body pre {
+                        overflow: visible !important; max-height: none !important; white-space: pre-wrap !important;
+                        word-wrap: break-word; margin: 0 0 3px 0 !important; padding: 0 !important;
+                        border: 0 !important; background: transparent !important; font-family: inherit !important;
+                    }
                     .dte-terms-body strong, .dte-terms-body b { font-weight: 700 !important; color: #374151 !important; }
                     .dte-terms-body h1, .dte-terms-body h2, .dte-terms-body h3,
                     .dte-terms-body h4, .dte-terms-body h5, .dte-terms-body h6 {
@@ -554,12 +560,12 @@
                             </t>
                         </div>
                         <div class="col-3">
-                            <p t-if="o.narration" style="font-size:7px; line-height:1.2;">
-                                <strong style="font-size:7px;">Términos y Condiciones:</strong>
-                                <br />
-                                <span t-field="o.narration" style="font-size:7px;" />
-                            </p>
+                            <div t-if="o.narration" class="dte-terms">
+                                <span class="dte-terms-label">Términos y Condiciones</span>
+                                <div class="dte-terms-body" t-field="o.narration" />
+                            </div>
                         </div>
+
                         <t t-set="tax_totals" t-value="o.tax_totals"/>
                         <div id="total" t-attf-class="#{'col-5' if report_move_type != 'html' else 'col-md-5'}">
                             <table class="table table-sm">
@@ -668,10 +674,6 @@
                             </table>
                         </div>
                     </div>
-                </div>
-                <div t-if="o.narration" class="dte-terms">
-                    <span class="dte-terms-label">Términos y Condiciones</span>
-                    <div class="dte-terms-body" t-field="o.narration" />
                 </div>
                 <t t-if="cedible">
                     <div class="clearfix">
