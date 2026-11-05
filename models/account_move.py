@@ -1077,6 +1077,46 @@ class AccountMove(models.Model):
                         lambda l: l.display_type == 'tax'
                     ).with_context(dynamic_unlink=True).unlink()
 
+    def _get_producto_no_product(self):
+        """Devuelve el producto marcador "Modifica Documento" (``NO_PRODUCT``).
+
+        Se busca con ``sudo`` y ``active_test=False`` a propósito: el producto es un
+        dato de la localización (``l10n_cl_fe.no_product``) que puede quedar archivado
+        o asignado a otra compañía, y en ese caso la búsqueda normal no lo encuentra
+        (regla multi-compañía / ``active_test``). Sin el producto, la línea de la nota
+        de crédito "Corrige texto" se creaba sin producto ni descripción, el detalle
+        del DTE quedaba vacío y el SII rechazaba el XML con
+        "Element '{...}Referencia': This element is not expected. Expected is
+        ( {...}Detalle )".
+        """
+        plantilla = self.env.ref("l10n_cl_fe.no_product", raise_if_not_found=False)
+        prod = self.env["product.product"]
+        if plantilla:
+            prod = self.env["product.product"].sudo().with_context(active_test=False).search(
+                [("product_tmpl_id", "=", plantilla.id)], limit=1
+            )
+        if not prod:
+            raise UserError(
+                _(
+                    "No se encontró el producto marcador %s (código NO_PRODUCT) de la "
+                    "localización chilena, necesario para la nota de crédito "
+                    "\"Corrige texto Documento Referencia\".\n"
+                    "Restaure ese producto (o reinstale el módulo de facturación "
+                    "electrónica) antes de continuar."
+                )
+                % "l10n_cl_fe.no_product"
+            )
+        if self and plantilla.company_id and plantilla.company_id != self.company_id:
+            _logger.warning(
+                "El producto marcador l10n_cl_fe.no_product (%s) pertenece a la compañía %s "
+                "y se usará en el documento %s de la compañía %s: conviene dejarlo compartido.",
+                prod.id,
+                plantilla.company_id.display_name,
+                self.display_name,
+                self.company_id.display_name,
+            )
+        return prod
+
     @api.returns('self', lambda value: value.id)
     def copy(self, default=None):
         copied_am = super().copy(default)
@@ -1085,17 +1125,14 @@ class AccountMove(models.Model):
 
                 if default["referencias"][0][2].get('sii_referencia_CodRef') == '2':
                     copied_am.invoice_line_ids.unlink()
-                    prod = self.env['product.product'].search(
-                            [
-                                    ('product_tmpl_id', '=', self.env.ref('l10n_cl_fe.no_product').id),
-                            ]
-                        )
+                    prod = self._get_producto_no_product()
                     copied_am.write({'invoice_line_ids': [
                         Command.create({
                             'product_id': prod.id,
                             'name': prod.name,
                             'quantity': 1,
-                            'price_unit': 0
+                            'price_unit': 0,
+                            'sequence': 1,
                         })
                     ]})
             return copied_am
@@ -1953,6 +1990,24 @@ class AccountMove(models.Model):
             return line._get_variant_description()
         return line.name
 
+    def _get_nro_lin_det(self, line, posicion, usados):
+        """Devuelve un ``NroLinDet`` válido (entero 1..99) y no repetido para la línea.
+
+        ``DTE_v10.xsd`` exige ``NroLinDet`` como ``xs:positiveInteger`` con
+        ``maxInclusive 99``. Este módulo redefine ``account.move.line.sequence`` con
+        ``default=-1``, así que las líneas creadas por código (``copy()``,
+        ``_reverse_moves()``, importaciones) no cumplen ese rango y se usa la posición
+        de la línea dentro del detalle. Si esa posición ya está tomada se busca el
+        siguiente número libre mayor, para no alterar el orden del detalle.
+        """
+        secuencia = line.sequence or 0
+        if 0 < secuencia <= 99 and secuencia not in usados:
+            return secuencia
+        nro = max(max(usados) + 1, posicion) if usados else posicion
+        if nro > 99 or nro in usados:
+            nro = next((i for i in range(1, 100) if i not in usados), nro)
+        return nro
+
     def _invoice_lines(self):
         invoice_lines = []
         product = True
@@ -1961,6 +2016,8 @@ class AccountMove(models.Model):
         currency_base = self.currency_base()
         currency_id = self.currency_target()
         taxInclude = self.document_class_id.es_boleta()
+        nro_lin_det = 0
+        nro_lin_det_usados = []
         #if (
         #    self.env["account.move.line"]
         #    .with_context(lang="es_CL")
@@ -1971,10 +2028,15 @@ class AccountMove(models.Model):
             if not line.tpo_doc_liq and (not line.account_id or not line.product_id):
                 continue
             if not line.name and not line.product_id:
-                raise UserError("Debe ingrear un producto o una descripción/etiqueta de la línea")
+                raise UserError(
+                    _("Debe ingresar un producto o una descripción/etiqueta en la línea %s del documento %s")
+                    % (line.id, self.display_name)
+                )
             product = line.product_id.default_code != "NO_PRODUCT"
             lines = {}
-            lines["NroLinDet"] = line.sequence
+            nro_lin_det += 1
+            lines["NroLinDet"] = self._get_nro_lin_det(line, nro_lin_det, nro_lin_det_usados)
+            nro_lin_det_usados.append(lines["NroLinDet"])
             cdg_items = []
             if product and line.product_id.default_code:
                 cdg_items.append({
@@ -2119,7 +2181,7 @@ class AccountMove(models.Model):
                 MontoItem = cash_rounding.balance * sign
                 MontoNF += MontoItem
                 invoice_lines.append({
-                    'NroLinDet': len(self.invoice_line_ids) +1,
+                    'NroLinDet': (max(nro_lin_det_usados) if nro_lin_det_usados else 0) + 1,
                     'NmbItem': cash_rounding.name,
                     'QtyItem': 1,
                     'MontoItem': MontoItem if MontoItem > 0 else MontoItem * -1,
@@ -2161,9 +2223,51 @@ class AccountMove(models.Model):
             lin_dr += 1
         return result
 
+    def _validar_detalle_dte(self, resumen):
+        """Impide timbrar un DTE sin líneas de detalle.
+
+        El esquema ``DTE_v10.xsd`` del SII exige al menos un ``Detalle``; si queda
+        vacío, la librería rechaza el XML con un mensaje críptico del tipo
+        "Element '{...}Referencia': This element is not expected. Expected is
+        ( {...}Detalle )". Aquí se reemplaza por un error accionable que nombra las
+        líneas excluidas.
+        """
+        if (resumen or {}).get("Detalle"):
+            return
+        lineas = self.invoice_line_ids
+        if not lineas:
+            raise UserError(
+                _(
+                    "El documento %s no tiene líneas de detalle, por lo que el SII rechazaría "
+                    "el DTE: agregue al menos una línea con producto o descripción."
+                )
+                % self.display_name
+            )
+        excluidas = "\n".join(
+            "  - %s (secuencia %s, cuenta: %s)"
+            % (
+                line.name or _("sin descripción"),
+                line.sequence,
+                line.account_id.display_name or _("sin cuenta"),
+            )
+            for line in lineas[:10]
+        )
+        if len(lineas) > 10:
+            excluidas += "\n  - %s" % (_("... y %s líneas más") % (len(lineas) - 10))
+        raise UserError(
+            _(
+                "El documento %s no generó ninguna línea de detalle para el DTE.\n"
+                "Estas líneas no se pueden incluir porque no tienen producto ni descripción, "
+                "o les falta la cuenta contable:\n%s\n"
+                "Agregue un producto o una descripción a la línea (y su cuenta) antes de validar."
+            )
+            % (self.display_name, excluidas)
+        )
+
     def _dte(self, n_atencion=None):
         dte = {}
         resumen = self._invoice_lines()
+        self._validar_detalle_dte(resumen)
         dte["Encabezado"] = self._encabezado(resumen)
         lin_ref = 1
         ref_lines = []
