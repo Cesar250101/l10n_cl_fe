@@ -828,8 +828,32 @@ class AccountMove(models.Model):
                 },
             }
 
+    def _sincronizar_folio_antes_de_publicar(self):
+        """Evita el nombre duplicado: adelanta la secuencia al primer folio libre antes de armar el `name`.
+
+        Solo aplica a ventas (out_invoice/out_refund) en borrador, con documentos DTE, sin folio asignado y
+        fuera de restore_mode. Las compras llevan el número del proveedor y no usan la secuencia.
+        """
+        self.ensure_one()
+        if (
+            self.state != "draft"
+            or self.move_type not in ("out_invoice", "out_refund")
+            or not self.use_documents
+            or not self.journal_document_class_id
+            or self.sii_document_number
+            or self.journal_id.restore_mode
+            or self._context.get("restore_mode", False)
+        ):
+            return False
+        numero = self.journal_document_class_id.sequence_id._sincronizar_numero_siguiente(self)
+        # sequence_number_next es un computado sin dependencia de la secuencia: si no se invalida, la
+        # asignación posterior de sii_document_number usaría el valor atrasado.
+        self.invalidate_recordset(["sequence_number_next"])
+        return numero
+
     def _post(self, soft=True):
         for s in self:
+            s._sincronizar_folio_antes_de_publicar()
             s.name=False
             if s.journal_document_class_id and s.use_documents:
                 s.name=s.journal_document_class_id.sequence_id.name+str(self.sii_document_number if self.sii_document_number else s.journal_document_class_id.sequence_id.number_next_actual)

@@ -94,6 +94,10 @@ Invoices (33), Exempt Invoices (34), Credit Notes (61), Debit Notes (56), Receip
 
 Migration scripts live in `migrations/` using Odoo's standard `pre-migrate.py` / `post-migrate.py` convention. The module has been migrated from 12.0 through multiple 16.0 versions (current: 0.40.3).
 
+### Folio, secuencia y `name` al publicar una venta
+
+`account.move._post` arma `name = <ir.sequence.name><folio>` (p. ej. `FEXP_Arsante72`) y el índice único `account_move_unique_name (name, journal_id)` rechaza un nombre ya publicado con «Ya existe otro asiento con el mismo nombre». La secuencia (`number_next`) puede quedar atrasada respecto de los folios ya usados, así que antes de armar el `name`, `_post` llama a `_sincronizar_folio_antes_de_publicar()` → `ir.sequence._sincronizar_numero_siguiente()`: toma `max(number_next, último folio usado + 1)` (publicados y anulados de la misma compañía, diario y clase de documento, dentro del rango de los CAF de la secuencia), avanza si el nombre candidato ya existe en el diario y solo escribe `number_next` si cambió; nunca retrocede. Solo actúa en `out_invoice`/`out_refund` en borrador, con `use_documents`, sin `sii_document_number` y fuera de `restore_mode`. Cubre también 110/111/112 de `l10n_cl_dte_exportacion`. No recalcula `dte.caf.folio_actual`. Pruebas: `tests/test_folio_name_duplicado.py` (fixtures en `tests/common_folio.py`).
+
 ## Chilean Tax / SII Concepts
 
 - **DTE**: Documento Tributario Electrónico — any tax document (invoice, receipt, etc.)

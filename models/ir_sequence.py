@@ -183,6 +183,87 @@ class IRSequence(models.Model):
         #     return self.get_folio(folio_actual+1)
         return self.number_next
 
+    # Tope de intentos al buscar un nombre libre; evita un bucle sin fin si los datos están corruptos.
+    _MAX_INTENTOS_NOMBRE_FOLIO = 1000
+
+    def _get_ultimo_folio_usado(self, move):
+        """Mayor folio ya consumido por la secuencia para el diario y la clase de documento de `move`.
+
+        Cuenta los documentos publicados y los anulados (un folio anulado también está consumido) de la misma
+        compañía, diario y clase de documento, dentro del rango de los CAF de la secuencia, de modo que
+        numeraciones antiguas fuera de rango no empujen el folio. Devuelve 0 si no hay CAF o documentos.
+        """
+        self.ensure_one()
+        cafs = self.dte_caf_ids
+        if not cafs or not self.sii_document_class_id:
+            return 0
+        self.env.cr.execute(
+            """
+            SELECT MAX(sii_document_number)
+              FROM account_move
+             WHERE company_id = %(company_id)s
+               AND journal_id = %(journal_id)s
+               AND document_class_id = %(document_class_id)s
+               AND use_documents
+               AND state IN ('posted', 'cancel')
+               AND id != %(move_id)s
+               AND sii_document_number BETWEEN %(inicio)s AND %(fin)s
+            """,
+            {
+                "company_id": move.company_id.id,
+                "journal_id": move.journal_id.id,
+                "document_class_id": self.sii_document_class_id.id,
+                "move_id": move.id or 0,
+                "inicio": min(cafs.mapped("start_nm")),
+                "fin": max(cafs.mapped("final_nm")),
+            },
+        )
+        return int((self.env.cr.fetchone() or [0])[0] or 0)
+
+    def _nombre_folio_existe(self, move, nombre):
+        """True si otro asiento publicado del diario ya usa `nombre` (índice único account_move_unique_name)."""
+        return bool(
+            self.env["account.move"].sudo().with_context(active_test=False).search_count([
+                ("name", "=", nombre),
+                ("journal_id", "=", move.journal_id.id),
+                ("state", "=", "posted"),
+                ("id", "!=", move.id or 0),
+            ])
+        )
+
+    def _sincronizar_numero_siguiente(self, move):
+        """Deja `number_next` en el primer folio libre para `move` y lo devuelve.
+
+        Evita «Ya existe otro asiento con el mismo nombre» cuando la secuencia quedó atrasada respecto de los
+        documentos ya publicados. Nunca retrocede la secuencia y solo escribe cuando el número cambia.
+        """
+        self.ensure_one()
+        if not self.is_dte:
+            return False
+        # Serializa publicaciones simultáneas: la segunda espera el commit de la primera y ve su folio.
+        self.env.cr.execute("SELECT id FROM ir_sequence WHERE id = %s FOR UPDATE", [self.id])
+        self.invalidate_recordset(["number_next", "number_next_actual"])
+        actual = int(self.number_next_actual)
+        candidato = max(actual, self._get_ultimo_folio_usado(move) + 1)
+        intentos = 0
+        while self._nombre_folio_existe(move, "%s%s" % (self.name, candidato)):
+            candidato += 1
+            intentos += 1
+            if intentos >= self._MAX_INTENTOS_NOMBRE_FOLIO:
+                raise UserError(_(
+                    "No se pudo encontrar un número libre para la secuencia %(secuencia)s: los nombres a partir "
+                    "del %(desde)s ya existen en el diario %(diario)s. Revise la secuencia y los folios usados.",
+                    secuencia=self.name, desde=actual, diario=move.journal_id.display_name,
+                ))
+        if candidato != actual:
+            _logger.warning(
+                "Secuencia %s (id %s) atrasada: number_next %s -> %s para el documento %s del diario %s.",
+                self.name, self.id, actual, candidato, move.id, move.journal_id.id,
+            )
+            self.sudo().write({"number_next": candidato})
+            self.invalidate_recordset(["number_next", "number_next_actual"])
+        return candidato
+
     def time_stamp(self, formato="%Y-%m-%dT%H:%M:%S"):
         tz = pytz.timezone("America/Santiago")
         return datetime.now(tz).strftime(formato)
