@@ -206,6 +206,31 @@ class ResPartner(models.Model):
         else:
             self.es_mipyme = True
 
+    @api.model
+    def find_partner_by_rut(self, document_number, document_type_id=False):
+        """Devuelve el id del contacto comercial de la compañía activa que ya usa este RUT/RUN.
+
+        Lo usa el widget ``rut_lookup`` para abrir el contacto existente en lugar de
+        crear uno duplicado. Retorna False si el RUT no es válido o no existe.
+        """
+        if not document_number or not document_type_id:
+            return False
+        tipos = self.env.ref("l10n_cl_fe.dt_RUT") | self.env.ref("l10n_cl_fe.dt_RUN")
+        if document_type_id not in tipos.ids:
+            return False
+        number = re.sub("[^1234567890Kk]", "", str(document_number)).zfill(9).upper()
+        if not self.check_vat_cl(number):
+            return False
+        partner = self.search(
+            [
+                ("vat", "=", "CL%s" % number),
+                ("vat", "!=", "CL555555555"),
+                ("company_id", "=", self.env.company.id),
+            ],
+            limit=1,
+        )
+        return partner.commercial_partner_id.id or False
+
     @api.onchange("document_number", "document_type_id")
     def onchange_document(self):
         if self.document_number and (self.document_type_id == self.env.ref("l10n_cl_fe.dt_RUT")

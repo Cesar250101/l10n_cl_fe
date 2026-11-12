@@ -63,7 +63,11 @@
             </xpath>
             <field name="vat" position="after">
                 <field name="document_type_id" attrs="{'invisible': [('parent_id', '!=', False)]}" />
-                <field name="document_number" attrs="{'invisible': [('parent_id', '!=', False)]}" />
+                <field
+                    name="document_number"
+                    widget="rut_lookup"
+                    attrs="{'invisible': [('parent_id', '!=', False)]}"
+                />
                 <field
                     name="responsability_id"
                     widget="selection"
