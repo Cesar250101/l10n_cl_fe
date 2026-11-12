@@ -86,6 +86,15 @@
                 <field name="send_dte" />
                 <field name="principal" />
             </xpath>
+            <!-- El onchange de dte_email crea un contacto hijo virtual (sin id): la plantilla
+                 base hace record.id.raw_value y rompe el kanban (OwlError). Solo mostrar la
+                 imagen cuando el registro ya tiene id. -->
+            <xpath
+                expr="//field[@name='child_ids']/kanban/templates/t/div/div[hasclass('o_kanban_image')]"
+                position="attributes"
+            >
+                <attribute name="t-if">record.id</attribute>
+            </xpath>
             <xpath
                 expr="//field[@name='child_ids']/kanban/templates/t/div/div[hasclass('oe_kanban_details')]"
                 position="inside"
