@@ -2,6 +2,7 @@ import json
 import logging
 import re
 from odoo import api, fields, models, tools
+from odoo.osv import expression
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
 
@@ -62,6 +63,12 @@ class ResPartner(models.Model):
         "sii.document_type", string="Document type", default=lambda self: self._get_default_doc_type(),
     )
     document_number = fields.Char(string="Document number", size=64,)
+    rut_search = fields.Char(
+        string="Rut",
+        compute="_compute_rut_search",
+        search="_search_rut_search",
+        help="Solo para búsquedas: encuentra el RUT con o sin puntos y guion.",
+    )
     start_date = fields.Date(string="Start-up Date",)
     tp_sii_code = fields.Char("Tax Payer SII Code", compute="_get_tp_sii_code", readonly=True,)
     activity_description = fields.Many2one("sii.activity.description", string="Glosa Giro", ondelete="restrict",)
@@ -205,6 +212,24 @@ class ResPartner(models.Model):
             self.es_mipyme=False
         else:
             self.es_mipyme = True
+
+    def _compute_rut_search(self):
+        for partner in self:
+            partner.rut_search = False
+
+    @api.model
+    def _search_rut_search(self, operator, value):
+        """Busca por RUT sin importar puntos, guion o espacios (el vat se guarda como CL + 9 dígitos)."""
+        if operator not in ("ilike", "like", "=ilike", "="):
+            return [("id", "=", False)]
+        if not value:
+            return [("id", "!=", False)]
+        raw = str(value).strip()
+        clauses = [[("document_number", "ilike", raw)], [("ref", "=", raw)]]
+        limpio = re.sub(r"[.\-\s]", "", raw).upper()
+        if re.fullmatch(r"\d+K?", limpio):
+            clauses.append([("vat", "ilike", limpio)])
+        return expression.OR(clauses)
 
     @api.model
     def find_partner_by_rut(self, document_number, document_type_id=False):

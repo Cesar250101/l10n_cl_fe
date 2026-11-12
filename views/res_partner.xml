@@ -146,10 +146,7 @@
         <field name="type">search</field>
         <field name="arch" type="xml">
             <field name="name" position="after">
-                <field
-                    name="document_number"
-                    filter_domain="['|','|',('document_number','ilike',self),('ref','=',self),('vat','ilike',self)]"
-                />
+                <field name="rut_search" string="Rut" />
             </field>
         </field>
     </record>
